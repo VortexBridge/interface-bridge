@@ -22,11 +22,12 @@ import { numberPattern } from "../utils/regex";
 // icons
 import HistoryIcon from "@mui/icons-material/History";
 import SettingsIcon from "@mui/icons-material/Settings";
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import SwapVert from "@mui/icons-material/SwapVert";
 
+// components
 import CustomEthConnectButton from "../components/Bridge/CustomEthConnectButton";
+import SelectChain from "./../components/SelectChain";
 import shortedAddress from "../utils/display";
 import { CHAINS_IDS, BRIDGE_ASSETS } from "../constants/chains";
 import { getAccount, fetchBalance, watchAccount, use } from '@wagmi/core'
@@ -148,7 +149,7 @@ const Bridge = () => {
         <Box marginY={".8em"} display={"flex"} justifyContent={"space-between"} alignItems={"center"} sx={{ flexDirection: { xs: "column", md: "row" } }}>
           <Box sx={{ maxWidth: { xs: "100%", md: "40%" }, width: "100%" }}>
             <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "4px" }}>From</Typography>
-            <Box onClick={() => { openModal("from") }} sx={{ maxHeight: "52px", backgroundColor: "background.light", width: "100%", "&:hover": { backgroundColor: "text.grey1", cursor: "pointer" } }} borderRadius={"10px"} padding={"12px"}>
+            {/* <Box onClick={() => { openModal("from") }} sx={{ maxHeight: "52px", backgroundColor: "background.light", width: "100%", "&:hover": { backgroundColor: "text.grey1", cursor: "pointer" } }} borderRadius={"10px"} padding={"12px"}>
               <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
                 <Box sx={{ display: "flex", alignItems: "center" }}>
                   {
@@ -162,7 +163,11 @@ const Bridge = () => {
                 </Box>
                 <KeyboardArrowDownIcon color="secondary" />
               </Box>
-            </Box>
+            </Box> */}
+            <SelectChain
+              onSelect={() => openModal("from")}
+              chain={fromChain}
+            />
           </Box>
           <Box>
             <Box onClick={() => swapNetworks()} sx={{ marginTop: "20px", height: "40px", width: "40px", padding: "10px", borderRadius: "10px", backgroundColor: "background.light", display: "flex", justifyContent: "space-around", alignItems: "center", "&:hover": { backgroundColor: "text.grey1", cursor: "pointer" } }}>
@@ -176,21 +181,10 @@ const Bridge = () => {
           </Box>
           <Box sx={{ maxWidth: { xs: "100%", md: "40%" }, width: "100%" }}>
             <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "4px" }}>To</Typography>
-            <Box onClick={() => { openModal("to") }} sx={{ maxHeight: "52px", backgroundColor: "background.light", width: "100%", "&:hover": { backgroundColor: "text.grey1", cursor: "pointer" } }} borderRadius={"10px"} padding={"12px"}>
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
-                <Box sx={{ display: "flex", alignItems: "center" }}>
-                  {
-                    toChain != null ?
-                      <img src={toChain.icon} width="24px" height="24px" sx={{ maxWidth: "24px", width: "24px", height: "24px", objectFit: "cover" }} />
-                    : null
-                  }
-                  <Typography sx={{ marginLeft: "10px" }} variant="h6">
-                    {toChain == null ? "Select" : toChain.name}
-                  </Typography>
-                </Box>
-                <KeyboardArrowDownIcon color="secondary" />
-              </Box>
-            </Box>
+            <SelectChain
+              onSelect={() => openModal("to")}
+              chain={toChain}
+            />
           </Box>
         </Box>
         <Box paddingY={"10px"} paddingX={"15px"} marginTop={"1em"} borderRadius={"10px"} sx={{ backgroundColor: "background.light" }}>
