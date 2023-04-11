@@ -1,0 +1,36 @@
+body {
+  margin: 0px;
+  padding: 0px;
+  /* background: linear-gradient(180deg, rgba(111, 0, 246, 0.101) 0%, rgba(2,0,36,0) 80%); */
+}
+
+.floating {
+  animation-name: floating;
+  animation-duration: 6s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+
+@keyframes floating {
+  0% {
+    transform: translate(0, 0px);
+  }
+
+  50% {
+    transform: translate(0, 8px);
+  }
+
+  100% {
+    transform: translate(0, -0px);
+  }
+}
+
+.gradientLight {
+  background: rgb(111, 0, 246);
+  /*  background: linear-gradient(180deg, rgba(111,0,246,0) 0%, rgba(2,0,36,0) 100%);*/
+}
+
+.gradientDark {
+  background: rgb(26, 26, 26);
+  /*  background: linear-gradient(180deg, rgb(27, 12, 44) 40%, rgb(12, 2, 24) 100%);*/
+}

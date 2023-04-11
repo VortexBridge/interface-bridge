@@ -1,0 +1,538 @@
+{
+    "methods": {
+        "name": {
+            "argument": "staking.name_arguments",
+            "return": "staking.name_result",
+            "description": "Returns the token's name",
+            "entry_point": 2191741823,
+            "read_only": true
+        },
+        "symbol": {
+            "argument": "staking.symbol_arguments",
+            "return": "staking.symbol_result",
+            "description": "Returns the token's symbol",
+            "entry_point": 3077209249,
+            "read_only": true
+        },
+        "decimals": {
+            "argument": "staking.decimals_arguments",
+            "return": "staking.decimals_result",
+            "description": "Returns the token's decimals precision",
+            "entry_point": 4001430831,
+            "read_only": true
+        },
+        "total_supply": {
+            "argument": "staking.total_supply_arguments",
+            "return": "staking.total_supply_result",
+            "description": "Returns the token's total supply",
+            "entry_point": 2967091508,
+            "read_only": true
+        },
+        "balance_of": {
+            "argument": "staking.balance_of_arguments",
+            "return": "staking.balance_of_result",
+            "description": "Checks the balance at an address",
+            "entry_point": 1550980247,
+            "read_only": true
+        },
+        "get_prior_votes": {
+            "argument": "staking.get_prior_votes_arguments",
+            "return": "staking.get_prior_votes_result",
+            "description": "Checks the balance at an address",
+            "entry_point": 3851874359,
+            "read_only": true
+        },
+        "get_current_votes": {
+            "argument": "staking.get_current_votes_arguments",
+            "return": "staking.get_current_votes_result",
+            "description": "Checks the balance at an address",
+            "entry_point": 1123284549,
+            "read_only": true
+        },
+        "initialize": {
+            "argument": "staking.initialize_arguments",
+            "return": "staking.initialize_result",
+            "description": "adjust block end date depending on rewards",
+            "entry_point": 1192148610,
+            "read_only": false
+        },
+        "update_initialize": {
+            "argument": "staking.update_initialize_arguments",
+            "return": "staking.update_initialize_result",
+            "description": "update inicialize configuration",
+            "entry_point": 3282934553,
+            "read_only": false
+        },
+        "get_pool": {
+            "argument": "staking.get_pool_arguments",
+            "return": "staking.get_pool_result",
+            "description": "update inicialize configuration",
+            "entry_point": 1544779537,
+            "read_only": false
+        },
+        "staking": {
+            "argument": "staking.staking_arguments",
+            "return": "staking.staking_result",
+            "description": "staking token sKNDX",
+            "entry_point": 3651770570,
+            "read_only": false
+        },
+        "unstaking": {
+            "argument": "staking.unstaking_arguments",
+            "return": "staking.unstaking_result",
+            "description": "unstaking token sKNDX",
+            "entry_point": 3837797317,
+            "read_only": false
+        },
+        "claim_pending_reward": {
+            "argument": "staking.claim_pending_reward_arguments",
+            "return": "staking.claim_pending_reward_result",
+            "description": "View function to see pending Reward on frontend.",
+            "entry_point": 966927033,
+            "read_only": false
+        },
+        "get_pending_reward": {
+            "argument": "staking.get_pending_reward_arguments",
+            "return": "staking.get_pending_reward_result",
+            "description": "View function to see pending Reward on frontend.",
+            "entry_point": 2957298589,
+            "read_only": true
+        }
+    },
+    "koilib_types": {
+        "nested": {
+            "staking": {
+                "nested": {
+                    "config_object": {
+                        "fields": {
+                            "isActive": {
+                                "type": "bool",
+                                "id": 1
+                            },
+                            "isInitialize": {
+                                "type": "bool",
+                                "id": 2
+                            }
+                        }
+                    },
+                    "balance_object": {
+                        "fields": {
+                            "value": {
+                                "type": "uint64",
+                                "id": 1,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            },
+                            "checkpoint": {
+                                "type": "uint64",
+                                "id": 2,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            },
+                            "rewardDebt": {
+                                "type": "uint64",
+                                "id": 3,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            }
+                        }
+                    },
+                    "checkpoint_object": {
+                        "fields": {
+                            "block": {
+                                "type": "uint64",
+                                "id": 2,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            },
+                            "votes": {
+                                "type": "uint64",
+                                "id": 3,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            }
+                        }
+                    },
+                    "staking_object": {
+                        "fields": {
+                            "blockReward": {
+                                "type": "uint64",
+                                "id": 1,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            },
+                            "blockStart": {
+                                "type": "uint64",
+                                "id": 2,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            },
+                            "blockEnd": {
+                                "type": "uint64",
+                                "id": 3,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            },
+                            "lastRewardBlock": {
+                                "type": "uint64",
+                                "id": 4,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            },
+                            "rewardPerShare": {
+                                "type": "uint64",
+                                "id": 5,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            }
+                        }
+                    },
+                    "controller_object": {
+                        "fields": {
+                            "result": {
+                                "type": "bool",
+                                "id": 1
+                            }
+                        }
+                    },
+                    "name_arguments": {
+                        "fields": {}
+                    },
+                    "name_result": {
+                        "fields": {
+                            "value": {
+                                "type": "string",
+                                "id": 1
+                            }
+                        }
+                    },
+                    "symbol_arguments": {
+                        "fields": {}
+                    },
+                    "symbol_result": {
+                        "fields": {
+                            "value": {
+                                "type": "string",
+                                "id": 1
+                            }
+                        }
+                    },
+                    "decimals_arguments": {
+                        "fields": {}
+                    },
+                    "decimals_result": {
+                        "fields": {
+                            "value": {
+                                "type": "uint32",
+                                "id": 1
+                            }
+                        }
+                    },
+                    "total_supply_arguments": {
+                        "fields": {}
+                    },
+                    "total_supply_result": {
+                        "fields": {
+                            "value": {
+                                "type": "uint64",
+                                "id": 1,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            }
+                        }
+                    },
+                    "balance_of_arguments": {
+                        "fields": {
+                            "owner": {
+                                "type": "bytes",
+                                "id": 1,
+                                "options": {
+                                    "(koinos.btype)": "ADDRESS"
+                                }
+                            }
+                        }
+                    },
+                    "balance_of_result": {
+                        "fields": {
+                            "value": {
+                                "type": "uint64",
+                                "id": 1,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            }
+                        }
+                    },
+                    "get_prior_votes_arguments": {
+                        "fields": {
+                            "owner": {
+                                "type": "bytes",
+                                "id": 1,
+                                "options": {
+                                    "(koinos.btype)": "ADDRESS"
+                                }
+                            },
+                            "blockNum": {
+                                "type": "uint64",
+                                "id": 2,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            }
+                        }
+                    },
+                    "get_prior_votes_result": {
+                        "fields": {
+                            "votes": {
+                                "type": "uint64",
+                                "id": 1,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            }
+                        }
+                    },
+                    "get_current_votes_arguments": {
+                        "fields": {
+                            "owner": {
+                                "type": "bytes",
+                                "id": 1,
+                                "options": {
+                                    "(koinos.btype)": "ADDRESS"
+                                }
+                            }
+                        }
+                    },
+                    "get_current_votes_result": {
+                        "fields": {
+                            "votes": {
+                                "type": "uint64",
+                                "id": 1,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            }
+                        }
+                    },
+                    "initialize_arguments": {
+                        "fields": {
+                            "blockReward": {
+                                "type": "uint64",
+                                "id": 1,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            },
+                            "blockStart": {
+                                "type": "uint64",
+                                "id": 2,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            },
+                            "blockEnd": {
+                                "type": "uint64",
+                                "id": 3,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            }
+                        }
+                    },
+                    "initialize_result": {
+                        "fields": {
+                            "result": {
+                                "type": "bool",
+                                "id": 1
+                            }
+                        }
+                    },
+                    "update_initialize_arguments": {
+                        "fields": {
+                            "blockReward": {
+                                "type": "uint64",
+                                "id": 1,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            },
+                            "blockStart": {
+                                "type": "uint64",
+                                "id": 2,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            },
+                            "blockEnd": {
+                                "type": "uint64",
+                                "id": 3,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            }
+                        }
+                    },
+                    "update_initialize_result": {
+                        "fields": {
+                            "result": {
+                                "type": "bool",
+                                "id": 1
+                            }
+                        }
+                    },
+                    "get_pool_arguments": {
+                        "fields": {}
+                    },
+                    "get_pool_result": {
+                        "fields": {
+                            "result": {
+                                "type": "staking_object",
+                                "id": 1
+                            }
+                        }
+                    },
+                    "staking_arguments": {
+                        "fields": {
+                            "from": {
+                                "type": "bytes",
+                                "id": 1,
+                                "options": {
+                                    "(koinos.btype)": "ADDRESS"
+                                }
+                            },
+                            "value": {
+                                "type": "uint64",
+                                "id": 2,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            }
+                        }
+                    },
+                    "staking_result": {
+                        "fields": {
+                            "result": {
+                                "type": "bool",
+                                "id": 1
+                            }
+                        }
+                    },
+                    "unstaking_arguments": {
+                        "fields": {
+                            "from": {
+                                "type": "bytes",
+                                "id": 1,
+                                "options": {
+                                    "(koinos.btype)": "ADDRESS"
+                                }
+                            },
+                            "value": {
+                                "type": "uint64",
+                                "id": 2,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            }
+                        }
+                    },
+                    "unstaking_result": {
+                        "fields": {
+                            "result": {
+                                "type": "bool",
+                                "id": 1
+                            }
+                        }
+                    },
+                    "claim_pending_reward_arguments": {
+                        "fields": {
+                            "from": {
+                                "type": "bytes",
+                                "id": 1,
+                                "options": {
+                                    "(koinos.btype)": "ADDRESS"
+                                }
+                            }
+                        }
+                    },
+                    "claim_pending_reward_result": {
+                        "fields": {
+                            "result": {
+                                "type": "bool",
+                                "id": 1
+                            }
+                        }
+                    },
+                    "get_pending_reward_arguments": {
+                        "fields": {
+                            "owner": {
+                                "type": "bytes",
+                                "id": 1,
+                                "options": {
+                                    "(koinos.btype)": "ADDRESS"
+                                }
+                            }
+                        }
+                    },
+                    "get_pending_reward_result": {
+                        "fields": {
+                            "result": {
+                                "type": "uint64",
+                                "id": 1,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            }
+                        }
+                    },
+                    "stake_event": {
+                        "fields": {
+                            "to": {
+                                "type": "bytes",
+                                "id": 1,
+                                "options": {
+                                    "(koinos.btype)": "ADDRESS"
+                                }
+                            },
+                            "value": {
+                                "type": "uint64",
+                                "id": 2,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            }
+                        }
+                    },
+                    "unstake_event": {
+                        "fields": {
+                            "from": {
+                                "type": "bytes",
+                                "id": 1,
+                                "options": {
+                                    "(koinos.btype)": "ADDRESS"
+                                }
+                            },
+                            "value": {
+                                "type": "uint64",
+                                "id": 2,
+                                "options": {
+                                    "jstype": "JS_STRING"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
