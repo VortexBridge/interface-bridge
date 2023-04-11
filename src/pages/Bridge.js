@@ -149,13 +149,17 @@ const Bridge = () => {
           <Box sx={{ maxWidth: { xs: "100%", md: "40%" }, width: "100%" }}>
             <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "4px" }}>From</Typography>
             <Box onClick={() => { openModal("from") }} sx={{ maxHeight: "52px", backgroundColor: "background.light", width: "100%", "&:hover": { backgroundColor: "text.grey1", cursor: "pointer" } }} borderRadius={"10px"} padding={"12px"}>
-              <Box sx={{ display: "flex", justifyContent: "space-around", alignItems: "center", maxWidth: { xs: "140px", md: "100%" } }}>
-                <Typography variant="h6">{fromChain == null ? "Select" : fromChain.name}</Typography>
-                {
-                  fromChain != null ?
-                    <img src={fromChain.icon} width="24px" height="24px" sx={{ maxWidth: "24px", width: "24px", height: "24px", objectFit: "cover" }} />
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                  {
+                    fromChain != null ?
+                      <img src={fromChain.icon} width="24px" height="24px" sx={{ maxWidth: "24px", width: "24px", height: "24px", objectFit: "cover" }} />
                     : null
-                }
+                  }
+                  <Typography sx={{ marginLeft: "10px" }} variant="h6">
+                    {fromChain == null ? "Select" : fromChain.name}
+                  </Typography>
+                </Box>
                 <KeyboardArrowDownIcon color="secondary" />
               </Box>
             </Box>
@@ -173,12 +177,17 @@ const Bridge = () => {
           <Box sx={{ maxWidth: { xs: "100%", md: "40%" }, width: "100%" }}>
             <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "4px" }}>To</Typography>
             <Box onClick={() => { openModal("to") }} sx={{ maxHeight: "52px", backgroundColor: "background.light", width: "100%", "&:hover": { backgroundColor: "text.grey1", cursor: "pointer" } }} borderRadius={"10px"} padding={"12px"}>
-              <Box sx={{ display: "flex", justifyContent: "space-around", alignItems: "center", maxWidth: { xs: "140px", md: "100%" } }}><Typography variant="h6">{toChain == null ? "Select" : toChain.name}</Typography>
-                {
-                  toChain != null ?
-                    <img src={toChain.icon} width="24px" height="24px" sx={{ maxWidth: "24px", width: "24px", height: "24px", objectFit: "cover" }} />
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                  {
+                    toChain != null ?
+                      <img src={toChain.icon} width="24px" height="24px" sx={{ maxWidth: "24px", width: "24px", height: "24px", objectFit: "cover" }} />
                     : null
-                }
+                  }
+                  <Typography sx={{ marginLeft: "10px" }} variant="h6">
+                    {toChain == null ? "Select" : toChain.name}
+                  </Typography>
+                </Box>
                 <KeyboardArrowDownIcon color="secondary" />
               </Box>
             </Box>
