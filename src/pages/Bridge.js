@@ -69,8 +69,11 @@ const Bridge = () => {
   const [ethereumAddress, setEthereumAddress] = useState(null)
   const [ethereumBalance, setEthereumBalance] = useState(null)
   // koinsAddress
-
-
+  
+  useEffect(() => {
+    dispatch(setModal("Disclaimer"))
+  }, []);
+  
 
   useEffect(() => {
     if (_get(walletSelector, "signer", null)) {
