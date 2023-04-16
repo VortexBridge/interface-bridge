@@ -12,7 +12,7 @@ const SelectChain = ({ chain, onSelect }) => {
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
         <Box sx={{ display: "flex", alignItems: "center" }}>
           {
-            chain != null ? <img src={chain.icon} alt={"chain"} width="24px" height="24px" sx={{ maxWidth: "24px", width: "24px", height: "24px", objectFit: "cover" }} /> : null
+            chain != null ? <img src={chain.icon} alt={"chain"} width="24px" height="24px" style={{ borderRadius: "999px", maxWidth: "28px", width: "28px", height: "28px", objectFit: "cover" }} /> : null
           }
           <Typography sx={{ marginLeft: "10px" }} variant="h6">
             {chain == null ? "Select" : chain.name}
