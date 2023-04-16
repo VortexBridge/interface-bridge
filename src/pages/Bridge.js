@@ -70,6 +70,9 @@ const Bridge = () => {
   const [ethereumBalance, setEthereumBalance] = useState(null)
   // koinsAddress
 
+  useEffect(() => {
+    dispatch(setModal("Disclaimer"))
+  }, []);
 
 
   useEffect(() => {
