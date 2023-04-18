@@ -18,3 +18,4 @@ export const SET_CONNECTED = "SET_CONNECTED";
 export const SET_CHAIN_FROM = "SET_CHAIN_FROM";
 export const SET_CHAIN_TO = "SET_CHAIN_TO";
 export const SET_BALANCE_FROM = "SET_BALANCE_FROM"
+export const SET_TOKEN_TO_BRIDGE = "SET_TOKEN_TO_BRIDGE"

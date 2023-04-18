@@ -53,9 +53,8 @@ const CustomEthConnectButton = () => {
               }
 
               return (
-                <div style={{ display: "flex", gap: 12 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px", gap: 12 }}>
                   <Button
-
                     onClick={openChainModal}
                     style={{ display: "flex", alignItems: "center" }}
                     type="button"
@@ -85,9 +84,6 @@ const CustomEthConnectButton = () => {
 
                   <Button onClick={openAccountModal} type="button">
                     {account.displayName}
-                    {account.displayBalance
-                      ? ` (${account.displayBalance})`
-                      : ""}
                   </Button>
                 </div>
               );

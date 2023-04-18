@@ -3,6 +3,8 @@ import { useSelector } from "react-redux"
 import Connect from "./Connect";
 import ModalSelectBridgeNetwork from "./SelectBridgeNetwork";
 import ModalDisclaimer from "./ModalDisclaimer";
+import ModalSelectTokenToBridge from "./SelectTokenToBridge";
+
 const Modals = () => {
   // selector
   const currentModal = useSelector(state => state.modals.modal);
@@ -17,6 +19,7 @@ const Modals = () => {
       <Connect />
       <ModalSelectBridgeNetwork />
       <ModalDisclaimer />
+      <ModalSelectTokenToBridge />
     </>
   );
 }
