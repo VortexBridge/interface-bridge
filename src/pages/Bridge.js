@@ -13,7 +13,7 @@ import { BigNumber } from "bignumber.js";
 import { KoinosTokenContract, EthereumTokenContract } from "./../helpers/contracts";
 
 // Actions
-import { setNetworkFrom, setNetworkTo, setBalanceFrom } from "../redux/actions/bridge";
+import { setNetworkFrom, setNetworkTo, setTokenToBridge } from "../redux/actions/bridge";
 import { setModal, setModalData } from "../redux/actions/modals";
 
 // utils
@@ -88,7 +88,7 @@ const Bridge = () => {
       setLoadingBalance(false);
     }
     loadBlance();
-  }, [ tokenToBridge, _get(walletSelector, "wallet", null), _get(account, 'isConnected', false) ]);
+  }, [ tokenToBridge, fromChain, _get(walletSelector, "wallet", null), _get(account, 'isConnected', false) ]);
 
   // functions
   const swapNetworks = () => {
@@ -106,8 +106,6 @@ const Bridge = () => {
   const openModalSelectToken = () => {
     dispatch(setModal("SelectTokenToBridge"))
   }
-
-
 
   const disabledButtonBridge = () => {
     return false;
