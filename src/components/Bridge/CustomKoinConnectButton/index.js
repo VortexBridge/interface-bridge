@@ -57,7 +57,7 @@ const CustomKoinConnectButton = () => {
           { CHAIN_IDS_TO_NAMES[networkChain] ? CHAIN_IDS_TO_NAMES[networkChain] : CHAIN_IDS_TO_NAMES["UNSUPPORTED"] }
         </Button>
 
-        <Button type="button">
+        <Button type="button" onClick={() => dispatch(setModal("Connect"))}>
           {shortedAddress(_get(walletSelector, "wallet[0].address", ""))}
         </Button>
       </div>
