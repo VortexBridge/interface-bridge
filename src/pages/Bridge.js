@@ -1,13 +1,16 @@
 /* eslint-disable */
 import React, { useEffect, useState } from "react";
-import { Provider, utils as koilibUtils, Contract } from "koilib";
+import { utils as koilibUtils } from "koilib";
 import { get as _get } from "lodash";
 import { useSnackbar } from "notistack";
 import { useDispatch, useSelector } from "react-redux";
-import { useTheme, Box, Button, InputBase, Card, CardContent, CardHeader, Typography, Avatar } from '@mui/material';
+import { useTheme, Box, Button, InputBase, Card, CardContent, CardHeader, Typography, Avatar, useMediaQuery } from '@mui/material';
 import { getAccount } from '@wagmi/core'
+import { useProvider } from "wagmi";
 import { BigNumber } from "bignumber.js";
-import useMediaQuery from '@mui/material/useMediaQuery';
+
+// helpers
+import { KoinosTokenContract, EthereumTokenContract } from "./../helpers/contracts";
 
 // Actions
 import { setNetworkFrom, setNetworkTo, setBalanceFrom } from "../redux/actions/bridge";
@@ -32,11 +35,11 @@ const Bridge = () => {
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.up('md'));
   const account = getAccount()
+  const provider = useProvider()
 
   // selectors
   const bridgeSelector = useSelector(state => state.bridge);
   const walletSelector = useSelector(state => state.wallet);
-  const settingsSelector = useSelector((state) => state.settings);
 
   // variables
   const fromChain = _get(bridgeSelector, "from", null);
@@ -45,30 +48,66 @@ const Bridge = () => {
 
   // states
   const [balance, setBalance] = useState(0)
+  const [loadingBalance, setLoadingBalance] = useState(false);
   const [inputValue, setInputValue] = useState("0")
 
+  // efects
   useEffect(() => {
     dispatch(setModal("Disclaimer"))
   }, []);
 
+  useEffect(() => {
+    const loadBlance = async () => {
+      let _balance = 0;
+      let _token = null;
+      setLoadingBalance(true);
+      if(tokenToBridge == null) {
+        setLoadingBalance(false);
+        return;
+      };
+      setInputValue("0");
+      let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
+      if(_get(fromChain, "symbol", "") == "ETH" && _get(account, 'isConnected', false)) {
+        _token = await EthereumTokenContract(_network.address, provider);
+        if(_token) {
+          let bal = await _token.balanceOf(account.address);
+          _balance = koilibUtils.formatUnits(bal.toString(), _get(_network, "decimals", 8))
+        }
+      }
+      if(_get(fromChain, "symbol", "") == "KOIN" && _get(walletSelector, "wallet", null)) {
+        let providerKoin = _get(walletSelector, "provider", null);
+        let signerKoin = _get(walletSelector, "signer", null);
+        _token = await KoinosTokenContract(_network.address, providerKoin, signerKoin);
+        if(_token) {
+          let addressOwner = _get(walletSelector, "wallet[0].address", null);
+          let bal = await _token.functions.balanceOf({ owner: addressOwner })
+          _balance = koilibUtils.formatUnits(_get(bal, 'result.value', 0), _get(_network, "decimals", 8))
+        }
+      }
+      setBalance(_balance);
+      setLoadingBalance(false);
+    }
+    loadBlance();
+  }, [ tokenToBridge, _get(walletSelector, "wallet", null), _get(account, 'isConnected', false) ]);
+
+  // functions
   const swapNetworks = () => {
     let oldNetwork = fromChain
     dispatch(setNetworkFrom(toChain))
     dispatch(setNetworkTo(oldNetwork))
   }
-
   const openModal = (side) => {
     dispatch(setModalData({ side: side }))
     dispatch(setModal("SelectBridgeNetwork"))
   }
-
   const onInput = (value) => {
     setInputValue(value)
   }
-
-  const openModalSelectToken = (side) => {
+  const openModalSelectToken = () => {
     dispatch(setModal("SelectTokenToBridge"))
   }
+
+
 
   const disabledButtonBridge = () => {
     return false;
@@ -87,7 +126,6 @@ const Bridge = () => {
     if(_get(fromChain, "symbol", "") == "KOIN" && !_get(walletSelector, "wallet", null)) return (
       <CustomKoinConnectButton />
     )
-    console.log(tokenToBridge)
     if(tokenToBridge == null) return (
       <>
         { _get(fromChain, "symbol", "") == "ETH" ? <CustomEthConnectButton /> : null }
@@ -95,7 +133,13 @@ const Bridge = () => {
         <Button variant="contained" size="large" sx={{ width: "100%" }} onClick={() => openModalSelectToken()}>SELECT A TOKEN</Button>
       </>
     )
-    return <Button disabled={disabledButtonBridge()} variant="contained" size="large" sx={{ width: "100%" }}>BRIDGE</Button>
+    return (
+      <>
+        { _get(fromChain, "symbol", "") == "ETH" ? <CustomEthConnectButton /> : null }
+        { _get(fromChain, "symbol", "") == "KOIN" ? <CustomKoinConnectButton /> : null }
+        <Button disabled={disabledButtonBridge()} variant="contained" size="large" sx={{ width: "100%" }}>BRIDGE</Button>
+      </>
+    )
   }
 
   return (
@@ -155,7 +199,7 @@ const Bridge = () => {
           </Box>
           <Box>
             {
-              tokenToBridge ?  <Typography variant="body1" component={"span"} sx={{ color: "text.grey2", marginTop: "5px" }}>Balance: {balance}</Typography> : null
+              tokenToBridge ?  <Typography variant="body1" component={"span"} sx={{ color: "text.grey2", marginTop: "5px" }}>Balance: { loadingBalance ? "loading..." : balance}</Typography> : null
             }
           </Box>
         </Box>
@@ -171,6 +215,7 @@ const Bridge = () => {
                 onClick={() => {
                   numberPattern(balance, onInput);
                 }}
+                disabled={loadingBalance}
               >
                 <Typography variant="h6" sx={{ color: "text.grey2" }}>
                   MAX
@@ -183,12 +228,14 @@ const Bridge = () => {
                 onClick={() => {
                   // numberPattern(balance, halfButtonClick);
                   numberPattern(balance, (b) => {
-                    let fullAmount = koilibUtils.parseUnits(b, token.decimals);
+                    let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
+                    let fullAmount = koilibUtils.parseUnits(b, _get(_network, "decimals", 8));
                     let _amount = new BigNumber(fullAmount).dividedBy(2).toFixed(0, 1);
-                    let value = koilibUtils.formatUnits(_amount, token.decimals);
+                    let value = koilibUtils.formatUnits(_amount, _get(_network, "decimals", 8));
                     onInput(value);
                   });
                 }}
+                disabled={loadingBalance}
               >
                 <Typography variant="h6" sx={{ color: "text.grey2" }}>
                   HALF
