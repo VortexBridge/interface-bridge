@@ -5,7 +5,7 @@ import { setModal } from "../../../redux/actions/modals";
 import { Button } from '@mui/material'
 import { CHAIN_IDS_TO_NAMES } from "./../../../constants/chains"
 // utils
-import shortedAddress from "./../../../utils/display";
+import { shortedAddress } from "./../../../utils/display";
 
 const CustomKoinConnectButton = () => {
   // Dispatch to call actions

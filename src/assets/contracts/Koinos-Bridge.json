@@ -106,7 +106,7 @@
             "read_only": false
         }
     },
-    "types": {
+    "koilib_types": {
         "nested": {
             "bridge": {
                 "nested": {
