@@ -1,4 +1,4 @@
-import { SET_BALANCE_FROM, SET_CHAIN_FROM, SET_CHAIN_TO } from "../constants"
+import { SET_BALANCE_FROM, SET_CHAIN_FROM, SET_CHAIN_TO, SET_TOKEN_TO_BRIDGE } from "../constants"
 
 // Actions
 export const setNetworkFrom = (data) => ({
@@ -13,5 +13,10 @@ export const setNetworkTo = (data) => ({
 
 export const setBalanceFrom = (data) => ({
   type: SET_BALANCE_FROM,
+  payload: data
+})
+
+export const setTokenToBridge = (data) => ({
+  type: SET_TOKEN_TO_BRIDGE,
   payload: data
 })
