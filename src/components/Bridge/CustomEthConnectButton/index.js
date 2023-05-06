@@ -25,6 +25,7 @@ const CustomEthConnectButton = () => {
 
         return (
           <div
+            style={connected || chain.unsupported ? {} : { width: "100%" }}
             {...(!ready && {
               "aria-hidden": true,
               "style": {
@@ -34,7 +35,6 @@ const CustomEthConnectButton = () => {
               },
             })}
           >
-
             {(() => {
               if (!connected) {
                 return (

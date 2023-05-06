@@ -19,7 +19,7 @@ const CustomKoinConnectButton = () => {
   const fromChain = _get(bridgeSelector, "from", null);
   const networkChain = _get(settingsSelector, "network", null);
 
-  if(!_get(walletSelector, "wallet", null)) {
+  if (!_get(walletSelector, "wallet", null)) {
     return (
       <Button variant="contained" sx={{ boxShadow: "0", width: "100%", borderRadius: "10px" }} onClick={() => dispatch(setModal("Connect"))}>
         Connect
@@ -54,7 +54,7 @@ const CustomKoinConnectButton = () => {
               )}
             </div>
             : null}
-          { CHAIN_IDS_TO_NAMES[networkChain] ? CHAIN_IDS_TO_NAMES[networkChain] : CHAIN_IDS_TO_NAMES["UNSUPPORTED"] }
+          {CHAIN_IDS_TO_NAMES[networkChain] ? CHAIN_IDS_TO_NAMES[networkChain] : CHAIN_IDS_TO_NAMES["UNSUPPORTED"]}
         </Button>
 
         <Button type="button" onClick={() => dispatch(setModal("Connect"))}>
