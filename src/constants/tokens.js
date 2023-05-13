@@ -15,7 +15,7 @@ export const BRIDGE_TOKENS = [
       {
         chain: BRIDGE_CHAINS_NAMES.ETH,
         decimals: 8,
-        address: "0xeA756978B2D8754b0f92CAc325880aa13AF38f88"
+        address: "0xDb7a53f3dD59444841066E5d340A765bF62b3014"
       }
     ]
   },
@@ -28,7 +28,7 @@ export const BRIDGE_TOKENS = [
       {
         chain: BRIDGE_CHAINS_NAMES.KOIN,
         decimals: 8,
-        address: "1KazZFUnZSLjeXq2QrifdnYqiBvA7RVF3G"
+        address: "13bNUFNYBwPSWxZaq8JVZf2ZCLTjWphyQo"
       },
       {
         chain: BRIDGE_CHAINS_NAMES.ETH,

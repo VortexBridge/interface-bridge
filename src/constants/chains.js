@@ -19,13 +19,13 @@ export const BRIDGE_CHAINS = [
   {
     id: BRIDGE_CHAINS_NAMES.KOIN,
     name: "Koinos",
-    bridgeAddress: "17XHjr7n2E4auykiHkfJMLGGovvaCadtQS",
+    bridgeAddress: "1KXRDqoGcvysTeoeZ3SePAHUZ99fW3cb2u",
     symbol: "KOIN",
     icon: "img/networks/koinos-icon-dark.png"
   },
   {
     id: BRIDGE_CHAINS_NAMES.ETH,
-    bridgeAddress: "0x47940D3089Da6DC306678109c834718AEF23A201",
+    bridgeAddress: "0x3cf2e6F03b126476E6BDb0305fA0C67AfE737D87",
     symbol: "ETH",
     name: "Ethereum",
     icon: "img/networks/eth-logo.png",

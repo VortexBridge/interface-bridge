@@ -22,6 +22,9 @@ import { EthereumBridgeContract, EthereumTokenContract, KoinosBridgeContract, Ko
 import { setNetworkFrom, setNetworkTo } from "../redux/actions/bridge";
 import { setModal, setModalData } from "../redux/actions/modals";
 
+// api
+import BrigeService from "./../services/bridge";
+
 // components
 import CustomEthConnectButton from "../components/Bridge/CustomEthConnectButton";
 import CustomKoinConnectButton from "../components/Bridge/CustomKoinConnectButton";
@@ -39,30 +42,38 @@ const Redeem = (props) => {
   const navigate = useNavigate();
 
   // get tx and network route params
+  // http://localhost:3000/redeem?tx=tx_id&from=koinos&to=koinos
   const [searchParams] = useSearchParams();
-  const tx = searchParams.get('tx') == null ? "" : searchParams.get('tx');
-  const network = searchParams.get('network');
 
   // selectors
   const bridgeSelector = useSelector(state => state.bridge);
   const walletSelector = useSelector(state => state.wallet);
 
   // variables
-  const fromChain = _get(bridgeSelector, "from", null);
   const toChain = _get(bridgeSelector, "to", null);
-  const tokenToBridge = _get(bridgeSelector, "token", null);
+  const fromChain = _get(bridgeSelector, "from", null);
 
   // states
-  const [inputValue, setInputValue] = useState("0");
-  const [approval, setApproval] = useState("0");
-  const [loadingApproval, setLoadingApproval] = useState(false);
-  const [txHash, setTxHash] = useState("");
-  const [loadingBridge, setLoadingBridge] = useState(false);
-  const [sourceTX, setSourceTX] = useState(tx)
-
+  const [blockIrreversal, setBlockIrreversal] = useState(false);
+  const [recover, setRecover] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [sourceTX, setSourceTX] = useState(null);
 
   // efects
   useEffect(() => {
+    if(searchParams.get("tx")) {
+      setSourceTX(searchParams.get("tx"))
+    }
+    if(searchParams.get("from")) {
+      let _chainRedeem = BRIDGE_CHAINS.find(chain => chain.id == searchParams.get("from"))
+      if(_chainRedeem) 
+        dispatch(setNetworkFrom(_chainRedeem))
+    }
+    if(searchParams.get("to")) {
+      let _chainRedeem = BRIDGE_CHAINS.find(chain => chain.id == searchParams.get("to"))
+      if(_chainRedeem) 
+        dispatch(setNetworkTo(_chainRedeem))
+    }
     dispatch(setModal("Disclaimer"))
   }, []);
 
@@ -73,164 +84,237 @@ const Redeem = (props) => {
   const onInput = (value) => {
     setInputValue(value)
   }
-  const openModalSelectToken = () => {
-    dispatch(setModal("SelectTokenToBridge"))
-  }
 
-  const bridgeTokens = async () => {
-    setLoadingBridge(true);
-    if (loadingBridge) return;
+  const redeem = async () => {
+    setLoading(true);
+    if (loading) return;
     try {
-      let _bridge = null;
-      let _txhash = null;
-      let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
-      let _bridgeInfo = BRIDGE_CHAINS.find(bridge => bridge.id == _get(fromChain, "id", null));
-      // amount    
-      let fullAmount = koilibUtils.parseUnits(inputValue, _get(_network, "decimals", 8));
-
-      // bridge
-      if (_get(fromChain, "id", "") == BRIDGE_CHAINS_NAMES.ETH) {
-        _bridge = await EthereumBridgeContract(_bridgeInfo.bridgeAddress, signer.data);
-        if (_bridge) {
-          const tx = await _bridge.transferTokens(_network.address, fullAmount, recipient)
-          await tx.wait()
-          _txhash = tx.hash;
+      // checks
+      const now = new Date()
+      const expiration = new Date(parseInt(_get(recover, "expiration", 0)))
+      if (now >= expiration) {
+        const delta = now.getTime() - expiration.getTime()
+        if (delta < 3700000) {
+          // toast({
+          //   title: 'Expired signatures',
+          //   description: `The validators signatures have expired, please request new ones in approximately ${approximateRequestTime} minutes.`,
+          //   status: 'error',
+          //   isClosable: true,
+          // })
+          console.log("expire 1")
+          setLoading(false)
+          return;
+        } else {
+          // toast({
+          //   title: 'Expired signatures',
+          //   description: 'The validators signatures have expired, please request new ones. If you already submitted a request, please try to complete the transfer again in a few minutes.',
+          //   status: 'error',
+          //   isClosable: true,
+          // })
+          console.log("expire 2")
+          setLoading(false)
+          return;
         }
       }
-      if (_get(fromChain, "id", "") == BRIDGE_CHAINS_NAMES.KOIN) {
+
+      let _bridge = null;
+      let _bridgeInfo = BRIDGE_CHAINS.find(bridge => bridge.id == _get(toChain, "id", null));
+
+      // redeem
+      if (_get(toChain, "id", "") == BRIDGE_CHAINS_NAMES.ETH) {
+        _bridge = await EthereumBridgeContract(_bridgeInfo.bridgeAddress, signer.data);
+        console.log("llego aqui")
+        if (_bridge) {
+          console.log(
+            _get(recover, "id", ""),
+            _get(recover, "opId", ""),
+            _get(recover, "ethToken", ""),
+            _get(recover, "recipient", ""),
+            _get(recover, "amount", ""),
+            _get(recover, "signatures", ""),
+            _get(recover, "expiration", "")
+          )
+          const tx = await _bridge.completeTransfer(
+            _get(recover, "id", ""),
+            _get(recover, "opId", ""),
+            _get(recover, "ethToken", ""),
+            _get(recover, "recipient", ""),
+            _get(recover, "amount", ""),
+            _get(recover, "signatures", ""),
+            _get(recover, "expiration", "")
+          )
+          await tx.wait()
+          console.log(tx)
+        }
+      }
+      if (_get(toChain, "id", "") == BRIDGE_CHAINS_NAMES.KOIN) {
         let providerKoin = _get(walletSelector, "provider", null);
         let signerKoin = _get(walletSelector, "signer", null);
-        let walletAddress = _get(walletSelector, "wallet[0].address", null);
         _bridge = await KoinosBridgeContract(_bridgeInfo.bridgeAddress, providerKoin, signerKoin);
         if (_bridge) {
-          let { transaction } = await _bridge.functions.transfer_tokens({
-            from: walletAddress,
-            token: _network.address,
-            amount: fullAmount,
-            recipient: recipient
+          let { transaction } = await _bridge.functions.complete_transfer({
+            transactionId: _get(recover, "id", ""),
+            token: _get(recover, "koinosToken", ""),
+            recipient: _get(recover, "recipient", ""),
+            value: _get(recover, "amount", ""),
+            expiration: _get(recover, "expiration", ""),
+            signatures: _get(recover, "signatures",  "")
           })
           console.log(transaction.id)
           await transaction.wait();
-          _txhash = transaction.id;
+          console.log(transaction)
         }
       }
-      setTxHash(_txhash);
-      setLoadingBridge(false)
+      setLoading(false)
     } catch (error) {
       console.log(error)
-      setTxHash(null);
-      setLoadingBridge(false)
+      setLoading(false)
       return;
     }
 
   }
 
-  const approveTransfers = async () => {
-    let _token = null;
-    setLoadingApproval(true);
-    if (loadingApproval) return;
+  const checkApi = async () => {
+    if(loading) return;
+    setLoading(true)
+    let result = null;
     try {
-      let _bridge = BRIDGE_CHAINS.find(bridge => bridge.id == _get(fromChain, "id", null));
-      let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
+      let bridge = new BrigeService();
       if (_get(fromChain, "id", "") == BRIDGE_CHAINS_NAMES.ETH) {
-        console.log(signer)
-        _token = await EthereumTokenContract(_network.address, signer.data);
-        const tx = await _token.approve(
-          _bridge.bridgeAddress,
-          ethers.constants.MaxUint256
-        )
-        await tx.wait();
-        setApproval(ethers.constants.MaxUint256.toString());
-        setLoadingApproval(false);
+        result = await bridge.getEthTx(sourceTX)
       }
+      if(_get(fromChain, "id", "") == BRIDGE_CHAINS_NAMES.KOIN) {
+        result = await bridge.getKoinTx(sourceTX)
+      }      
     } catch (error) {
-      setLoadingApproval(false);
+      result = null;
+      console.log(error)
     }
+    setLoading(false)
+    setRecover(result);
   }
 
   const BaseConnections = () => (
     <>
-      {_get(fromChain, "id", "") != BRIDGE_CHAINS_NAMES.ETH ? <CustomEthConnectButton /> : null}
-      {_get(fromChain, "id", "") != BRIDGE_CHAINS_NAMES.KOIN ? <CustomKoinConnectButton /> : null}
+      { _get(toChain, "id", "") == BRIDGE_CHAINS_NAMES.ETH ? <CustomEthConnectButton /> : null }
+      { _get(toChain, "id", "") == BRIDGE_CHAINS_NAMES.KOIN ? <CustomKoinConnectButton /> : null }
     </>
   )
-
-  const RecoverButton = ({ onClick }) => (
-    <Button disabled={sourceTX ? false : true} variant={"contained"} sx={{ width: "100%" }} onClick={onClick}>Recover</Button>
-  )
-
-  const RecoverCall = () => {
-    if(fromChain.name == "Koinos") {
-      RecoverEthTX();
-    } else {
-      RecoverKoinTX();
-    }
+  const disabledButtonBridge = () => {
+    if (loading) return true;
+    if (sourceTX == "" || sourceTX == null) return true;
+    if (_get(recover, "status", "") != "signed") return true;
+    return false;
   }
-  
-  const RecoverEthTX = () => {
-    
-  }
-  const RecoverKoinTX = () => {
-
+  const ActionsBase = () => {
+    if(fromChain == null) return (
+      <Button variant="contained" size="large" sx={{ width: "100%" }} onClick={() => openModal("from")}>SELECT SOURCE NETWORK</Button>
+    )
+    if(toChain == null) return (
+      <Button variant="contained" size="large" sx={{ width: "100%" }} onClick={() => openModal("to")}>SELECT REDEEM NETWORK</Button>
+    )
+    // conect from Ethereum
+    if (_get(toChain, "id", "") == BRIDGE_CHAINS_NAMES.ETH && !_get(account, 'isConnected', false)) return (
+      <CustomEthConnectButton />
+    )
+    // conect from Koin
+    if (_get(toChain, "id", "") == BRIDGE_CHAINS_NAMES.KOIN && !_get(walletSelector, "wallet", null)) return (
+      <CustomKoinConnectButton />
+    )
+    if(!recover) return (
+      <>
+        <BaseConnections />
+        <Button variant="contained" size="large" onClick={() => checkApi()} sx={{ width: "100%" }}>RECOVER</Button>
+      </>
+    )
+    return (
+      <>
+        <BaseConnections />
+        <Button disabled={disabledButtonBridge()} onClick={() => redeem()} variant="contained" size="large" sx={{ width: "100%" }}>REDEEM</Button>
+      </>
+    )
   }
 
   return (
     <Box>
-      <Box sx={{ marginY: "1em", maxWidth: "600px", marginX: "auto", display: "flex", justifyContent: "space-around", alignItems: "center" }}>
-        <Button sx={{ height: "35px", padding: "3px" }} size={"small"} variant="outlined" onClick={() => navigate("/bridge")}>Bridge</Button>
-        <Button sx={{ height: "35px", padding: "3px" }} size={"small"} variant="contained" onClick={() => navigate("/redeem")}>Redeem</Button>
-      </Box>
-      {
-        <Card variant="outlined" sx={{ maxWidth: "600px", marginX: "auto", marginBottom: "20px", borderRadius: "10px", padding: "15px 20px" }}>
-          <CardHeader title="REDEEM" sx={{ paddingBottom: "4px" }} />
-          <CardContent>
-            <Box marginY={".8em"} display={"flex"} justifyContent={"space-between"} alignItems={"center"} sx={{ flexDirection: { xs: "column", md: "row" } }}>
-              <Chip variant={"outlined"} sx={{
-                padding: "3px",
-                height: 'auto',
-                '& .MuiChip-label': {
-                  display: 'block',
-                  whiteSpace: 'normal',
-                },
-              }} label={"If you have sent your tokens but have not redeemed them, you may paste in the Source Transaction ID to resume your transfer."} color={"info"} />
+      <Card variant="outlined" sx={{ maxWidth: "600px", marginX: "auto", marginBottom: "20px", borderRadius: "10px", padding: "15px 20px" }}>
+        <CardHeader title="REDEEM" sx={{ paddingBottom: "4px" }} />
+        <CardContent>
+          <Box marginY={".8em"} display={"flex"} justifyContent={"space-between"} alignItems={"center"} sx={{ flexDirection: { xs: "column", md: "row" } }}>
+            <Chip variant={"outlined"} sx={{
+              padding: "3px",
+              height: 'auto',
+              '& .MuiChip-label': {
+                display: 'block',
+                whiteSpace: 'normal',
+              },
+            }} label={"If you have sent your tokens but have not redeemed them, you may paste in the Source Transaction ID to resume your transfer."} color={"info"} />
 
-            </Box>
-            <Box marginTop={"1em"}>
-              <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "4px" }}>Source Network</Typography>
-              <SelectChain
-                onSelect={() => openModal("from")}
-                chain={fromChain}
-              />
-
-            </Box>
-            <Box marginTop={"1em"}>
-              <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "4px" }}>Source Transaction ID</Typography>
-              <Box paddingY={"6px"} paddingX={"10px"} borderRadius={"10px"} sx={{ backgroundColor: "background.light" }}>
-                <Box sx={{ display: "flex", width: "100%" }}>
-                  <InputBase
-                    placeholder={"Source TX ID Paste here"}
-                    type={"text"}
-                    value={sourceTX}
-                    sx={{ width: "100%", fontSize: "16px", height: "40px", color: "text.main" }}
-                    onChange={(e) => setSourceTX(e.currentTarget.value)}
-                  />
-                </Box>
+          </Box>
+          <Box marginTop={"1em"}>
+            <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "4px" }}>Source Network</Typography>
+            <SelectChain
+              onSelect={() => openModal("from")}
+              chain={fromChain}
+            />
+          </Box>
+          <Box marginTop={"1em"}>
+            <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "4px" }}>Redeem Network</Typography>
+            <SelectChain
+              onSelect={() => openModal("to")}
+              chain={toChain}
+            />
+          </Box>
+          <Box marginTop={"1em"}>
+            <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "4px" }}>Source Transaction ID</Typography>
+            <Box paddingY={"6px"} paddingX={"10px"} borderRadius={"10px"} sx={{ backgroundColor: "background.light" }}>
+              <Box sx={{ display: "flex", width: "100%" }}>
+                <InputBase
+                  placeholder={"Source TX ID Paste here"}
+                  type={"text"}
+                  value={sourceTX}
+                  sx={{ width: "100%", fontSize: "16px", height: "40px", color: "text.main" }}
+                  onChange={(e) => setSourceTX(e.currentTarget.value)}
+                />
               </Box>
             </Box>
-            <Box marginX={"auto"} marginTop={"1em"} display={"flex"} justifyContent={"space-around"} alignContent={"center"} >
-              <BaseConnections />
-            </Box>
-            <Box marginTop={"1em"} display={"flex"} justifyContent={"space-around"} alignContent={"center"} >
-              {
-                fromChain.name.toLowerCase() == BRIDGE_CHAINS_NAMES.KOIN.toLowerCase() || fromChain.name.toLowerCase() == BRIDGE_CHAINS_NAMES.ETH.toLowerCase() && _get(account, 'isConnected', false) ?
-                  <RecoverButton onClick={RecoverCall} />
-                  :
-                  null
-              }
-            </Box>
-          </CardContent>
-        </Card>
-      }
+          </Box>
+
+          {
+            recover ?
+              <Box sx={{ border: `1px solid ${theme.palette.background.light}`, borderRadius: "10px", padding: "10px 20px", display: "flex", alignContent: "center", flexDirection: "column" }} marginY={"1.4em"} display={"flex"} justifyContent={"space-between"}>
+                <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
+                  <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Tx Status:</Typography>
+                  <Typography variant="h6" component={"span"}>{ _get(recover, "status", "") }</Typography>
+                </Box>
+                <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
+                  <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Receiving address:</Typography>
+                  <Typography variant="h6" component={"span"}>{ shortedAddress(_get(recover, "recipient", "")) }</Typography>
+                </Box>
+                <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
+                  <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Block Number:</Typography>
+                  <Typography variant="h6" component={"span"}>{ _get(recover, "blockNumber", "") }</Typography>
+                </Box>
+                <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
+                  <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Block Time:</Typography>
+                  <Typography variant="h6" component={"span"}>{ _get(recover, "blockTime", "") }</Typography>
+                </Box>
+                <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
+                  <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Expire:</Typography>
+                  <Typography variant="h6" component={"span"}>{ _get(recover, "expiration", "") }</Typography>
+                </Box>
+                <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
+                  <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Signatures:</Typography>
+                  <Typography variant="h6" component={"span"}>{ _get(recover, "signatures", []).length }</Typography>
+                </Box>
+              </Box>
+            : null
+          }
+          <Box marginTop={"1em"}>
+            <ActionsBase />
+          </Box>
+        </CardContent>
+      </Card>
     </Box >
   )
 }

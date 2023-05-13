@@ -1,6 +1,8 @@
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import React from "react";
 import { Button } from "@mui/material";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { get as _get } from "lodash";
+
 const CustomEthConnectButton = () => {
   return (
     <ConnectButton.Custom>
@@ -25,7 +27,7 @@ const CustomEthConnectButton = () => {
 
         return (
           <div
-            style={connected || chain.unsupported ? {} : { width: "100%" }}
+            style={connected || _get(chain, "unsupported", false) ? {} : { width: "100%" }}
             {...(!ready && {
               "aria-hidden": true,
               "style": {

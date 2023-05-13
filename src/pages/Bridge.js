@@ -234,7 +234,7 @@ const Bridge = () => {
     if (txHash) return (
       <>
         <BaseConnections />
-        <Button variant="contained" size="large" sx={{ width: "100%" }} onClick={() => navigate(`/redeem?tx=${txHash}&network=${_get(toChain, "id", "")}`)}>CLAIM TOKENS</Button>
+        <Button variant="contained" size="large" sx={{ width: "100%" }} onClick={() => navigate(`/redeem?tx=${txHash}&from=${_get(fromChain, "id", "")}&to=${_get(toChain, "id", "")}`)}>CLAIM TOKENS</Button>
       </>
     )
     // select network token
@@ -264,142 +264,142 @@ const Bridge = () => {
 
   return (
     <Box>
-      <Box sx={{ marginY: "1em", maxWidth: "600px", marginX: "auto", display: "flex", justifyContent: "space-around", alignItems: "center" }}>
-      <Button sx={{ height: "35px", padding: "3px" }} size={"small"} variant="contained" onClick={() => navigate("/bridge")}>Bridge</Button>
+      {/* <Box sx={{ marginY: "1em", maxWidth: "600px", marginX: "auto", display: "flex", justifyContent: "space-around", alignItems: "center" }}>
+        <Button sx={{ height: "35px", padding: "3px" }} size={"small"} variant="contained" onClick={() => navigate("/bridge")}>Bridge</Button>
         <Button sx={{ height: "35px", padding: "3px" }} size={"small"} variant= "outlined"  onClick={() => navigate("/redeem")}>Redeem</Button>
-      </Box>
-          <Card variant="outlined" sx={{ maxWidth: "600px", marginX: "auto", marginBottom: "20px", borderRadius: "10px", padding: "15px 20px" }}>
-            <CardHeader title="BRIDGE" sx={{ paddingBottom: "4px" }} />
-            <CardContent>
-              <Box marginY={".8em"} display={"flex"} justifyContent={"space-between"} alignItems={"center"} sx={{ flexDirection: { xs: "column", md: "row" } }}>
-                <Box sx={{ maxWidth: { xs: "100%", md: "40%" }, width: "100%" }}>
-                  <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "4px" }}>From</Typography>
-                  <SelectChain
-                    onSelect={() => openModal("from")}
-                    chain={fromChain}
-                  />
-                </Box>
-                <Box>
-                  <Box onClick={() => swapNetworks()} sx={{ marginTop: "20px", height: "40px", width: "40px", padding: "10px", borderRadius: "10px", backgroundColor: "background.light", display: "flex", justifyContent: "space-around", alignItems: "center", "&:hover": { backgroundColor: "text.grey1", cursor: "pointer" } }}>
-                    {
-                      matches ?
-                        <SwapHorizIcon fontSize="large" sx={{ color: "background.paper" }} />
-                        :
-                        <SwapVert fontSize="large" sx={{ color: "background.paper" }} />
-                    }
-                  </Box>
-                </Box>
-                <Box sx={{ maxWidth: { xs: "100%", md: "40%" }, width: "100%" }}>
-                  <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "4px" }}>To</Typography>
-                  <SelectChain
-                    onSelect={() => openModal("to")}
-                    chain={toChain}
-                  />
-                </Box>
+      </Box> */}
+      <Card variant="outlined" sx={{ maxWidth: "600px", marginX: "auto", marginBottom: "20px", borderRadius: "10px", padding: "15px 20px" }}>
+        <CardHeader title="BRIDGE" sx={{ paddingBottom: "4px" }} />
+        <CardContent>
+          <Box marginY={".8em"} display={"flex"} justifyContent={"space-between"} alignItems={"center"} sx={{ flexDirection: { xs: "column", md: "row" } }}>
+            <Box sx={{ maxWidth: { xs: "100%", md: "40%" }, width: "100%" }}>
+              <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "4px" }}>From</Typography>
+              <SelectChain
+                onSelect={() => openModal("from")}
+                chain={fromChain}
+              />
+            </Box>
+            <Box>
+              <Box onClick={() => swapNetworks()} sx={{ marginTop: "20px", height: "40px", width: "40px", padding: "10px", borderRadius: "10px", backgroundColor: "background.light", display: "flex", justifyContent: "space-around", alignItems: "center", "&:hover": { backgroundColor: "text.grey1", cursor: "pointer" } }}>
+                {
+                  matches ?
+                    <SwapHorizIcon fontSize="large" sx={{ color: "background.paper" }} />
+                    :
+                    <SwapVert fontSize="large" sx={{ color: "background.paper" }} />
+                }
               </Box>
+            </Box>
+            <Box sx={{ maxWidth: { xs: "100%", md: "40%" }, width: "100%" }}>
+              <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "4px" }}>To</Typography>
+              <SelectChain
+                onSelect={() => openModal("to")}
+                chain={toChain}
+              />
+            </Box>
+          </Box>
 
-              <Box paddingY={"10px"} paddingX={"15px"} marginTop={"1em"} borderRadius={"10px"} sx={{ backgroundColor: "background.light" }}>
-                <Box display={"flex"} justifyContent={"space-between"} alignItems={"center"}>
-                  <InputBase placeholder={"0"} type={"text"} value={inputValue} sx={{ fontSize: "22px", color: "text.main" }} onChange={(e) => numberPattern(e.currentTarget.value, onInput)} />
-                  <Button
-                    sx={{ width: { xs: "100%", sm: "40%", md: "25%" }, paddingX: "0px" }}
-                    variant="grey-contained"
-                    size="small"
-                    onClick={() => openModalSelectToken()}
-                  >
-                    {
-                      tokenToBridge != null ?
-                        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-                          <Avatar sx={{ width: 24, height: 24, marginRight: "10px" }} alt={_get(tokenToBridge, "symbol", "token")} src={_get(tokenToBridge, "icon", "/x")} />
-                          <Typography variant="h6" sx={{ color: "text.main", display: "block" }}>
-                            {_get(tokenToBridge, "symbol", "Unrecognized")}
-                          </Typography>
-                        </Box>
-                        :
-                        <Typography variant="h6" sx={{ color: "text.grey2" }}>
-                          Select Token
-                        </Typography>
-                    }
-                  </Button>
-                </Box>
-                <Box>
-                  {
-                    tokenToBridge ? <Typography variant="body1" component={"span"} sx={{ color: "text.grey2", marginTop: "5px" }}>Balance: {loadingBalance ? "loading..." : balance}</Typography> : null
-                  }
-                </Box>
-              </Box>
-
-
+          <Box paddingY={"10px"} paddingX={"15px"} marginTop={"1em"} borderRadius={"10px"} sx={{ backgroundColor: "background.light" }}>
+            <Box display={"flex"} justifyContent={"space-between"} alignItems={"center"}>
+              <InputBase placeholder={"0"} type={"text"} value={inputValue} sx={{ fontSize: "22px", color: "text.main" }} onChange={(e) => numberPattern(e.currentTarget.value, onInput)} />
+              <Button
+                sx={{ width: { xs: "100%", sm: "40%", md: "25%" }, paddingX: "0px" }}
+                variant="grey-contained"
+                size="small"
+                onClick={() => openModalSelectToken()}
+              >
+                {
+                  tokenToBridge != null ?
+                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                      <Avatar sx={{ width: 24, height: 24, marginRight: "10px" }} alt={_get(tokenToBridge, "symbol", "token")} src={_get(tokenToBridge, "icon", "/x")} />
+                      <Typography variant="h6" sx={{ color: "text.main", display: "block" }}>
+                        {_get(tokenToBridge, "symbol", "Unrecognized")}
+                      </Typography>
+                    </Box>
+                    :
+                    <Typography variant="h6" sx={{ color: "text.grey2" }}>
+                      Select Token
+                    </Typography>
+                }
+              </Button>
+            </Box>
+            <Box>
               {
-                tokenToBridge != null ?
-                  <Box marginTop={"1.4em"} display={"flex"} justifyContent={"space-between"}>
-                    <Button
-                      variant="grey-contained"
-                      size="small"
-                      sx={{ height: "36px", width: { xs: "100%", sm: "50%" }, marginRight: "5px", paddingX: "0px" }}
-                      onClick={() => {
-                        numberPattern(balance, onInput);
-                      }}
-                      disabled={loadingBalance}
-                    >
-                      <Typography variant="h6" sx={{ color: "text.grey2" }}>
-                        MAX
-                      </Typography>
-                    </Button>
-                    <Button
-                      sx={{ height: "36px", width: { xs: "100%", sm: "50%" }, marginRight: "5px", paddingX: "0px" }}
-                      variant="grey-contained"
-                      size="small"
-                      onClick={() => {
-                        // numberPattern(balance, halfButtonClick);
-                        numberPattern(balance, (b) => {
-                          let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
-                          let fullAmount = koilibUtils.parseUnits(b, _get(_network, "decimals", 8));
-                          let _amount = new BigNumber(fullAmount).dividedBy(2).toFixed(0, 1);
-                          let value = koilibUtils.formatUnits(_amount, _get(_network, "decimals", 8));
-                          onInput(value);
-                        });
-                      }}
-                      disabled={loadingBalance}
-                    >
-                      <Typography variant="h6" sx={{ color: "text.grey2" }}>
-                        HALF
-                      </Typography>
-                    </Button>
-                  </Box>
-                  : null
+                tokenToBridge ? <Typography variant="body1" component={"span"} sx={{ color: "text.grey2", marginTop: "5px" }}>Balance: {loadingBalance ? "loading..." : balance}</Typography> : null
               }
+            </Box>
+          </Box>
 
-              <Box marginTop={"1em"}>
-                <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "4px" }}>Receiving address</Typography>
-                <Box paddingY={"6px"} paddingX={"10px"} borderRadius={"10px"} sx={{ backgroundColor: "background.light" }}>
-                  <Box sx={{ display: "flex", width: "100%" }}>
-                    <InputBase
-                      placeholder={""}
-                      type={"text"}
-                      value={recipient}
-                      sx={{ width: "100%", fontSize: "16px", color: "text.main" }}
-                      onChange={(e) => setRecipient(e.currentTarget.value)}
-                    />
-                  </Box>
-                </Box>
+
+          {
+            tokenToBridge != null ?
+              <Box marginTop={"1.4em"} display={"flex"} justifyContent={"space-between"}>
+                <Button
+                  variant="grey-contained"
+                  size="small"
+                  sx={{ height: "36px", width: { xs: "100%", sm: "50%" }, marginRight: "5px", paddingX: "0px" }}
+                  onClick={() => {
+                    numberPattern(balance, onInput);
+                  }}
+                  disabled={loadingBalance}
+                >
+                  <Typography variant="h6" sx={{ color: "text.grey2" }}>
+                    MAX
+                  </Typography>
+                </Button>
+                <Button
+                  sx={{ height: "36px", width: { xs: "100%", sm: "50%" }, marginRight: "5px", paddingX: "0px" }}
+                  variant="grey-contained"
+                  size="small"
+                  onClick={() => {
+                    // numberPattern(balance, halfButtonClick);
+                    numberPattern(balance, (b) => {
+                      let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
+                      let fullAmount = koilibUtils.parseUnits(b, _get(_network, "decimals", 8));
+                      let _amount = new BigNumber(fullAmount).dividedBy(2).toFixed(0, 1);
+                      let value = koilibUtils.formatUnits(_amount, _get(_network, "decimals", 8));
+                      onInput(value);
+                    });
+                  }}
+                  disabled={loadingBalance}
+                >
+                  <Typography variant="h6" sx={{ color: "text.grey2" }}>
+                    HALF
+                  </Typography>
+                </Button>
               </Box>
+              : null
+          }
 
-              <Box sx={{ border: `1px solid ${theme.palette.background.light}`, borderRadius: "10px", padding: "10px 20px", display: "flex", alignContent: "center", flexDirection: "column" }} marginY={"1.4em"} display={"flex"} justifyContent={"space-between"}>
-                <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
-                  <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>You will receive:</Typography>
-                  <Typography variant="h6" component={"span"}>0 {tokenToBridge != null ? _get(tokenToBridge, "symbol", "") : null}</Typography>
-                </Box>
-                <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
-                  <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Receiving address:</Typography>
-                  <Typography variant="h6" component={"span"}>{recipient ? shortedAddress(recipient) : "?"}</Typography>
-                </Box>
+          <Box marginTop={"1em"}>
+            <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "4px" }}>Receiving address</Typography>
+            <Box paddingY={"6px"} paddingX={"10px"} borderRadius={"10px"} sx={{ backgroundColor: "background.light" }}>
+              <Box sx={{ display: "flex", width: "100%" }}>
+                <InputBase
+                  placeholder={""}
+                  type={"text"}
+                  value={recipient}
+                  sx={{ width: "100%", fontSize: "16px", color: "text.main" }}
+                  onChange={(e) => setRecipient(e.currentTarget.value)}
+                />
               </Box>
+            </Box>
+          </Box>
 
-              {ActionLoad()}
+          <Box sx={{ border: `1px solid ${theme.palette.background.light}`, borderRadius: "10px", padding: "10px 20px", display: "flex", alignContent: "center", flexDirection: "column" }} marginY={"1.4em"} display={"flex"} justifyContent={"space-between"}>
+            <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
+              <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>You will receive:</Typography>
+              <Typography variant="h6" component={"span"}>0 {tokenToBridge != null ? _get(tokenToBridge, "symbol", "") : null}</Typography>
+            </Box>
+            <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
+              <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Receiving address:</Typography>
+              <Typography variant="h6" component={"span"}>{recipient ? shortedAddress(recipient) : "?"}</Typography>
+            </Box>
+          </Box>
 
-            </CardContent>
-          </Card>
+          {ActionLoad()}
+
+        </CardContent>
+      </Card>
     </Box >
   )
 }
