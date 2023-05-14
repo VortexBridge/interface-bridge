@@ -5,7 +5,7 @@ export const BRIDGE_TOKENS = [
     id: "koin",
     symbol: "tKOIN",
     name: "Koin",
-    icon: "https://raw.githubusercontent.com/koinos/koinos-branding/master/assets/icons/koinos-icon-dark.png",
+    icon: "img/networks/koin_logo.png",
     networks: [
       {
         chain: BRIDGE_CHAINS_NAMES.KOIN,
@@ -23,7 +23,7 @@ export const BRIDGE_TOKENS = [
     id: "weth",
     symbol: "wETH",
     name: "Wrapped Ether",
-    icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Ethereum-icon-purple.svg/2048px-Ethereum-icon-purple.svg.png",
+    icon: "img/networks/eth_logo.png",
     networks: [
       {
         chain: BRIDGE_CHAINS_NAMES.KOIN,

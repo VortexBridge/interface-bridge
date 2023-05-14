@@ -19,7 +19,7 @@ const ModalSelectTokenToBridge = () => {
   const dispatch = useDispatch();
 
   // vars
-  const [ tokens, setTokens ] = useState(null);
+  const [tokens, setTokens] = useState(null);
 
   // selectors
   const currentModal = useSelector((state) => state.modals.modal);
@@ -43,6 +43,7 @@ const ModalSelectTokenToBridge = () => {
       return !!(toNet && fromNet)
     })
     setTokens(_tokens)
+
   }, [fromChain, toChain])
 
   const onSelect = (token) => {
