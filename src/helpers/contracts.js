@@ -5,6 +5,7 @@ import { getContract } from "@wagmi/core";
 // bridge
 import EthereumBridgeAbi from "./../assets/contracts/Ethereum-Bridge.json";
 import KoinosBridgeAbi from "./../assets/contracts/Koinos-Bridge.json";
+
 // variables
 const provider = new Provider([ process.env.REACT_APP_RPC ]);
 const signer = Signer.fromSeed("demo seed");
@@ -24,7 +25,7 @@ export let KoinosTokenContract = (address, _provider, _signer) => new Contract({
 
 export let EthereumBridgeContract = (address, _provider) => getContract({
   address: address,
-  abi: EthereumBridgeAbi,
+  abi: EthereumBridgeAbi.abi,
   signerOrProvider: _provider ? _provider : null
 });
 
