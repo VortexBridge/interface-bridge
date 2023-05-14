@@ -57,7 +57,7 @@ const Redeem = (props) => {
   const [blockIrreversal, setBlockIrreversal] = useState(false);
   const [recover, setRecover] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [sourceTX, setSourceTX] = useState(null);
+  const [sourceTX, setSourceTX] = useState("");
 
   // efects
   useEffect(() => {
@@ -80,9 +80,6 @@ const Redeem = (props) => {
   const openModal = (side) => {
     dispatch(setModalData({ side: side }))
     dispatch(setModal("SelectBridgeNetwork"))
-  }
-  const onInput = (value) => {
-    setInputValue(value)
   }
 
   const redeem = async () => {

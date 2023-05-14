@@ -7,20 +7,27 @@ import { setModal, setModalData } from "../../../redux/actions/modals";
 
 // components
 import ModalHeader from "../ModalHeader";
+import { setBridgeDisclaimer } from "../../../redux/actions/settings";
 
 const ModalDisclaimer = () => {
   // hooks
   const dispatch = useDispatch();
   // selectors
   const currentModal = useSelector((state) => state.modals.modal);
+  const disclaimer = useSelector((state) => state.settings.disclaimer)
 
   const closeModal = () => {
     dispatch(setModalData(null));
     dispatch(setModal(null));
   };
 
+  const acceptModal = () => {
+    dispatch(setBridgeDisclaimer(true))
+    closeModal()
+  }
+
   return (
-    <Modal open={currentModal === "Disclaimer"} sx={{ justifyContent: "center", display: "flex", alignItems: "center" }}>
+    <Modal open={currentModal === "Disclaimer" && disclaimer == false} sx={{ justifyContent: "center", display: "flex", alignItems: "center" }}>
       <Box sx={{ minWidth: "sm", maxHeight: "900px", width: "100%", maxWidth: "420px", marginY: "20px", bgcolor: "background.paper", borderRadius: "10px", overflowY: "auto" }}>
         <ModalHeader title={"Disclaimer"} hideCloseButton={true} />
         <Box paddingX={"15px"} paddingTop="15px">
@@ -29,7 +36,7 @@ const ModalDisclaimer = () => {
         </Box>
         <Box padding={"15px"} display={"flex"} justifyContent={"space-around"} alignContent={"center"}>
           <Button href="https://koindx.com" variant="outlined" size={"large"} color="warning" sx={{ minWidth: "40%" }}>Leave</Button>
-          <Button onClick={closeModal} variant="contained" size={"large"} color="warning" sx={{ minWidth: "40%" }}>Confirm</Button>
+          <Button onClick={acceptModal} variant="contained" size={"large"} color="warning" sx={{ minWidth: "40%" }}>Confirm</Button>
         </Box>
       </Box>
     </Modal>
