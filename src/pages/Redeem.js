@@ -1,12 +1,12 @@
 /* eslint-disable */
-import { Avatar, Container, Box, Button, Card, CardContent, CardHeader, Chip, FormControl, InputBase, InputLabel, MenuItem, Select, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Avatar, Container, Box, Button, Card, CardContent, CardHeader, Chip, FormControl, InputBase, Link, InputLabel, MenuItem, Select, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { getAccount } from '@wagmi/core';
 import { BigNumber } from "bignumber.js";
 import { ethers } from 'ethers';
 import { utils as koilibUtils } from "koilib";
 import { get as _get } from "lodash";
 import { useSnackbar } from "notistack";
-import React, { useEffect, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useProvider, useSigner } from "wagmi";
@@ -59,10 +59,20 @@ const Redeem = (props) => {
   const [loading, setLoading] = useState(false);
   const [sourceTX, setSourceTX] = useState("");
 
+  const actionClose = (snackbarId) => (
+    <Fragment>
+      <Button style={{ color: "white" }} onClick={() => { Snackbar.closeSnackbar(snackbarId) }}>
+        Close
+      </Button>
+    </Fragment>
+  );
+
   // efects
   useEffect(() => {
     if (searchParams.get("tx")) {
       setSourceTX(searchParams.get("tx"))
+      checkApi()
+
     }
     if (searchParams.get("from")) {
       let _chainRedeem = BRIDGE_CHAINS.find(chain => chain.id == searchParams.get("from"))
@@ -76,6 +86,7 @@ const Redeem = (props) => {
     }
     dispatch(setModal("Disclaimer"))
   }, []);
+
 
   const openModal = (side) => {
     dispatch(setModalData({ side: side }))
@@ -98,7 +109,7 @@ const Redeem = (props) => {
           //   status: 'error',
           //   isClosable: true,
           // })
-          console.log("expire 1")
+          // console.log("expire 1")
           setLoading(false)
           return;
         } else {
@@ -108,7 +119,7 @@ const Redeem = (props) => {
           //   status: 'error',
           //   isClosable: true,
           // })
-          console.log("expire 2")
+          // console.log("expire 2")
           setLoading(false)
           return;
         }
@@ -120,17 +131,8 @@ const Redeem = (props) => {
       // redeem
       if (_get(toChain, "id", "") == BRIDGE_CHAINS_NAMES.ETH) {
         _bridge = await EthereumBridgeContract(_bridgeInfo.bridgeAddress, signer.data);
-        console.log("llego aqui")
         if (_bridge) {
-          console.log(
-            _get(recover, "id", ""),
-            _get(recover, "opId", ""),
-            _get(recover, "ethToken", ""),
-            _get(recover, "recipient", ""),
-            _get(recover, "amount", ""),
-            _get(recover, "signatures", ""),
-            _get(recover, "expiration", "")
-          )
+   
           const tx = await _bridge.completeTransfer(
             _get(recover, "id", ""),
             _get(recover, "opId", ""),
@@ -140,8 +142,17 @@ const Redeem = (props) => {
             _get(recover, "signatures", ""),
             _get(recover, "expiration", "")
           )
+          Snackbar.enqueueSnackbar(<Typography variant="h6">Transaction submitted</Typography>, {
+            variant: 'info',
+            persist: false,
+            action: actionClose,
+          })
           await tx.wait()
-          console.log(tx)
+          Snackbar.enqueueSnackbar(<Link underline="none" style={{ cursor: "pointer" }} target="_blank" href={`${toChain.explorer}/${tx.id}`}><Typography sx={{ color: "white" }} variant="h6">Transaction successful</Typography><Typography sx={{ color: "white" }} variant="subtitle1" component="p">View Block</Typography></Link>, {
+            variant: 'success',
+            persist: false,
+            action: actionClose,
+          })
         }
       }
       if (_get(toChain, "id", "") == BRIDGE_CHAINS_NAMES.KOIN) {
@@ -157,18 +168,30 @@ const Redeem = (props) => {
             expiration: _get(recover, "expiration", ""),
             signatures: _get(recover, "signatures", "")
           })
-          console.log(transaction.id)
+          Snackbar.enqueueSnackbar(<Typography variant="h6">Transaction submitted</Typography>, {
+            variant: 'info',
+            persist: false,
+            action: actionClose,
+          })
           await transaction.wait();
-          console.log(transaction)
+          Snackbar.enqueueSnackbar(<Typography sx={{ color: "white" }} variant="h6">Transaction successful</Typography>, {
+            variant: 'success',
+            persist: false,
+            action: actionClose,
+          })
         }
       }
       setLoading(false)
     } catch (error) {
       console.log(error)
       setLoading(false)
+      Snackbar.enqueueSnackbar(<span><Typography variant="h6">Transaction error</Typography></span>, {
+        variant: 'error',
+        persist: false,
+        action: actionClose,
+      })
       return;
     }
-
   }
 
   const checkApi = async () => {
@@ -186,6 +209,12 @@ const Redeem = (props) => {
     } catch (error) {
       result = null;
       console.log(error)
+      Snackbar.enqueueSnackbar(<span><Typography variant="h6">Transaction not found yet</Typography>
+      <Typography variant="body1" color="white">please wait a moment or check the source transaction id</Typography></span>, {
+        variant: 'error',
+        persist: false,
+        action: actionClose,
+      })
     }
     setLoading(false)
     setRecover(result);

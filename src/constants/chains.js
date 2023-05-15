@@ -21,7 +21,8 @@ export const BRIDGE_CHAINS = [
     name: "Koinos",
     bridgeAddress: "1KXRDqoGcvysTeoeZ3SePAHUZ99fW3cb2u",
     symbol: "KOIN",
-    icon: "img/networks/koin_logo.png"
+    icon: "img/networks/koin_logo.png",
+    explorer: "https://harbinger.koinosblocks.com/tx"
   },
   {
     id: BRIDGE_CHAINS_NAMES.ETH,
@@ -29,5 +30,6 @@ export const BRIDGE_CHAINS = [
     symbol: "ETH",
     name: "Ethereum",
     icon: "img/networks/eth_logo.png",
+    explorer: "https://goerli.etherscan.io/tx"
   }
 ]

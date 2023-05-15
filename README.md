@@ -11,4 +11,5 @@ This repository contains the web ui for BridgeKoin.
 - validation for recipient address / source tx
 - terms of privacy
 - terms of service
-- add snackbar
+- KoinDX App Link
+- Docs Link
