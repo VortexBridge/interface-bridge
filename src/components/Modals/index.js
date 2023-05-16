@@ -13,7 +13,6 @@ const Modals = () => {
   if(currentModal == null) {
     document.body.style.overflow = "auto"
   }
-  
 
   return (
     <>
