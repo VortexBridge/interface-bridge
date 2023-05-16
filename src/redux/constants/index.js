@@ -6,7 +6,7 @@ export const SET_MODAL_DATA = "SET_MODAL_DATA";
 export const SET_NETWORK = "SET_NETWORK";
 export const SET_SLIPPAGE = "SET_SLIPPAGE";
 export const SET_DARKMODE = "SET_DARKMODE";
-export const SET_MANA_FOUNTAIN = "SET_MANA_FOUNTAIN";
+export const SET_BRIDGE_DISCLAIMER = "SET_BRIDGE_DISCLAIMER";
 
 // WALLET
 export const SET_WALLET = "SET_WALLET";

@@ -4,6 +4,7 @@ import Connect from "./Connect";
 import ModalSelectBridgeNetwork from "./SelectBridgeNetwork";
 import ModalDisclaimer from "./ModalDisclaimer";
 import ModalSelectTokenToBridge from "./SelectTokenToBridge";
+import Disconnect from "./Disconnect"
 
 const Modals = () => {
   // selector
@@ -12,11 +13,11 @@ const Modals = () => {
   if(currentModal == null) {
     document.body.style.overflow = "auto"
   }
-  
 
   return (
     <>
       <Connect />
+      <Disconnect />
       <ModalSelectBridgeNetwork />
       <ModalDisclaimer />
       <ModalSelectTokenToBridge />

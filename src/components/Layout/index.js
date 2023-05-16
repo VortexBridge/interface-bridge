@@ -34,7 +34,7 @@ const Layout = () => {
       <SnackbarProvider
         ref={notistackRef}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-        autoHideDuration={2000}
+        autoHideDuration={15000}
         action={(key) => SnackbarActions(key)}
       >
         <Box sx={{ backgroundColor: theme.palette.background.main }}>

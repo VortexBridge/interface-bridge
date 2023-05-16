@@ -1,4 +1,4 @@
-import { SET_SLIPPAGE, SET_DARKMODE, SET_NETWORK, SET_MANA_FOUNTAIN } from "../constants"
+import { SET_SLIPPAGE, SET_DARKMODE, SET_NETWORK, SET_BRIDGE_DISCLAIMER } from "../constants"
 
 // Actions
 export const setSlippage = (slippage) => ({
@@ -13,7 +13,7 @@ export const setNetwork = (chain_id) => ({
   type: SET_NETWORK,
   payload: chain_id
 })
-export const setManaFountain = (manafountain) => ({
-  type: SET_MANA_FOUNTAIN,
-  payload: manafountain
+export const setBridgeDisclaimer = (value) => ({
+  type: SET_BRIDGE_DISCLAIMER,
+  payload: value
 })

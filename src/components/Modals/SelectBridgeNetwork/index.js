@@ -23,18 +23,25 @@ const ModalSelectBridgeNetwork = () => {
   const toNetwork = _get(bridgeSelector, "to", null);
 
   const onSelect = (network) => {
+
     const side = _get(currentModalData, "side", "")
     if (side == "from") {
       if(_get(network, "name", null) == _get(toNetwork, "name", null)) {
         dispatch(setNetworkTo(fromNetwork))
       }
       dispatch(setNetworkFrom(network))
+      if(_get(toNetwork, "name", null) == null) {
+        dispatch(setNetworkTo(BRIDGE_CHAINS.find((i) => i.id != network.id )))
+      }
     }
     if (side == "to") {
       if(_get(network, "name", null) == _get(fromNetwork, "name", null)) {
         dispatch(setNetworkFrom(toNetwork))
       }
       dispatch(setNetworkTo(network))
+      if(_get(fromNetwork, "name", null) == null) {
+        dispatch(setNetworkFrom(BRIDGE_CHAINS.find((i) => i.id != network.id )))
+      }
     }
     closeModal()
   }
