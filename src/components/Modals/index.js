@@ -4,6 +4,7 @@ import Connect from "./Connect";
 import ModalSelectBridgeNetwork from "./SelectBridgeNetwork";
 import ModalDisclaimer from "./ModalDisclaimer";
 import ModalSelectTokenToBridge from "./SelectTokenToBridge";
+import Disconnect from "./Disconnect"
 
 const Modals = () => {
   // selector
@@ -17,6 +18,7 @@ const Modals = () => {
   return (
     <>
       <Connect />
+      <Disconnect />
       <ModalSelectBridgeNetwork />
       <ModalDisclaimer />
       <ModalSelectTokenToBridge />
