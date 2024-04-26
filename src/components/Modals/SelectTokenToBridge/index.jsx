@@ -6,13 +6,13 @@ import { Modal, Box, Avatar, List, ListItem, ListItemAvatar, ListItemButton, Lis
 
 // Actions
 import { setModal, setModalData } from "../../../redux/actions/modals";
-import { setTokenToBridge } from "./../../../redux/actions/bridge";
+import { setTokenToBridge } from "../../../redux/actions/bridge";
 
 // components
 import ModalHeader from "../ModalHeader";
 
 // constants
-import { BRIDGE_TOKENS } from "./../../../constants/tokens";
+import { BRIDGE_TOKENS } from "../../../constants/tokens";
 
 const ModalSelectTokenToBridge = () => {
   // hooks
@@ -85,7 +85,7 @@ const ModalSelectTokenToBridge = () => {
               ))
               : (
                 <Box sx={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
-                  <Typography>Select Networks</Typography>
+                  <Typography>There are no tokens for these networks</Typography>
                 </Box>
               )
           }

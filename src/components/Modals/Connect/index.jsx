@@ -1,5 +1,7 @@
-import { get as _get } from "lodash";
+import * as kondor from "kondor-js";
 import React, { Fragment, useState } from "react";
+import { Provider } from "koilib";
+import { get as _get } from "lodash";
 import { isMobile } from "react-device-detect";
 import { useDispatch, useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
@@ -20,7 +22,8 @@ import { CHAIN_IDS_TO_NAMES, CHAINS_IDS } from "./../../../constants/chains";
 import ModalHeader from "./../ModalHeader";
 
 // Assets
-import KondorLogo from "./../../../assets/images/kondor.svg";
+import MKWLogo from "./../../../assets/images/wallets/mkw.png";
+import KondorLogo from "./../../../assets/images/wallets/kondor.svg";
 
 const ModalConnect = () => {
   // Dispatch to call actions
@@ -59,12 +62,12 @@ const ModalConnect = () => {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       let timeOut = setTimeout(() => reject("Error Connect"), 1000 * 60)
-      if (window.kondor) {
+      if (kondor) {
         try {
-          let wallet = await window.kondor.getAccounts();
-          let provider = await window.kondor.provider;
-          let signer = await window.kondor.getSigner(_get(wallet, "[0].address", ""));
-          let chain_id = await window.kondor.provider.getChainId();
+          let provider = new Provider(import.meta.env.VITE_KOINOS_RPC);
+          let wallet = await kondor.getAccounts();
+          let signer = await kondor.getSigner(_get(wallet, "[0].address", ""), { providerPrepareTransaction: provider });
+          let chain_id = await kondor.provider.getChainId();
 
           // set connection
           dispatch(setSigner(signer));
@@ -112,9 +115,9 @@ const ModalConnect = () => {
             "signer": ["prepareTransaction", "signMessage", "signAndSendTransaction"]
           }).then(async () => {
             // get data from connected wallet
-            const wallet = await mkw.getAccounts()
-            const provider = await mkw.getProvider()
-            const signer = await mkw.getSigner(_get(wallet, "[0].address", ""));
+            let provider = new Provider(import.meta.env.KOINOS_RPC);
+            let wallet = await mkw.getAccounts()
+            let signer = await mkw.getSigner(_get(wallet, "[0].address", ""));
             let chain_id = await provider.getChainId();
 
             // set connection
@@ -202,9 +205,7 @@ const ModalConnect = () => {
           <ListItem sx={{ "&:hover": { backgroundColor: "background.default", borderRadius: "10px" } }} >
             <ListItemButton disabled={false} variant="outlined" onClick={() => selectWallet("mkw-wallet")}>
               <ListItemIcon>
-                <img
-                  src="mkw-logo.png"
-                  style={{ width: "40px", height: "40px" }} alt="My Koinos Wallet wallet logo" />
+                <img src={MKWLogo} style={{ width: "40px", height: "40px" }} alt="My Koinos Wallet wallet logo" />
               </ListItemIcon>
               <ListItemText primary="My Koinos Wallet" />
             </ListItemButton>

@@ -1,4 +1,5 @@
 /* eslint-disable */
+import React, { Fragment, useEffect, useState } from "react";
 import { Avatar, Box, Button, Card, CardContent, CardHeader, Link, Chip, FormControl, InputBase, InputLabel, MenuItem, Select, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { getAccount } from '@wagmi/core';
 import { BigNumber } from "bignumber.js";
@@ -6,33 +7,32 @@ import { ethers } from 'ethers';
 import { utils as koilibUtils } from "koilib";
 import { get as _get } from "lodash";
 import { useSnackbar } from "notistack";
-import React, { Fragment, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useProvider, useSigner } from "wagmi";
-import { shortedAddress } from "./../utils/display";
+import { shortedAddress } from "../utils/display";
 
 // constants
-import { BRIDGE_CHAINS, BRIDGE_CHAINS_NAMES } from "./../constants/chains";
+import { BRIDGE_CHAINS, BRIDGE_CHAINS_NAMES, BRIDGE_CHAINS_TYPES } from "../constants/chains";
 
 // helpers
-import { EthereumBridgeContract, EthereumTokenContract, KoinosBridgeContract, KoinosTokenContract } from "./../helpers/contracts";
+import { EvmBridgeContract, EvmTokenContract, KoinosBridgeContract, KoinosTokenContract } from "../helpers/contracts";
 
 // Actions
-import { setNetworkFrom, setNetworkTo } from "../redux/actions/bridge";
 import { setModal, setModalData } from "../redux/actions/modals";
+import { setNetworkFrom, setNetworkTo } from "../redux/actions/bridge";
 
 // utils
 import { numberPattern } from "../utils/regex";
 
 // icons
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import SwapVert from "@mui/icons-material/SwapVert";
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 
 // components
 import CustomEthConnectButton from "../components/Bridge/CustomEthConnectButton";
 import CustomKoinConnectButton from "../components/Bridge/CustomKoinConnectButton";
-import SelectChain from "./../components/SelectChain";
+import SelectChain from "../components/SelectChain";
 
 const Bridge = () => {
   // Dispatch to call actions
@@ -83,8 +83,8 @@ const Bridge = () => {
       setInputValue("0");
       let _bridge = BRIDGE_CHAINS.find(bridge => bridge.id == _get(fromChain, "id", null));
       let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
-      if (_get(fromChain, "symbol", "") == "ETH" && _get(account, 'isConnected', false)) {
-        _token = await EthereumTokenContract(_network.address, provider);
+      if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM && _get(account, 'isConnected', false)) {
+        _token = await EvmTokenContract(_network.address, provider);
         if (_token) {
           let bal = await _token.balanceOf(account.address);
           _balance = koilibUtils.formatUnits(bal.toString(), _get(_network, "decimals", 8))
@@ -93,7 +93,7 @@ const Bridge = () => {
           _approve = approve.toString();
         }
       }
-      if (_get(fromChain, "symbol", "") == "KOIN" && _get(walletSelector, "wallet", null)) {
+      if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN && _get(walletSelector, "wallet", null)) {
         let providerKoin = _get(walletSelector, "provider", null);
         let signerKoin = _get(walletSelector, "signer", null);
         _token = await KoinosTokenContract(_network.address, providerKoin, signerKoin);
@@ -145,32 +145,55 @@ const Bridge = () => {
     try {
       let _bridge = null;
       let _txhash = null;
-      let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
-      let _bridgeInfo = BRIDGE_CHAINS.find(bridge => bridge.id == _get(fromChain, "id", null));
-      // amount    
-      let fullAmount = koilibUtils.parseUnits(inputValue, _get(_network, "decimals", 8));
+      let operations = [];
+      let _token = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
+      let _bridgeTo = BRIDGE_CHAINS.find(bridge => bridge.id == _get(toChain, "id", null));
+      let _bridgeFrom = BRIDGE_CHAINS.find(bridge => bridge.id == _get(fromChain, "id", null));
+      let fullAmount = koilibUtils.parseUnits(inputValue, _get(_token, "decimals", 8));
 
       // bridge
-      if (_get(fromChain, "id", "") == BRIDGE_CHAINS_NAMES.ETH) {
-        _bridge = await EthereumBridgeContract(_bridgeInfo.bridgeAddress, signer.data);
+      if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM) {
+        _bridge = await EvmBridgeContract(_bridgeFrom.bridgeAddress, signer.data);
         if (_bridge) {
-          const tx = await _bridge.transferTokens(_network.address, fullAmount, recipient)
+          const tx = await _bridge.transferTokens(_token.address, fullAmount, _bridgeTo.chainId, recipient)
           await tx.wait()
           _txhash = tx.hash;
         }
       }
-      if (_get(fromChain, "id", "") == BRIDGE_CHAINS_NAMES.KOIN) {
+      if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN) {
         let providerKoin = _get(walletSelector, "provider", null);
         let signerKoin = _get(walletSelector, "signer", null);
         let walletAddress = _get(walletSelector, "wallet[0].address", null);
-        _bridge = await KoinosBridgeContract(_bridgeInfo.bridgeAddress, providerKoin, signerKoin);
+        let configs = { payer: walletAddress };
+        _bridge = await KoinosBridgeContract(_bridgeFrom.bridgeAddress, providerKoin, signerKoin);
+        _bridge.options.onlyOperation = true;        
         if (_bridge) {
-          let { transaction } = await _bridge.functions.transfer_tokens({
+          // create bridge
+          let { operation } = await _bridge.functions.transfer_tokens({
             from: walletAddress,
-            token: _network.address,
+            token: _token.address,
             amount: fullAmount,
+            toChain: _bridgeTo.chainId,
             recipient: recipient
           })
+          operations.push(operation)
+
+          // sent transaction
+          let transaction = null;
+          let receipt = null;
+          try {
+            console.log(signer)
+            const tx = await signer.prepareTransaction({ operations: operations, header: configs });
+            const { transaction: _transaction, receipt: _receipt } = await signerKoin.sendTransaction(tx);
+            transaction = _transaction
+            receipt = _receipt
+          } catch (error) {
+            Snackbar.enqueueSnackbar("Error sending transaction", { variant: "error" });
+            console.log(error)
+            setLoadingBridge(false);
+            return;
+          }
+
           // console.log(transaction.id)
           Snackbar.enqueueSnackbar(<Typography variant="h6">Transaction submitted</Typography>, {
             variant: 'info',
@@ -211,7 +234,7 @@ const Bridge = () => {
       let _bridge = BRIDGE_CHAINS.find(bridge => bridge.id == _get(fromChain, "id", null));
       let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
       if (_get(fromChain, "id", "") == BRIDGE_CHAINS_NAMES.ETH) {
-        _token = await EthereumTokenContract(_network.address, signer.data);
+        _token = await EvmTokenContract(_network.address, signer.data);
         const tx = await _token.approve(
           _bridge.bridgeAddress,
           ethers.constants.MaxUint256
@@ -270,13 +293,6 @@ const Bridge = () => {
     if (_get(fromChain, "id", "") == BRIDGE_CHAINS_NAMES.KOIN && !_get(walletSelector, "wallet", null)) return (
       <CustomKoinConnectButton />
     )
-    // claim tokens
-    if (txHash) return (
-      <>
-        <BaseConnections />
-        <Button variant="contained" size="large" sx={{ width: "100%" }} onClick={() => navigate(`/redeem?tx=${txHash}&from=${_get(fromChain, "id", "")}&to=${_get(toChain, "id", "")}`)}>CLAIM TOKENS</Button>
-      </>
-    )
     // select network token
     if (tokenToBridge == null) return (
       <>
@@ -304,9 +320,8 @@ const Bridge = () => {
 
   return (
     <Box>
-      <Box sx={{ marginY: "1em", maxWidth: "600px", marginX: "auto", display: "flex", justifyContent: "space-around", alignItems: "center" }}>
+      <Box sx={{ marginY: "3em", maxWidth: "600px", marginX: "auto", display: "flex", justifyContent: "space-around", alignItems: "center" }}>
         <Button sx={{ height: "35px", padding: "3px" }} size={"small"} variant="contained" onClick={() => navigate("/bridge")}>Bridge</Button>
-        <Button sx={{ height: "35px", padding: "3px" }} size={"small"} variant="outlined" onClick={() => navigate("/redeem")}>Redeem</Button>
       </Box>
       <Card variant="outlined" sx={{ maxWidth: "600px", marginX: "auto", marginBottom: "20px", borderRadius: "10px", padding: "15px 20px" }}>
         <CardHeader title="BRIDGE" sx={{ paddingBottom: "4px" }} />
@@ -319,8 +334,8 @@ const Bridge = () => {
                 chain={fromChain}
               />
             </Box>
-            <Box>
-              <Box onClick={() => swapNetworks()} sx={{ marginTop: "20px", height: "40px", width: "40px", padding: "10px", borderRadius: "10px", backgroundColor: "background.light", display: "flex", justifyContent: "space-around", alignItems: "center", "&:hover": { backgroundColor: "text.grey1", cursor: "pointer" } }}>
+            <Box sx={{ marginTop: "20px" }}>
+              <Box onClick={() => swapNetworks()} sx={{ height: "40px", width: "40px", borderRadius: "10px", backgroundColor: "background.light", display: "flex", justifyContent: "space-around", alignItems: "center", "&:hover": { backgroundColor: "text.grey1", cursor: "pointer" } }}>
                 {
                   matches ?
                     <SwapHorizIcon fontSize="large" sx={{ color: "background.paper" }} />
@@ -342,7 +357,7 @@ const Bridge = () => {
             <Box display={"flex"} justifyContent={"space-between"} alignItems={"center"}>
               <InputBase placeholder={"0"} type={"text"} value={inputValue} sx={{ fontSize: "22px", color: "text.main" }} onChange={(e) => numberPattern(e.currentTarget.value, onInput)} />
               <Button
-                sx={{ width: { xs: "100%", sm: "40%", md: "25%" }, paddingX: "0px" }}
+                sx={{ width: { xs: "100%", sm: "40%", md: "25%" } }}
                 variant="grey-contained"
                 size="small"
                 onClick={() => openModalSelectToken()}

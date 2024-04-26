@@ -6,7 +6,7 @@ import { Avatar, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, M
 // Actions
 import { setNetworkFrom, setNetworkTo } from "../../../redux/actions/bridge";
 import { setModal, setModalData } from "../../../redux/actions/modals";
-import {BRIDGE_CHAINS} from "../../../constants/chains.js"
+import { BRIDGE_CHAINS } from "../../../constants/chains.js"
 
 
 // components
@@ -30,18 +30,12 @@ const ModalSelectBridgeNetwork = () => {
         dispatch(setNetworkTo(fromNetwork))
       }
       dispatch(setNetworkFrom(network))
-      if(_get(toNetwork, "name", null) == null) {
-        dispatch(setNetworkTo(BRIDGE_CHAINS.find((i) => i.id != network.id )))
-      }
     }
     if (side == "to") {
       if(_get(network, "name", null) == _get(fromNetwork, "name", null)) {
         dispatch(setNetworkFrom(toNetwork))
       }
       dispatch(setNetworkTo(network))
-      if(_get(fromNetwork, "name", null) == null) {
-        dispatch(setNetworkFrom(BRIDGE_CHAINS.find((i) => i.id != network.id )))
-      }
     }
     closeModal()
   }

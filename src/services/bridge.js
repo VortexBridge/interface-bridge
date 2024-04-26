@@ -2,7 +2,7 @@ import { Request as JSONRequest } from "../helpers/request";
 
 class Bridge extends JSONRequest {
   constructor() {
-    super({ url: process.env.REACT_APP_NODE_BRIDGE });
+    super({ url: import.meta.env.VITE_NODE_BRIDGE });
   }
   getKoinTx(_tx) {
     return this.getPrepared("/GetKoinosTransaction", { TransactionId: _tx })

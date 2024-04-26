@@ -19,7 +19,7 @@ const { chains, provider } = configureChains(
 )
 
 const { connectors } = getDefaultWallets({
-  appName: "KoinDX BridgeKoin",
+  appName: "Koinos Bridge",
   chains,
 })
 

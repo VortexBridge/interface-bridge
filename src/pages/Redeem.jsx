@@ -10,25 +10,25 @@ import React, { Fragment, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useProvider, useSigner } from "wagmi";
-import { shortedAddress } from "./../utils/display";
+import { shortedAddress } from "../utils/display";
 
 // constants
-import { BRIDGE_CHAINS, BRIDGE_CHAINS_NAMES } from "./../constants/chains";
+import { BRIDGE_CHAINS, BRIDGE_CHAINS_NAMES } from "../constants/chains";
 
 // helpers
-import { EthereumBridgeContract, EthereumTokenContract, KoinosBridgeContract, KoinosTokenContract } from "./../helpers/contracts";
+import { EvmBridgeContract, EvmTokenContract, KoinosBridgeContract, KoinosTokenContract } from "../helpers/contracts";
 
 // Actions
 import { setNetworkFrom, setNetworkTo } from "../redux/actions/bridge";
 import { setModal, setModalData } from "../redux/actions/modals";
 
 // api
-import BrigeService from "./../services/bridge";
+import BrigeService from "../services/bridge";
 
 // components
 import CustomEthConnectButton from "../components/Bridge/CustomEthConnectButton";
 import CustomKoinConnectButton from "../components/Bridge/CustomKoinConnectButton";
-import SelectChain from "./../components/SelectChain";
+import SelectChain from "../components/SelectChain";
 
 const Redeem = (props) => {
   // Dispatch to call actions
@@ -130,7 +130,7 @@ const Redeem = (props) => {
 
       // redeem
       if (_get(toChain, "id", "") == BRIDGE_CHAINS_NAMES.ETH) {
-        _bridge = await EthereumBridgeContract(_bridgeInfo.bridgeAddress, signer.data);
+        _bridge = await EvmBridgeContract(_bridgeInfo.bridgeAddress, signer.data);
         if (_bridge) {
    
           const tx = await _bridge.completeTransfer(
