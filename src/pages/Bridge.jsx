@@ -283,11 +283,11 @@ const Bridge = () => {
       <Button variant="contained" size="large" sx={{ width: "100%" }} onClick={() => openModal("to")}>SELECT TO NETWORK</Button>
     )
     // conect from Ethereum
-    if (_get(fromChain, "id", "") == BRIDGE_CHAINS_NAMES.ETH && !_get(account, 'isConnected', false)) return (
+    if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM && !_get(account, 'isConnected', false)) return (
       <CustomEthConnectButton />
     )
     // conect from Koin
-    if (_get(fromChain, "id", "") == BRIDGE_CHAINS_NAMES.KOIN && !_get(walletSelector, "wallet", null)) return (
+    if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN && !_get(walletSelector, "wallet", null)) return (
       <CustomKoinConnectButton />
     )
     // select network token
