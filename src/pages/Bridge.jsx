@@ -4,7 +4,7 @@ import { Avatar, Box, Button, Card, CardContent, CardHeader, Link, Chip, FormCon
 import { getAccount } from '@wagmi/core';
 import { BigNumber } from "bignumber.js";
 import { ethers } from 'ethers';
-import { utils as koilibUtils } from "koilib";
+import { utils as koilibUtils, Transaction } from "koilib";
 import { get as _get } from "lodash";
 import { useSnackbar } from "notistack";
 import { useDispatch, useSelector } from "react-redux";
@@ -24,6 +24,7 @@ import { setNetworkFrom, setNetworkTo } from "../redux/actions/bridge";
 
 // utils
 import { numberPattern } from "../utils/regex";
+import { waitTransation } from "./../utils/transactions"
 
 // icons
 import SwapVert from "@mui/icons-material/SwapVert";
@@ -145,7 +146,6 @@ const Bridge = () => {
     try {
       let _bridge = null;
       let _txhash = null;
-      let operations = [];
       let _token = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
       let _bridgeTo = BRIDGE_CHAINS.find(bridge => bridge.id == _get(toChain, "id", null));
       let _bridgeFrom = BRIDGE_CHAINS.find(bridge => bridge.id == _get(fromChain, "id", null));
@@ -164,10 +164,10 @@ const Bridge = () => {
         let providerKoin = _get(walletSelector, "provider", null);
         let signerKoin = _get(walletSelector, "signer", null);
         let walletAddress = _get(walletSelector, "wallet[0].address", null);
-        let configs = { payer: walletAddress };
         _bridge = await KoinosBridgeContract(_bridgeFrom.bridgeAddress, providerKoin, signerKoin);
         _bridge.options.onlyOperation = true;        
         if (_bridge) {
+          let tx = new Transaction({ provider: providerKoin, signer: signerKoin })
           // create bridge
           let { operation } = await _bridge.functions.transfer_tokens({
             from: walletAddress,
@@ -176,17 +176,13 @@ const Bridge = () => {
             toChain: _bridgeTo.chainId,
             recipient: recipient
           })
-          operations.push(operation)
+          tx.pushOperation(operation)
 
           // sent transaction
           let transaction = null;
-          let receipt = null;
           try {
-            console.log(signer)
-            const tx = await signer.prepareTransaction({ operations: operations, header: configs });
-            const { transaction: _transaction, receipt: _receipt } = await signerKoin.sendTransaction(tx);
+            const _transaction = await tx.send();
             transaction = _transaction
-            receipt = _receipt
           } catch (error) {
             Snackbar.enqueueSnackbar("Error sending transaction", { variant: "error" });
             console.log(error)
@@ -200,8 +196,9 @@ const Bridge = () => {
             persist: false,
             action: actionClose,
           })
-          await transaction.wait();
+          console.log(transaction)
           _txhash = transaction.id;
+          await waitTransation(providerKoin, transaction)
         }
       }
       setTxHash(_txhash);

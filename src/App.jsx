@@ -2,7 +2,7 @@ import React from "react";
 import { Provider as ReactProvider } from "react-redux";
 import "@rainbow-me/rainbowkit/styles.css"
 import { getDefaultWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit"
-import { goerli, configureChains, createClient, WagmiConfig } from "wagmi"
+import { sepolia, configureChains, createClient, WagmiConfig } from "wagmi"
 import { publicProvider } from "wagmi/providers/public"
 import generateStore from "./redux/index";
 import AppRouter from "./AppRouter";
@@ -14,7 +14,7 @@ import "@fontsource/roboto/900.css";
 const store = generateStore();
 
 const { chains, provider } = configureChains(
-  [goerli],
+  [sepolia],
   [publicProvider()]
 )
 

@@ -24,6 +24,7 @@ export const CHAIN_IDS_TO_NAMES = {
 
 export const BRIDGE_CHAINS_NAMES = {
   ETH: "ethereum",
+  SEP: "sepolia",
   BNB: "binance",
   KOIN: "koinos",
 }
@@ -40,7 +41,7 @@ let chains = {
       name: "Koinos",
       chainId: 1,
       chainType: BRIDGE_CHAINS_TYPES.KOIN,
-      bridgeAddress: "1KXRDqoGcvysTeoeZ3SePAHUZ99fW3cb2u",
+      bridgeAddress: "1Fp3iNkmGKMPVdTpC7i3rttBBXVi7CDoX7",
       symbol: "KOIN",
       icon: KOIN,
       explorer: "https://harbinger.koinosblocks.com/tx"
@@ -70,23 +71,23 @@ let chains = {
     {
       id: BRIDGE_CHAINS_NAMES.KOIN,
       name: "Koinos",
-      chainId: 1,
+      chainId: 100,
       chainType: BRIDGE_CHAINS_TYPES.KOIN,
-      bridgeAddress: "1KXRDqoGcvysTeoeZ3SePAHUZ99fW3cb2u",
+      bridgeAddress: "1Fp3iNkmGKMPVdTpC7i3rttBBXVi7CDoX7",
       symbol: "KOIN",
       icon: KOIN,
       explorer: "https://harbinger.koinosblocks.com/tx"
     },
     {
-      id: BRIDGE_CHAINS_NAMES.BNB,
+      id: BRIDGE_CHAINS_NAMES.SEP,
       chainType: BRIDGE_CHAINS_TYPES.EVM,
-      bridgeAddress: "0x3cf2e6F03b126476E6BDb0305fA0C67AfE737D87",
-      chainId: 2,
-      symbol: "BSC",
-      name: "Binance",
-      icon: BNB,
-      explorer: "https://testnet.bscscan.com/tx"
-    }
+      bridgeAddress: "0x06c680642DA9a35Fd88e7702CD718FbA3CBc3Bde",
+      chainId: 0,
+      symbol: "ETH",
+      name: "Sepolia",
+      icon: ETH,
+      explorer: "https://sepolia.etherscan.io/tx"
+    },
   ]
 }
 

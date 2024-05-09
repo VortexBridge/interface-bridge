@@ -21,12 +21,12 @@ let tokens = {
         {
           chain: BRIDGE_CHAINS_NAMES.KOIN,
           decimals: 8,
-          address: "15DJN4a8SgrbGhhGksSBASiSYjGnMU8dGL"
+          address: "1FaSvLjQJsCJKq5ybmGsMMQs8RQYyVv8ju"
         },
         {
           chain: BRIDGE_CHAINS_NAMES.ETH,
           decimals: 8,
-          address: "0xDb7a53f3dD59444841066E5d340A765bF62b3014"
+          address: "0x6b176fB1D3c420DBFd3AA51De597f8d2e5752556"
         }
       ]
     },
@@ -50,6 +50,24 @@ let tokens = {
     },
   ],
   ["TESTNET"]: [
+    {
+      id: "koin",
+      symbol: "KOIN",
+      name: "Koin",
+      icon: KOIN,
+      networks: [
+        {
+          chain: BRIDGE_CHAINS_NAMES.KOIN,
+          decimals: 8,
+          address: "1FaSvLjQJsCJKq5ybmGsMMQs8RQYyVv8ju"
+        },
+        {
+          chain: BRIDGE_CHAINS_NAMES.SEP,
+          decimals: 8,
+          address: "0x6b176fB1D3c420DBFd3AA51De597f8d2e5752556"
+        }
+      ]
+    }
   ]
 }
 export const BRIDGE_TOKENS = tokens[CHAIN || "TESTNET"]
