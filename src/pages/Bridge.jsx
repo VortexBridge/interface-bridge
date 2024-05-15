@@ -71,45 +71,46 @@ const Bridge = () => {
     dispatch(setModal("Disclaimer"))
   }, []);
 
-  useEffect(() => {
-    const loadBlance = async () => {
-      let _balance = 0;
-      let _approve = false;
-      let _token = null;
-      setLoadingBalance(true);
-      if (tokenToBridge == null) {
-        setLoadingBalance(false);
-        return;
-      };
-      setInputValue("0");
-      let _bridge = BRIDGE_CHAINS.find(bridge => bridge.id == _get(fromChain, "id", null));
-      let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
-      if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM && _get(account, 'isConnected', false)) {
-        _token = await EvmTokenContract(_network.address, provider);
-        if (_token) {
-          let bal = await _token.balanceOf(account.address);
-          _balance = koilibUtils.formatUnits(bal.toString(), _get(_network, "decimals", 8))
-          // approval
-          let approve = await _token.allowance(_network.address, _bridge.bridgeAddress)
-          _approve = approve.toString();
-        }
-      }
-      if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN && _get(walletSelector, "wallet", null)) {
-        let providerKoin = _get(walletSelector, "provider", null);
-        let signerKoin = _get(walletSelector, "signer", null);
-        _token = await KoinosTokenContract(_network.address, providerKoin, signerKoin);
-        if (_token) {
-          let addressOwner = _get(walletSelector, "wallet[0].address", null);
-          let bal = await _token.functions.balanceOf({ owner: addressOwner })
-          _balance = koilibUtils.formatUnits(_get(bal, 'result.value', 0), _get(_network, "decimals", 8))
-          // set automatic max approval
-          _approve = ethers.constants.MaxUint256.toString();
-        }
-      }
-      setBalance(_balance);
-      setApproval(_approve);
+  const loadBlance = async () => {
+    let _balance = 0;
+    let _approve = false;
+    let _token = null;
+    setLoadingBalance(true);
+    if (tokenToBridge == null) {
       setLoadingBalance(false);
+      return;
+    };
+    setInputValue("0");
+    let _bridge = BRIDGE_CHAINS.find(bridge => bridge.id == _get(fromChain, "id", null));
+    let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
+    if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM && _get(account, 'isConnected', false)) {
+      _token = await EvmTokenContract(_network.address, provider);
+      if (_token) {
+        let bal = await _token.balanceOf(account.address);
+        _balance = koilibUtils.formatUnits(bal.toString(), _get(_network, "decimals", 8))
+        // approval
+        let approve = await _token.allowance(account.address, _bridge.bridgeAddress)
+        _approve = approve.toString();
+      }
     }
+    if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN && _get(walletSelector, "wallet", null)) {
+      let providerKoin = _get(walletSelector, "provider", null);
+      let signerKoin = _get(walletSelector, "signer", null);
+      _token = await KoinosTokenContract(_network.address, providerKoin, signerKoin);
+      if (_token) {
+        let addressOwner = _get(walletSelector, "wallet[0].address", null);
+        let bal = await _token.functions.balanceOf({ owner: addressOwner })
+        _balance = koilibUtils.formatUnits(_get(bal, 'result.value', 0), _get(_network, "decimals", 8))
+        // set automatic max approval
+        _approve = ethers.constants.MaxUint256.toString();
+      }
+    }
+    setBalance(_balance);
+    setApproval(_approve);
+    setLoadingBalance(false);
+  }
+
+  useEffect(() => {
     loadBlance();
   }, [tokenToBridge, fromChain, _get(walletSelector, "wallet", null), _get(account, 'isConnected', false)]);
 
@@ -209,6 +210,7 @@ const Bridge = () => {
       })
 
       setLoadingBridge(false)
+      loadBlance()
     } catch (error) {
       console.log(error)
       setTxHash(null);
@@ -230,7 +232,7 @@ const Bridge = () => {
     try {
       let _bridge = BRIDGE_CHAINS.find(bridge => bridge.id == _get(fromChain, "id", null));
       let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
-      if (_get(fromChain, "id", "") == BRIDGE_CHAINS_NAMES.ETH) {
+      if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM) {
         _token = await EvmTokenContract(_network.address, signer.data);
         const tx = await _token.approve(
           _bridge.bridgeAddress,
@@ -247,7 +249,7 @@ const Bridge = () => {
           persist: false,
           action: actionClose,
         })
-        setApproval(ethers.constants.MaxUint256.toString());
+        setApproval(balance);
         setLoadingApproval(false);
       }
     } catch (error) {
@@ -269,8 +271,8 @@ const Bridge = () => {
 
   const BaseConnections = () => (
     <>
-      {_get(fromChain, "id", "") == BRIDGE_CHAINS_NAMES.ETH ? <CustomEthConnectButton /> : null}
-      {_get(fromChain, "id", "") == BRIDGE_CHAINS_NAMES.KOIN ? <CustomKoinConnectButton /> : null}
+      {_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM ? <CustomEthConnectButton /> : null}
+      {_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN ? <CustomKoinConnectButton /> : null}
     </>
   )
   const ActionLoad = () => {
@@ -300,12 +302,13 @@ const Bridge = () => {
     // check approval of tokens
     let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
     let fullAmount = koilibUtils.parseUnits(inputValue, _get(_network, "decimals", 8));
-    if (_get(fromChain, "id", "") == BRIDGE_CHAINS_NAMES.ETH && new BigNumber(approval).lt(fullAmount)) return (
+    if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM && new BigNumber(approval).lt(fullAmount) || new BigNumber(fullAmount).isZero()) return (
       <>
         <BaseConnections />
-        <Button disabled={loadingApproval} variant="contained" size="large" sx={{ width: "100%" }} onClick={() => approveTransfers()}>{loadingApproval ? "loading..." : "APPROVE TOKEN"}</Button>
+        <Button disabled={loadingApproval || new BigNumber(fullAmount).isZero()} variant="contained" size="large" sx={{ width: "100%" }} onClick={() => approveTransfers()}>{loadingApproval ? "loading..." : "APPROVE TOKEN"}</Button>
       </>
     )
+
     // return button bridge
     return (
       <>
