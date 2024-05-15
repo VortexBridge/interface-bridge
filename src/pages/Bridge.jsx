@@ -269,10 +269,10 @@ const Bridge = () => {
     return false;
   }
 
-  const BaseConnections = () => (
+  const BaseConnections = (props) => (
     <>
-      {_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM ? <CustomEthConnectButton /> : null}
-      {_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN ? <CustomKoinConnectButton /> : null}
+      {_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM ? <CustomEthConnectButton {...props} /> : null}
+      {_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN ? <CustomKoinConnectButton {...props} /> : null}
     </>
   )
   const ActionLoad = () => {
@@ -294,27 +294,30 @@ const Bridge = () => {
     )
     // select network token
     if (tokenToBridge == null) return (
-      <>
-        <BaseConnections />
-        <Button variant="contained" size="large" sx={{ width: "100%" }} onClick={() => openModalSelectToken()}>SELECT A TOKEN</Button>
-      </>
+      <BaseConnections
+        actions={
+          <Button variant="contained" size="large" sx={{ width: "100%" }} onClick={() => openModalSelectToken()}>SELECT A TOKEN</Button>
+        }
+      />
     )
     // check approval of tokens
     let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
     let fullAmount = koilibUtils.parseUnits(inputValue, _get(_network, "decimals", 8));
     if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM && new BigNumber(approval).lt(fullAmount) || new BigNumber(fullAmount).isZero()) return (
-      <>
-        <BaseConnections />
-        <Button disabled={loadingApproval || new BigNumber(fullAmount).isZero()} variant="contained" size="large" sx={{ width: "100%" }} onClick={() => approveTransfers()}>{loadingApproval ? "loading..." : "APPROVE TOKEN"}</Button>
-      </>
+      <BaseConnections
+        actions={
+          <Button disabled={loadingApproval || new BigNumber(fullAmount).isZero()} variant="contained" size="large" sx={{ width: "100%" }} onClick={() => approveTransfers()}>{loadingApproval ? "loading..." : "APPROVE TOKEN"}</Button>
+        }
+      />
     )
 
     // return button bridge
     return (
-      <>
-        <BaseConnections />
-        <Button disabled={disabledButtonBridge()} onClick={() => bridgeTokens()} variant="contained" size="large" sx={{ width: "100%" }}>{loadingBridge ? "loading..." : "BRIDGE"}</Button>
-      </>
+      <BaseConnections
+        actions={
+          <Button disabled={disabledButtonBridge()} onClick={() => bridgeTokens()} variant="contained" size="large" sx={{ width: "100%" }}>{loadingBridge ? "loading..." : "BRIDGE"}</Button>
+        }
+      />
     )
   }
 
