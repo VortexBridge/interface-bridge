@@ -7,7 +7,7 @@ import { CHAIN_IDS_TO_NAMES } from "./../../../constants/chains"
 // utils
 import { shortedAddress } from "./../../../utils/display";
 
-const CustomKoinConnectButton = () => {
+const CustomKoinConnectButton = (props) => {
   // Dispatch to call actions
   const dispatch = useDispatch();
 
@@ -61,6 +61,7 @@ const CustomKoinConnectButton = () => {
           {shortedAddress(_get(walletSelector, "wallet[0].address", ""))}
         </Button>
       </div>
+      {props.actions}
     </div>
   )
 }
