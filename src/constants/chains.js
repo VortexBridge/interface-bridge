@@ -12,7 +12,7 @@ import KOIN from "./../assets/images/networks/koinos.svg"
  */
 export const CHAINS_IDS = {
   MAINNET: "EiBZK_GGVP0H_fXVAM3j6EAuz3-B-l3ejxRSewi7qIBfSA==",
-  TESTNET: "EiAAKqFi-puoXnuJTdn7qBGGJa8yd-dcS2P0ciODe4wupQ==",
+  TESTNET: "EiBncD4pKRIQWco_WRqo5Q-xnXR7JuO3PtZv983mKdKHSQ==",
   UNSUPPORTED: "UNSUPPORTED",
 }
 
