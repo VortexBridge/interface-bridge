@@ -157,6 +157,12 @@ const Bridge = () => {
         _bridge = await EvmBridgeContract(_bridgeFrom.bridgeAddress, signer.data);
         if (_bridge) {
           const tx = await _bridge.transferTokens(_token.address, fullAmount, _bridgeTo.chainId, recipient)
+          // console.log(transaction.id)
+          Snackbar.enqueueSnackbar(<Typography variant="h6">Transaction submitted</Typography>, {
+            variant: 'info',
+            persist: false,
+            action: actionClose,
+          })
           await tx.wait()
           _txhash = tx.hash;
         }
@@ -197,7 +203,6 @@ const Bridge = () => {
             persist: false,
             action: actionClose,
           })
-          console.log(transaction)
           _txhash = transaction.id;
           await waitTransation(providerKoin, transaction)
         }
