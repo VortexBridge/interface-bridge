@@ -92,7 +92,7 @@ const ModalConnect = () => {
   }
 
   const checkPopUps = () => {
-    var newWin = window.open("https://koindx.com");
+    var newWin = window.open("http://vortexbridge.io");
     if (!newWin || newWin.closed || typeof newWin.closed == "undefined") {
       return false
     }

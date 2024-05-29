@@ -3,7 +3,7 @@ import React from "react"; // , {useState}
 // components mui
 import { AppBar, Container, useMediaQuery, useTheme } from "@mui/material";
 
-import LogoWhite from "../../assets/images/vortex-logo.png";
+import LogoWhite from "../../assets/images/vortex-logo-main.png";
 
 
 const Header = () => {
