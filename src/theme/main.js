@@ -11,7 +11,7 @@ const paper = "#ececec"
 const secondary_grey_1 = "#4C4C4C";
 const secondary_grey_2 = "#848484";
 const secondary_grey_3 = "#bfbfbf"
-const primary = "#a23e8a"
+const primary = "#6f00f6"
 const text_color = "#353f4f"
 
 export const themeOptions = {
