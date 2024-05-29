@@ -194,16 +194,16 @@ const ModalConnect = () => {
         <Typography variant="body1" component="p" sx={{ textAlign: "center", marginBottom: "10px" }}>Choose one of the accepted wallets</Typography>
         <Divider />
         <List>
-          <ListItem sx={{ "&:hover": { backgroundColor: "background.default", borderRadius: "10px" } }} >
-            <ListItemButton disabled={false} variant="outlined" onClick={() => selectWallet("kondor-wallet")}>
+          <ListItem sx={{ "&:hover": { backgroundColor: "background.light", borderRadius: "10px" } }} >
+            <ListItemButton sx={{ "&:hover": { backgroundColor: "background.light" } }} disabled={false} variant="outlined" onClick={() => selectWallet("kondor-wallet")}>
               <ListItemIcon>
                 <img src={KondorLogo} style={{ width: "40px", height: "40px" }} alt="kondor wallet" />
               </ListItemIcon>
               <ListItemText primary="Kondor Wallet" />
             </ListItemButton>
           </ListItem>
-          <ListItem sx={{ "&:hover": { backgroundColor: "background.default", borderRadius: "10px" } }} >
-            <ListItemButton disabled={false} variant="outlined" onClick={() => selectWallet("mkw-wallet")}>
+          <ListItem sx={{ "&:hover": { backgroundColor: "background.light", borderRadius: "10px" } }} >
+            <ListItemButton sx={{ "&:hover": { backgroundColor: "background.light" } }} disabled={false} variant="outlined" onClick={() => selectWallet("mkw-wallet")}>
               <ListItemIcon>
                 <img src={MKWLogo} style={{ width: "40px", height: "40px" }} alt="My Koinos Wallet wallet logo" />
               </ListItemIcon>

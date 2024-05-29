@@ -4,14 +4,15 @@ import darkScrollbar from "@mui/material/darkScrollbar";
 // const black = "#000000";
 
 // const secondary_grey_3 = "rgba(40 40 40 / 70%)";
-const secondary_grey_4 = "#282828";
+const secondary_grey_4 = "#d8d7d7e3";
 
-const background = "#111111"
-const paper = "#1a1a1a"
+const background = "#f6f6fa"
+const paper = "#ececec"
 const secondary_grey_1 = "#4C4C4C";
 const secondary_grey_2 = "#848484";
-const primary = "#00ffbb"
-const text_color = "#ffffff"
+const secondary_grey_3 = "#bfbfbf"
+const primary = "#a23e8a"
+const text_color = "#353f4f"
 
 export const themeOptions = {
   breakpoints: {
@@ -38,7 +39,7 @@ export const themeOptions = {
       dark: "#353535",
       main: secondary_grey_1,
       light: secondary_grey_2,
-      contrastText: "#fff",
+      contrastText: "red",
     },
     background: {
       default: background,
@@ -50,6 +51,7 @@ export const themeOptions = {
       disabled: text_color,
       grey1: secondary_grey_1,
       grey2: secondary_grey_2,
+      grey3: secondary_grey_3,
     },
     action: {
       focus: "#dcd8b6",
@@ -194,7 +196,7 @@ export const themeOptions = {
             backgroundColor: secondary_grey_4,
             color: background,
             "&:hover": {
-              backgroundColor: secondary_grey_1,
+              backgroundColor: secondary_grey_3,
             },
           },
         },

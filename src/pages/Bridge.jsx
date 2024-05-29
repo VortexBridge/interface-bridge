@@ -343,12 +343,12 @@ const Bridge = () => {
               />
             </Box>
             <Box sx={{ marginTop: "20px" }}>
-              <Box onClick={() => swapNetworks()} sx={{ height: "40px", width: "40px", borderRadius: "10px", backgroundColor: "background.light", display: "flex", justifyContent: "space-around", alignItems: "center", "&:hover": { backgroundColor: "text.grey1", cursor: "pointer" } }}>
+              <Box onClick={() => swapNetworks()} sx={{ height: "40px", width: "40px", borderRadius: "10px", backgroundColor: "background.light", display: "flex", justifyContent: "space-around", alignItems: "center", "&:hover": { backgroundColor: "text.grey3", cursor: "pointer" } }}>
                 {
                   matches ?
-                    <SwapHorizIcon fontSize="large" sx={{ color: "background.paper" }} />
+                    <SwapHorizIcon fontSize="large" sx={{ color: "text.grey2" }} />
                     :
-                    <SwapVert fontSize="large" sx={{ color: "background.paper" }} />
+                    <SwapVert fontSize="large" sx={{ color: "text.grey2" }} />
                 }
               </Box>
             </Box>
