@@ -67,13 +67,13 @@ export const CONFIG_BASE =  {
         "coinmarketcap_id": ""
       },
       received: {
-        "name": "KoinDX",
+        "name": "Vortex",
         "symbol": "KNDX",
-        "description": "The governance token of KoinDX.",
+        "description": "The governance token of Vortex.",
         "decimals": "8",
         "logoURI": "https://avatars.githubusercontent.com/u/100445299?s=200&v=4",
         "address": "18HHisnBQDQ5GJTdaR2h6QPTY42RmZwCS",
-        "token_website": "https://koindx.com",
+        "token_website": "http://vortexbridge.io",
         "coingecko_id": "",
         "coinmarketcap_id": ""
       }

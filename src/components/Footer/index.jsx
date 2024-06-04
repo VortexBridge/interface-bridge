@@ -37,7 +37,7 @@ const Footer = () => {
       }}
     >
       <Typography variant="subtitle2" component="h6" sx={{paddingY: "5px", fontWeight: "bold", color: "#efefef"}}>
-        KoinDX
+        Vortex
       </Typography>
     </Box>
   );

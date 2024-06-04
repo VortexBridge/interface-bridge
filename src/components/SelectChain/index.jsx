@@ -6,7 +6,7 @@ const SelectChain = ({ chain, onSelect }) => {
   return (
     <Box
       onClick={() => onSelect()}
-      sx={{ maxHeight: "52px", backgroundColor: "background.light", width: "100%", "&:hover": { backgroundColor: "text.grey1", cursor: "pointer" } }}
+      sx={{ maxHeight: "52px", backgroundColor: "background.light", width: "100%", "&:hover": { backgroundColor: "text.grey3", cursor: "pointer" } }}
       borderRadius={"10px"} padding={"12px"}
     >
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>

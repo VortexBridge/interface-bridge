@@ -369,12 +369,12 @@ const Bridge = () => {
               />
             </Box>
             <Box sx={{ marginTop: "20px" }}>
-              <Box onClick={() => swapNetworks()} sx={{ height: "40px", width: "40px", borderRadius: "10px", backgroundColor: "background.light", display: "flex", justifyContent: "space-around", alignItems: "center", "&:hover": { backgroundColor: "text.grey1", cursor: "pointer" } }}>
+              <Box onClick={() => swapNetworks()} sx={{ height: "40px", width: "40px", borderRadius: "10px", backgroundColor: "background.light", display: "flex", justifyContent: "space-around", alignItems: "center", "&:hover": { backgroundColor: "text.grey3", cursor: "pointer" } }}>
                 {
                   matches ?
-                    <SwapHorizIcon fontSize="large" sx={{ color: "background.paper" }} />
+                    <SwapHorizIcon fontSize="large" sx={{ color: "text.grey2" }} />
                     :
-                    <SwapVert fontSize="large" sx={{ color: "background.paper" }} />
+                    <SwapVert fontSize="large" sx={{ color: "text.grey2" }} />
                 }
               </Box>
             </Box>
@@ -489,6 +489,7 @@ const Bridge = () => {
 
         </CardContent>
       </Card>
+
       <Box sx={{ maxWidth: "600px", marginX: "auto", marginTop: "2em" }}>
         <Typography component={"p"} variant={"body2"}>This Interface is a web user interface software to BridgeKoin, a cross chain messaging protocol. THIS INTERFACE AND THE BRIDGEKOIN PROTOCOL ARE PROVIDED &quot;AS IS&quot;, AT YOUR OWN RISK, AND WITHOUT WARRANTIES OF ANY KIND. By using or accessing this Interface or BridgeKoin, you agree that no developer or entity involved in creating, deploying, maintaining, operating this Interface or BridgeKoin, or causing or supporting any of the foregoing, will be liable in any manner for any claims or damages whatsoever associated with your use, inability to use, or your interaction with other users of, this Interface or Bridgekoin, or this Interface or BridgeKoin themselves, including any direct, indirect, incidental, special, exemplary, punitive or consequential damages, or loss of profits, cryptocurrencies, tokens, or anything else of value. By using or accessing this Interface, you represent that you are not subject to sanctions or otherwise designated on any list of prohibited or restricted parties or excluded or denied persons, including but not limited to the lists maintained by the United States&apos; Department of Treasury&apos;s Office of Foreign Assets Control, the United Nations Security Council, the European Union or its Member States, or any other government authority. Use at your own risk, the protocols and interfaces are not audited and might not work correctly, what could end in a loss of your token.</Typography>
       </Box>
