@@ -66,6 +66,10 @@ const Bridge = () => {
   const [txHash, setTxHash] = useState("");
   const [loadingBridge, setLoadingBridge] = useState(false);
 
+  // conectors
+  const [connectorTo, setConnectorTo] = useState(false);
+  const [connectorFrom, setConnectorFrom] = useState(false);
+
   // efects
   useEffect(() => {
     dispatch(setModal("Disclaimer"))
@@ -113,6 +117,7 @@ const Bridge = () => {
   useEffect(() => {
     loadBlance();
   }, [tokenToBridge, fromChain, _get(walletSelector, "wallet", null), _get(account, 'isConnected', false)]);
+
 
   // SNACKBAR
 
@@ -266,6 +271,17 @@ const Bridge = () => {
       })
     }
   }
+  const checkChain = (_chain) => {
+    let evm_conector = _get(account, 'isConnected', false);
+    let koin_conector = _get(walletSelector, "connected", false);    
+    if(_get(_chain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM && !evm_conector) {
+      return true
+    }
+    if(_get(_chain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN && !koin_conector) {
+      return true
+    }
+    return false
+  }
 
   const disabledButtonBridge = () => {
     if (loadingBridge) return true;
@@ -280,6 +296,16 @@ const Bridge = () => {
       {_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN ? <CustomKoinConnectButton {...props} /> : null}
     </>
   )
+  const Connectors = ({ chain }) => {
+    // conect from Ethereum
+    if (_get(chain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM) return (
+      <CustomEthConnectButton />
+    )
+    // conect from Koin
+    if (_get(chain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN) return (
+      <CustomKoinConnectButton />
+    )
+  }
   const ActionLoad = () => {
     // select network from
     if (fromChain === null) return (
@@ -289,13 +315,13 @@ const Bridge = () => {
     if (toChain === null) return (
       <Button variant="contained" size="large" sx={{ width: "100%" }} onClick={() => openModal("to")}>SELECT TO NETWORK</Button>
     )
-    // conect from Ethereum
-    if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM && !_get(account, 'isConnected', false)) return (
-      <CustomEthConnectButton />
+    // conect wallet from chain
+    if (checkChain(fromChain)) return (
+      <Connectors chain={fromChain} />
     )
-    // conect from Koin
-    if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN && !_get(walletSelector, "wallet", null)) return (
-      <CustomKoinConnectButton />
+    // conect wallet to chain
+    if (checkChain(toChain)) return (
+      <Connectors chain={toChain} />
     )
     // select network token
     if (tokenToBridge == null) return (
