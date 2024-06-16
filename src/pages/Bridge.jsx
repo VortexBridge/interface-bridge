@@ -1,6 +1,6 @@
 /* eslint-disable */
 import React, { Fragment, useEffect, useState } from "react";
-import { Avatar, Box, Button, Card, CardContent, CardHeader, Link, Chip, FormControl, InputBase, InputLabel, MenuItem, Select, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Avatar, Box, Button, Card, CardContent, CardHeader, Link, Stack, Divider, InputBase, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { getAccount } from '@wagmi/core';
 import { BigNumber } from "bignumber.js";
 import { ethers } from 'ethers';
@@ -13,7 +13,7 @@ import { useProvider, useSigner } from "wagmi";
 import { shortedAddress } from "../utils/display";
 
 // constants
-import { BRIDGE_CHAINS, BRIDGE_CHAINS_NAMES, BRIDGE_CHAINS_TYPES } from "../constants/chains";
+import { BRIDGE_CHAINS, BRIDGE_CHAINS_TYPES } from "../constants/chains";
 
 // helpers
 import { EvmBridgeContract, EvmTokenContract, KoinosBridgeContract, KoinosTokenContract } from "../helpers/contracts";
@@ -58,6 +58,7 @@ const Bridge = () => {
 
   // states
   const [balance, setBalance] = useState(0);
+  const [relayer, setRelayer] = useState(null);
   const [recipient, setRecipient] = useState("");
   const [loadingBalance, setLoadingBalance] = useState(false);
   const [inputValue, setInputValue] = useState("0");
@@ -126,6 +127,11 @@ const Bridge = () => {
     setRecipient(final)
   }, [ toChain, _get(account, 'isConnected', false), _get(walletSelector, "connected", false) ])
 
+  // reset if switch chains
+  useEffect(() => {
+    setRelayer(null)
+  }, [ fromChain, toChain ])
+
 
   // SNACKBAR
 
@@ -193,8 +199,11 @@ const Bridge = () => {
             from: walletAddress,
             token: _token.address,
             amount: fullAmount,
+            payment: relayer ? _get(relayer, "payment") : "0",
+            relayer: relayer ? _get(relayer, "address") : "",
+            recipient: recipient,
+            metadata: "",
             toChain: _bridgeTo.chainId,
-            recipient: recipient
           })
           tx.pushOperation(operation)
 
@@ -339,6 +348,15 @@ const Bridge = () => {
         }
       />
     )
+
+    // claim tokens
+    if(txHash) return (
+      <>
+        <BaseConnections />
+        <Button variant="contained" size="large" sx={{ width: "100%" }} onClick={() => navigate(`/redeem?tx=${txHash}&network=${_get(toChain, "id", "")}`)}>CLAIM TOKENS</Button>
+      </>
+    )
+
     // check approval of tokens
     let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
     let fullAmount = koilibUtils.parseUnits(inputValue, _get(_network, "decimals", 8));
@@ -358,6 +376,48 @@ const Bridge = () => {
         }
       />
     )
+  }
+
+  const RelayerLoad = () => {
+    let _relayers = []
+    _relayers.push(
+      <Card
+        key={"fee"}
+        onClick={() => setRelayer(null)}
+        variant="outlined"
+        sx={{ backgroundColor: !relayer ? "background.primary" : "background.paper", maxWidth: "600px", marginX: "auto", marginBottom: "20px", borderRadius: "10px", padding: "15px 20px" }}
+      >
+        <Stack direction="row" justifyContent="space-between" alignItems="center">
+          <Typography color={!relayer ? "white" : "text.main"} gutterBottom variant="h5" component="div">Manual</Typography>
+          <Typography color={!relayer ? "white" : "text.main"} gutterBottom variant="h6" component="div">$0</Typography>
+        </Stack>
+        <Typography color={!relayer ? "white" : "text.main"} variant="body2">The user is responsible for claiming (redeeming) their tokens on the destination blockchain.</Typography>
+      </Card>
+    )
+
+    let _token = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(toChain, "id", null));
+    let listRelayers = _get(_token, "relayers", [])
+    if(listRelayers.length) {
+      listRelayers.map(rele => {
+        let isRele = _get(rele, "id", null) == _get(relayer, "id", "")
+        let _payment =  koilibUtils.formatUnits(_get(rele, "payment", "0"), _get(_token, "decimals", 8))
+        _relayers.push(
+          <Card
+            key={_get(rele, "id", null)}
+            onClick={() => setRelayer(rele)}
+            variant="outlined"
+            sx={{ backgroundColor: isRele ? "background.primary" : "background.paper", maxWidth: "600px", marginX: "auto", marginBottom: "20px", borderRadius: "10px", padding: "15px 20px" }}
+          >
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Typography color={isRele ? "white" : "text.main"} gutterBottom variant="h5" component="div">{ _get(rele, "name", "") }</Typography>
+              <Typography color={isRele ? "white" : "text.main"} gutterBottom variant="h6" component="div">${ _payment }</Typography>
+            </Stack>
+            <Typography color={isRele ? "white" : "text.main"} variant="body2">{ _get(rele, "description", "") }</Typography>
+          </Card>
+        )
+      })
+    }
+    return _relayers;
   }
 
   return (
@@ -499,7 +559,8 @@ const Bridge = () => {
         </CardContent>
       </Card>
 
-      <Box sx={{ maxWidth: "600px", marginX: "auto", marginTop: "2em" }}>
+      <Box sx={{ maxWidth: "600px", marginX: "auto", marginY: "2em" }}>
+        {RelayerLoad()}
       </Box>
     </Box >
   )

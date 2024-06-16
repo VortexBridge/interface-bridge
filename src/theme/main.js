@@ -43,6 +43,7 @@ export const themeOptions = {
     },
     background: {
       default: background,
+      primary: primary,
       light: secondary_grey_4,
       paper: paper,
     },

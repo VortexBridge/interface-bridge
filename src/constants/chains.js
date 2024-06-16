@@ -44,17 +44,7 @@ let chains = {
       bridgeAddress: "1Fp3iNkmGKMPVdTpC7i3rttBBXVi7CDoX7",
       symbol: "KOIN",
       icon: KOIN,
-      explorer: "https://harbinger.koinosblocks.com/tx"
-    },
-    {
-      id: BRIDGE_CHAINS_NAMES.BNB,
-      chainType: BRIDGE_CHAINS_TYPES.EVM,
-      bridgeAddress: "0x3cf2e6F03b126476E6BDb0305fA0C67AfE737D87",
-      chainId: 2,
-      symbol: "BSC",
-      name: "Binance",
-      icon: BNB,
-      explorer: "https://goerli.etherscan.io/tx"
+      explorer: "https://koinosblocks.com/tx"
     },
     {
       id: BRIDGE_CHAINS_NAMES.ETH,
@@ -64,7 +54,7 @@ let chains = {
       symbol: "ETH",
       name: "Ethereum",
       icon: ETH,
-      explorer: "https://goerli.etherscan.io/tx"
+      explorer: "https://etherscan.io/tx"
     }
   ],
   ["TESTNET"]: [
@@ -81,8 +71,8 @@ let chains = {
     {
       id: BRIDGE_CHAINS_NAMES.SEP,
       chainType: BRIDGE_CHAINS_TYPES.EVM,
-      bridgeAddress: "0x06c680642DA9a35Fd88e7702CD718FbA3CBc3Bde",
-      chainId: 0,
+      bridgeAddress: "0xa983e3dA9d8371F288A8a5427E3b02a5b8848666",
+      chainId: 100,
       symbol: "ETH",
       name: "Sepolia",
       icon: ETH,

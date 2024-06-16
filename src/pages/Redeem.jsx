@@ -1,8 +1,8 @@
 /* eslint-disable */
+import moment from 'moment';
 import { Avatar, Container, Box, Button, Card, CardContent, CardHeader, Chip, FormControl, InputBase, Link, InputLabel, MenuItem, Select, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { getAccount } from '@wagmi/core';
 import { BigNumber } from "bignumber.js";
-import { ethers } from 'ethers';
 import { utils as koilibUtils } from "koilib";
 import { get as _get } from "lodash";
 import { useSnackbar } from "notistack";
@@ -13,7 +13,7 @@ import { useProvider, useSigner } from "wagmi";
 import { shortedAddress } from "../utils/display";
 
 // constants
-import { BRIDGE_CHAINS, BRIDGE_CHAINS_NAMES } from "../constants/chains";
+import { BRIDGE_CHAINS, BRIDGE_CHAINS_NAMES, BRIDGE_CHAINS_TYPES } from "../constants/chains";
 
 // helpers
 import { EvmBridgeContract, EvmTokenContract, KoinosBridgeContract, KoinosTokenContract } from "../helpers/contracts";
@@ -71,7 +71,7 @@ const Redeem = (props) => {
   useEffect(() => {
     if (searchParams.get("tx")) {
       setSourceTX(searchParams.get("tx"))
-      checkApi()
+      checkApi(searchParams.get("tx"))
 
     }
     if (searchParams.get("from")) {
@@ -94,6 +94,7 @@ const Redeem = (props) => {
   }
 
   const redeem = async () => {
+    console.log("redeem")
     setLoading(true);
     if (loading) return;
     try {
@@ -129,18 +130,20 @@ const Redeem = (props) => {
       let _bridgeInfo = BRIDGE_CHAINS.find(bridge => bridge.id == _get(toChain, "id", null));
 
       // redeem
-      if (_get(toChain, "id", "") == BRIDGE_CHAINS_NAMES.ETH) {
+      if (_get(toChain, "id", "") == BRIDGE_CHAINS_NAMES.SEP) {
         _bridge = await EvmBridgeContract(_bridgeInfo.bridgeAddress, signer.data);
         if (_bridge) {
-   
           const tx = await _bridge.completeTransfer(
             _get(recover, "id", ""),
             _get(recover, "opId", ""),
             _get(recover, "ethToken", ""),
+            _get(recover, "relayer", ""),
             _get(recover, "recipient", ""),
             _get(recover, "amount", ""),
+            _get(recover, "payment", ""),
             _get(recover, "signatures", ""),
-            _get(recover, "expiration", "")
+            _get(recover, "metadata", ""),
+            _get(recover, "expiration", ""),
           )
           Snackbar.enqueueSnackbar(<Typography variant="h6">Transaction submitted</Typography>, {
             variant: 'info',
@@ -193,18 +196,29 @@ const Redeem = (props) => {
       return;
     }
   }
+  const checkChain = (_chain) => {
+    let evm_conector = _get(account, 'isConnected', false);
+    let koin_conector = _get(walletSelector, "connected", false);    
+    if(_get(_chain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM && !evm_conector) {
+      return true
+    }
+    if(_get(_chain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN && !koin_conector) {
+      return true
+    }
+    return false
+  }
 
-  const checkApi = async () => {
+  const checkApi = async (txIdParam = null) => {
     if (loading) return;
     setLoading(true)
     let result = null;
     try {
       let bridge = new BrigeService();
       if (_get(fromChain, "id", "") == BRIDGE_CHAINS_NAMES.ETH) {
-        result = await bridge.getEthTx(sourceTX)
+        result = await bridge.getEthTx(txIdParam ? txIdParam : sourceTX)
       }
       if (_get(fromChain, "id", "") == BRIDGE_CHAINS_NAMES.KOIN) {
-        result = await bridge.getKoinTx(sourceTX)
+        result = await bridge.getKoinTx(txIdParam ? txIdParam : sourceTX)
       }
     } catch (error) {
       result = null;
@@ -220,10 +234,10 @@ const Redeem = (props) => {
     setRecover(result);
   }
 
-  const BaseConnections = () => (
+  const BaseConnections = (props) => (
     <>
-      {_get(toChain, "id", "") == BRIDGE_CHAINS_NAMES.ETH ? <CustomEthConnectButton /> : null}
-      {_get(toChain, "id", "") == BRIDGE_CHAINS_NAMES.KOIN ? <CustomKoinConnectButton /> : null}
+      {_get(toChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM ? <CustomEthConnectButton {...props} /> : null}
+      {_get(toChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN ? <CustomKoinConnectButton {...props} /> : null}
     </>
   )
   const disabledButtonBridge = () => {
@@ -239,25 +253,23 @@ const Redeem = (props) => {
     if (toChain == null) return (
       <Button variant="contained" size="large" sx={{ width: "100%" }} onClick={() => openModal("to")}>SELECT REDEEM NETWORK</Button>
     )
-    // conect from Ethereum
-    if (_get(toChain, "id", "") == BRIDGE_CHAINS_NAMES.ETH && !_get(account, 'isConnected', false)) return (
-      <CustomEthConnectButton />
+    // conect wallet to chain
+    if (checkChain(toChain)) return (
+      <Connectors chain={toChain} />
     )
-    // conect from Koin
-    if (_get(toChain, "id", "") == BRIDGE_CHAINS_NAMES.KOIN && !_get(walletSelector, "wallet", null)) return (
-      <CustomKoinConnectButton />
-    )
-    if (!recover) return (
+
+    if (!recover /*|| (recover && _get(recover, "signatures", []).length < 5)*/) return (
       <>
         <BaseConnections />
         <Button variant="contained" size="large" onClick={() => checkApi()} sx={{ width: "100%" }}>RECOVER</Button>
       </>
     )
     return (
-      <>
-        <BaseConnections />
-        <Button disabled={disabledButtonBridge()} onClick={() => redeem()} variant="contained" size="large" sx={{ width: "100%" }}>REDEEM</Button>
-      </>
+      <BaseConnections
+        actions={
+          <Button disabled={disabledButtonBridge()} onClick={() => redeem()} variant="contained" size="large" sx={{ width: "100%" }}>REDEEM</Button>
+        }
+      />
     )
   }
 
@@ -321,17 +333,25 @@ const Redeem = (props) => {
                   <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Receiving address:</Typography>
                   <Typography variant="h6" component={"span"}>{shortedAddress(_get(recover, "recipient", ""))}</Typography>
                 </Box>
+                {/* <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
+                  <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Amount:</Typography>
+                  <Typography variant="h6" component={"span"}>{ koilibUtils.formatUnits(_get(recover, "amount", ""), 8) }</Typography>
+                </Box>
+                <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
+                  <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Payment to relayer:</Typography>
+                  <Typography variant="h6" component={"span"}>{ koilibUtils.formatUnits(_get(recover, "payment", ""), 8) }</Typography>
+                </Box> */}
                 <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
                   <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Block Number:</Typography>
                   <Typography variant="h6" component={"span"}>{_get(recover, "blockNumber", "")}</Typography>
                 </Box>
                 <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
                   <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Block Time:</Typography>
-                  <Typography variant="h6" component={"span"}>{_get(recover, "blockTime", "")}</Typography>
+                  <Typography variant="h6" component={"span"}>{ moment.unix(Number(_get(recover, "blockTime", ""))/1000).format("DD-MM-YYYY, hh:mm:ss") }</Typography>
                 </Box>
                 <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
                   <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Expire:</Typography>
-                  <Typography variant="h6" component={"span"}>{_get(recover, "expiration", "")}</Typography>
+                  <Typography variant="h6" component={"span"}>{ moment.unix(Number(_get(recover, "expiration", ""))/1000).format("DD-MM-YYYY, hh:mm:ss") }</Typography>
                 </Box>
                 <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
                   <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Signatures:</Typography>
