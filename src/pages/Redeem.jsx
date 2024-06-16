@@ -259,10 +259,11 @@ const Redeem = (props) => {
     )
 
     if (!recover /*|| (recover && _get(recover, "signatures", []).length < 5)*/) return (
-      <>
-        <BaseConnections />
-        <Button variant="contained" size="large" onClick={() => checkApi()} sx={{ width: "100%" }}>RECOVER</Button>
-      </>
+      <BaseConnections
+        actions={
+            <Button variant="contained" size="large" onClick={() => checkApi()} sx={{ width: "100%" }}>RECOVER</Button>
+          }
+        />
     )
     return (
       <BaseConnections
