@@ -18,8 +18,8 @@ const { chains, provider } = configureChains(
   [publicProvider()]
 )
 
-// walletconnect projectId (this is a test id, please replace with real one!)
-const projectId = 'c4f79cc821944d9680842e34466bfb';
+// walletconnect projectId
+const projectId = 'c64ca949713c7b3ef89702e71583fb97';
 
 const { connectors } = getDefaultWallets({
   appName: "Koinos Bridge",
