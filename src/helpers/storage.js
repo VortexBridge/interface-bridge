@@ -48,12 +48,12 @@ export default {
     return update;
   },
   getItemDevice: function(key) {
-    return localStorage.getItem(`koindx_${key}`);
+    return localStorage.getItem(`vortex_${key}`);
   },
   setItemDevice: function(key, value) {
-    return localStorage.setItem(`koindx_${key}`, value);
+    return localStorage.setItem(`vortex_${key}`, value);
   },
   removeItemDevice: function(key) {
-    return localStorage.removeItem(`koindx_${key}`);
+    return localStorage.removeItem(`vortex_${key}`);
   }
 };

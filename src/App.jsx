@@ -13,8 +13,13 @@ import "@fontsource/roboto/700.css";
 import "@fontsource/roboto/900.css";
 const store = generateStore();
 
+
+let testsepl = sepolia;
+testsepl.rpcUrls.default.http[0] = "https://rpc.sepolia.dev"
+testsepl.rpcUrls.public.http[0] = "https://rpc.sepolia.dev"
+
 const { chains, provider } = configureChains(
-  [sepolia],
+  [testsepl],
   [publicProvider()]
 )
 

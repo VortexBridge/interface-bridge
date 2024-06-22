@@ -27,13 +27,13 @@ const Soon = () => {
       <Typography variant="h3" textAlign="center" gutterBottom component="div">Maintenance in progress</Typography>
       <Divider />
       <Typography variant="subtitle2" my={2} textAlign="center" gutterBottom component="div">We are back soon.</Typography>
-      <Typography variant="subtitle2" my={2} textAlign="center" gutterBottom component="div">Follow us on social media to receive the latest KoinDX news.</Typography>
+      <Typography variant="subtitle2" my={2} textAlign="center" gutterBottom component="div">Follow us on social media to receive the latest Vortex news.</Typography>
 
       <Box sx={{ justifyContent: { md: "space-around", xs: "center" }, display: "flex", marginTop: "30px" }}>
-        <Link color="inherit" sx={{ textDecoration: "none", mx: "6px", display: "block" }} href="https://twitter.com/koindx" title="KoinDX Twitter"><img width="32" alt="KoinDX Twitter" src={TwitterLight} /></Link>
-        <Link color="inherit" sx={{ textDecoration: "none", mx: "6px", display: "block" }} href="https://discord.gg/Wh49QvYB3X" title="KoinDX Discord"><img width="32" alt="KoinDX Discord" src={DiscordLight} /></Link>
-        <Link color="inherit" sx={{ textDecoration: "none", mx: "6px", display: "block" }} href="https://t.me/koindx" title="KoinDX Telegram"><img width="32" alt="KoinDX Telegram" src={TelegramLight} /></Link>
-        <Link color="inherit" sx={{ textDecoration: "none", mx: "6px", display: "block" }} href="https://medium.com/@koindx" title="KoinDX Medium"><img width="32" alt="KoinDX Medium" src={MediumLight} /></Link>
+        <Link color="inherit" sx={{ textDecoration: "none", mx: "6px", display: "block" }} href="https://twitter.com/vortexbridge" title="Vortex Twitter"><img width="32" alt="Vortex Twitter" src={TwitterLight} /></Link>
+        {/* <Link color="inherit" sx={{ textDecoration: "none", mx: "6px", display: "block" }} href="https://discord.gg/Wh49QvYB3X" title="Vortex Discord"><img width="32" alt="Vortex Discord" src={DiscordLight} /></Link>
+        <Link color="inherit" sx={{ textDecoration: "none", mx: "6px", display: "block" }} href="https://t.me/Vortex" title="Vortex Telegram"><img width="32" alt="Vortex Telegram" src={TelegramLight} /></Link>
+        <Link color="inherit" sx={{ textDecoration: "none", mx: "6px", display: "block" }} href="https://medium.com/@Vortex" title="Vortex Medium"><img width="32" alt="Vortex Medium" src={MediumLight} /></Link> */}
       </Box>
     </Box>
   )

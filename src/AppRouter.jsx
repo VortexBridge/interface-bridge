@@ -8,6 +8,8 @@ import "./App.css";
 import Layout from "./components/Layout";
 import Bridge from "./pages/Bridge";
 import NotFound from "./pages/NotFound"
+import Redeem from "./pages/Redeem";
+
 
 function AppRouter() {
   return (
@@ -17,6 +19,7 @@ function AppRouter() {
 
           <Route path="/" element={<Navigate replace to="/bridge" />} />
           <Route path="/bridge" element={<Bridge />} />
+          <Route path="/redeem" element={<Redeem />} />
           <Route path='*' element={<NotFound />} />
           
         </Route>

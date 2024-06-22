@@ -1,6 +1,6 @@
 /* eslint-disable */
 import React, { Fragment, useEffect, useState } from "react";
-import { Avatar, Box, Button, Card, CardContent, CardHeader, Link, Chip, FormControl, InputBase, InputLabel, MenuItem, Select, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Avatar, Box, Button, Card, CardContent, CardHeader, Link, Stack, Divider, InputBase, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { getAccount } from '@wagmi/core';
 import { BigNumber } from "bignumber.js";
 import { ethers } from 'ethers';
@@ -13,7 +13,7 @@ import { useProvider, useSigner } from "wagmi";
 import { shortedAddress } from "../utils/display";
 
 // constants
-import { BRIDGE_CHAINS, BRIDGE_CHAINS_NAMES, BRIDGE_CHAINS_TYPES } from "../constants/chains";
+import { BRIDGE_CHAINS, BRIDGE_CHAINS_TYPES } from "../constants/chains";
 
 // helpers
 import { EvmBridgeContract, EvmTokenContract, KoinosBridgeContract, KoinosTokenContract } from "../helpers/contracts";
@@ -58,6 +58,7 @@ const Bridge = () => {
 
   // states
   const [balance, setBalance] = useState(0);
+  const [relayer, setRelayer] = useState(null);
   const [recipient, setRecipient] = useState("");
   const [loadingBalance, setLoadingBalance] = useState(false);
   const [inputValue, setInputValue] = useState("0");
@@ -113,6 +114,24 @@ const Bridge = () => {
   useEffect(() => {
     loadBlance();
   }, [tokenToBridge, fromChain, _get(walletSelector, "wallet", null), _get(account, 'isConnected', false)]);
+
+
+  useEffect(() => {
+    let final = ""
+    if(_get(toChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM && _get(account, 'isConnected', false)) {
+      final = _get(account, 'address', '')
+    }
+    if(_get(toChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN && _get(walletSelector, "connected", false)) {
+      final = _get(walletSelector, "wallet[0].address", "");
+    }
+    setRecipient(final)
+  }, [ toChain, _get(account, 'isConnected', false), _get(walletSelector, "connected", false) ])
+
+  // reset if switch chains
+  useEffect(() => {
+    setRelayer(null)
+  }, [ fromChain, toChain ])
+
 
   // SNACKBAR
 
@@ -180,8 +199,11 @@ const Bridge = () => {
             from: walletAddress,
             token: _token.address,
             amount: fullAmount,
+            payment: relayer ? _get(relayer, "payment") : "0",
+            relayer: relayer ? _get(relayer, "address") : "",
+            recipient: recipient,
+            metadata: "",
             toChain: _bridgeTo.chainId,
-            recipient: recipient
           })
           tx.pushOperation(operation)
 
@@ -266,6 +288,17 @@ const Bridge = () => {
       })
     }
   }
+  const checkChain = (_chain) => {
+    let evm_conector = _get(account, 'isConnected', false);
+    let koin_conector = _get(walletSelector, "connected", false);    
+    if(_get(_chain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM && !evm_conector) {
+      return true
+    }
+    if(_get(_chain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN && !koin_conector) {
+      return true
+    }
+    return false
+  }
 
   const disabledButtonBridge = () => {
     if (loadingBridge) return true;
@@ -280,6 +313,16 @@ const Bridge = () => {
       {_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN ? <CustomKoinConnectButton {...props} /> : null}
     </>
   )
+  const Connectors = ({ chain }) => {
+    // conect from Ethereum
+    if (_get(chain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM) return (
+      <CustomEthConnectButton />
+    )
+    // conect from Koin
+    if (_get(chain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN) return (
+      <CustomKoinConnectButton />
+    )
+  }
   const ActionLoad = () => {
     // select network from
     if (fromChain === null) return (
@@ -289,13 +332,13 @@ const Bridge = () => {
     if (toChain === null) return (
       <Button variant="contained" size="large" sx={{ width: "100%" }} onClick={() => openModal("to")}>SELECT TO NETWORK</Button>
     )
-    // conect from Ethereum
-    if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM && !_get(account, 'isConnected', false)) return (
-      <CustomEthConnectButton />
+    // conect wallet from chain
+    if (checkChain(fromChain)) return (
+      <Connectors chain={fromChain} />
     )
-    // conect from Koin
-    if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN && !_get(walletSelector, "wallet", null)) return (
-      <CustomKoinConnectButton />
+    // conect wallet to chain
+    if (checkChain(toChain)) return (
+      <Connectors chain={toChain} />
     )
     // select network token
     if (tokenToBridge == null) return (
@@ -305,6 +348,15 @@ const Bridge = () => {
         }
       />
     )
+
+    // claim tokens
+    if(txHash) return (
+      <>
+        <BaseConnections />
+        <Button variant="contained" size="large" sx={{ width: "100%" }} onClick={() => navigate(`/redeem?tx=${txHash}&network=${_get(toChain, "id", "")}`)}>CLAIM TOKENS</Button>
+      </>
+    )
+
     // check approval of tokens
     let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
     let fullAmount = koilibUtils.parseUnits(inputValue, _get(_network, "decimals", 8));
@@ -326,10 +378,53 @@ const Bridge = () => {
     )
   }
 
+  const RelayerLoad = () => {
+    let _relayers = []
+    _relayers.push(
+      <Card
+        key={"fee"}
+        onClick={() => setRelayer(null)}
+        variant="outlined"
+        sx={{ backgroundColor: !relayer ? "background.primary" : "background.paper", maxWidth: "600px", marginX: "auto", marginBottom: "20px", borderRadius: "10px", padding: "15px 20px" }}
+      >
+        <Stack direction="row" justifyContent="space-between" alignItems="center">
+          <Typography color={!relayer ? "white" : "text.main"} gutterBottom variant="h5" component="div">Manual</Typography>
+          <Typography color={!relayer ? "white" : "text.main"} gutterBottom variant="h6" component="div">$0</Typography>
+        </Stack>
+        <Typography color={!relayer ? "white" : "text.main"} variant="body2">The user is responsible for claiming (redeeming) their tokens on the destination blockchain.</Typography>
+      </Card>
+    )
+
+    let _token = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(toChain, "id", null));
+    let listRelayers = _get(_token, "relayers", [])
+    if(listRelayers.length) {
+      listRelayers.map(rele => {
+        let isRele = _get(rele, "id", null) == _get(relayer, "id", "")
+        let _payment =  koilibUtils.formatUnits(_get(rele, "payment", "0"), _get(_token, "decimals", 8))
+        _relayers.push(
+          <Card
+            key={_get(rele, "id", null)}
+            onClick={() => setRelayer(rele)}
+            variant="outlined"
+            sx={{ backgroundColor: isRele ? "background.primary" : "background.paper", maxWidth: "600px", marginX: "auto", marginBottom: "20px", borderRadius: "10px", padding: "15px 20px" }}
+          >
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Typography color={isRele ? "white" : "text.main"} gutterBottom variant="h5" component="div">{ _get(rele, "name", "") }</Typography>
+              <Typography color={isRele ? "white" : "text.main"} gutterBottom variant="h6" component="div">${ _payment }</Typography>
+            </Stack>
+            <Typography color={isRele ? "white" : "text.main"} variant="body2">{ _get(rele, "description", "") }</Typography>
+          </Card>
+        )
+      })
+    }
+    return _relayers;
+  }
+
   return (
     <Box>
       <Box sx={{ marginY: "3em", maxWidth: "600px", marginX: "auto", display: "flex", justifyContent: "space-around", alignItems: "center" }}>
         <Button sx={{ height: "35px", padding: "3px" }} size={"small"} variant="contained" onClick={() => navigate("/bridge")}>Bridge</Button>
+        <Button sx={{ height: "35px", padding: "3px" }} size={"small"} variant="outlined" onClick={() => navigate("/redeem")}>Redeem</Button>
       </Box>
       <Card variant="outlined" sx={{ maxWidth: "600px", marginX: "auto", marginBottom: "20px", borderRadius: "10px", padding: "15px 20px" }}>
         <CardHeader title="BRIDGE" sx={{ paddingBottom: "4px" }} />
@@ -343,12 +438,12 @@ const Bridge = () => {
               />
             </Box>
             <Box sx={{ marginTop: "20px" }}>
-              <Box onClick={() => swapNetworks()} sx={{ height: "40px", width: "40px", borderRadius: "10px", backgroundColor: "background.light", display: "flex", justifyContent: "space-around", alignItems: "center", "&:hover": { backgroundColor: "text.grey1", cursor: "pointer" } }}>
+              <Box onClick={() => swapNetworks()} sx={{ height: "40px", width: "40px", borderRadius: "10px", backgroundColor: "background.light", display: "flex", justifyContent: "space-around", alignItems: "center", "&:hover": { backgroundColor: "text.grey3", cursor: "pointer" } }}>
                 {
                   matches ?
-                    <SwapHorizIcon fontSize="large" sx={{ color: "background.paper" }} />
+                    <SwapHorizIcon fontSize="large" sx={{ color: "text.grey2" }} />
                     :
-                    <SwapVert fontSize="large" sx={{ color: "background.paper" }} />
+                    <SwapVert fontSize="large" sx={{ color: "text.grey2" }} />
                 }
               </Box>
             </Box>
@@ -463,8 +558,9 @@ const Bridge = () => {
 
         </CardContent>
       </Card>
-      <Box sx={{ maxWidth: "600px", marginX: "auto", marginTop: "2em" }}>
-        <Typography component={"p"} variant={"body2"}>This Interface is a web user interface software to BridgeKoin, a cross chain messaging protocol. THIS INTERFACE AND THE BRIDGEKOIN PROTOCOL ARE PROVIDED &quot;AS IS&quot;, AT YOUR OWN RISK, AND WITHOUT WARRANTIES OF ANY KIND. By using or accessing this Interface or BridgeKoin, you agree that no developer or entity involved in creating, deploying, maintaining, operating this Interface or BridgeKoin, or causing or supporting any of the foregoing, will be liable in any manner for any claims or damages whatsoever associated with your use, inability to use, or your interaction with other users of, this Interface or Bridgekoin, or this Interface or BridgeKoin themselves, including any direct, indirect, incidental, special, exemplary, punitive or consequential damages, or loss of profits, cryptocurrencies, tokens, or anything else of value. By using or accessing this Interface, you represent that you are not subject to sanctions or otherwise designated on any list of prohibited or restricted parties or excluded or denied persons, including but not limited to the lists maintained by the United States&apos; Department of Treasury&apos;s Office of Foreign Assets Control, the United Nations Security Council, the European Union or its Member States, or any other government authority. Use at your own risk, the protocols and interfaces are not audited and might not work correctly, what could end in a loss of your token.</Typography>
+
+      <Box sx={{ maxWidth: "600px", marginX: "auto", marginY: "2em" }}>
+        {RelayerLoad()}
       </Box>
     </Box >
   )
