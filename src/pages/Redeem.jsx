@@ -73,7 +73,6 @@ const Redeem = (props) => {
     if (searchParams.get("tx")) {
       setSourceTX(searchParams.get("tx"))
       checkApi(searchParams.get("tx"))
-
     }
     if (searchParams.get("from")) {
       let _chainRedeem = BRIDGE_CHAINS.find(chain => chain.id == searchParams.get("from"))
@@ -167,10 +166,13 @@ const Redeem = (props) => {
           let { transaction } = await _bridge.functions.complete_transfer({
             transactionId: _get(recover, "id", ""),
             token: _get(recover, "koinosToken", ""),
+            relayer:  _get(recover, "relayer", ""),
             recipient: _get(recover, "recipient", ""),
             value: _get(recover, "amount", ""),
+            payment: _get(recover, "payment", ""),
+            metadata: _get(recover, "metadata", ""),
+            signatures: _get(recover, "signatures", ""),
             expiration: _get(recover, "expiration", ""),
-            signatures: _get(recover, "signatures", "")
           })
           Snackbar.enqueueSnackbar(<Typography variant="h6">Transaction submitted</Typography>, {
             variant: 'info',
@@ -215,10 +217,10 @@ const Redeem = (props) => {
     let result = null;
     try {
       let bridge = new BrigeService();
-      if (_get(fromChain, "id", "") == BRIDGE_CHAINS_NAMES.ETH) {
+      if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM) {
         result = await bridge.getEthTx(txIdParam ? txIdParam : sourceTX)
       }
-      if (_get(fromChain, "id", "") == BRIDGE_CHAINS_NAMES.KOIN) {
+      if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN) {
         result = await bridge.getKoinTx(txIdParam ? txIdParam : sourceTX)
       }
     } catch (error) {
@@ -241,10 +243,20 @@ const Redeem = (props) => {
       {_get(toChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN ? <CustomKoinConnectButton {...props} /> : null}
     </>
   )
+  const Connectors = ({ chain }) => {
+    // conect from Ethereum
+    if (_get(chain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM) return (
+      <CustomEthConnectButton />
+    )
+    // conect from Koin
+    if (_get(chain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN) return (
+      <CustomKoinConnectButton />
+    )
+  }
   const disabledButtonBridge = () => {
     if (loading) return true;
     if (sourceTX == "" || sourceTX == null) return true;
-    if (_get(recover, "status", "") != "signed") return true;
+    // if (_get(recover, "status", "") != "signed") return true;
     return false;
   }
   const ActionsBase = () => {
@@ -254,6 +266,12 @@ const Redeem = (props) => {
     if (toChain == null) return (
       <Button variant="contained" size="large" sx={{ width: "100%" }} onClick={() => openModal("to")}>SELECT REDEEM NETWORK</Button>
     )
+
+    // conect wallet to chain
+    if (checkChain(fromChain)) return (
+      <Connectors chain={fromChain} />
+    )
+
     // conect wallet to chain
     if (checkChain(toChain)) return (
       <Connectors chain={toChain} />
