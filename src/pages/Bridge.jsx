@@ -1,7 +1,7 @@
 /* eslint-disable */
 import React, { Fragment, useEffect, useState } from "react";
 import { Avatar, Box, Button, Card, CardContent, CardHeader, Link, Stack, Divider, InputBase, Typography, useMediaQuery, useTheme } from '@mui/material';
-import { getAccount } from '@wagmi/core';
+import { fetchBalance } from '@wagmi/core';
 import { BigNumber } from "bignumber.js";
 import { ethers } from 'ethers';
 import { utils as koilibUtils, Transaction } from "koilib";
@@ -9,7 +9,7 @@ import { get as _get } from "lodash";
 import { useSnackbar } from "notistack";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { useProvider, useSigner } from "wagmi";
+import { useAccount, useConnect } from "wagmi";
 import { shortedAddress } from "../utils/display";
 
 // constants
@@ -25,6 +25,11 @@ import { setNetworkFrom, setNetworkTo } from "../redux/actions/bridge";
 // utils
 import { numberPattern } from "../utils/regex";
 import { waitTransation } from "./../utils/transactions"
+import { walletClientToSigner } from "./../utils/ethers";
+
+// hooks
+import { useEthersSigner } from "../hooks/useSigner"
+import { useEthersProvider } from "../hooks/useProvider"
 
 // icons
 import SwapVert from "@mui/icons-material/SwapVert";
@@ -41,11 +46,10 @@ const Bridge = () => {
   const Snackbar = useSnackbar();
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.up('md'));
-  const account = getAccount()
-  const signer = useSigner()
-  const provider = useProvider()
+  const account = useAccount()
   const navigate = useNavigate();
-
+  const signer = useEthersSigner();
+  const provider = useEthersProvider();
 
   // selectors
   const bridgeSelector = useSelector(state => state.bridge);
@@ -73,25 +77,35 @@ const Bridge = () => {
   }, []);
 
   const loadBlance = async () => {
+    console.log("load 1")
     let _balance = 0;
     let _approve = false;
     let _token = null;
+    console.log("load 3")
     setLoadingBalance(true);
     if (tokenToBridge == null) {
       setLoadingBalance(false);
       return;
     };
+    console.log("load 2")
     setInputValue("0");
     let _bridge = BRIDGE_CHAINS.find(bridge => bridge.id == _get(fromChain, "id", null));
     let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
     if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM && _get(account, 'isConnected', false)) {
-      _token = await EvmTokenContract(_network.address, provider);
-      if (_token) {
-        let bal = await _token.balanceOf(account.address);
-        _balance = koilibUtils.formatUnits(bal.toString(), _get(_network, "decimals", 8))
-        // approval
-        let approve = await _token.allowance(account.address, _bridge.bridgeAddress)
-        _approve = approve.toString();
+      if(_network.native == true) {
+        console.log("loading balance from native token in evm")
+        let bal = await provider.getBalance(account.address)
+        _balance = ethers.utils.formatEther(bal)
+        _approve = bal.toString()
+      } else {
+        _token = await EvmTokenContract(_network.address, signer);        
+        if (_token) {
+          let bal = await _token.balanceOf(account.address);
+          _balance = koilibUtils.formatUnits(bal.toString(), _get(_network, "decimals", 8))
+          // approval
+          let approve = await _token.allowance(account.address, _bridge.bridgeAddress)
+          _approve = approve.toString();
+        }
       }
     }
     if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN && _get(walletSelector, "wallet", null)) {
@@ -170,21 +184,44 @@ const Bridge = () => {
       let _bridgeTo = BRIDGE_CHAINS.find(bridge => bridge.id == _get(toChain, "id", null));
       let _bridgeFrom = BRIDGE_CHAINS.find(bridge => bridge.id == _get(fromChain, "id", null));
       let fullAmount = koilibUtils.parseUnits(inputValue, _get(_token, "decimals", 8));
+      let fullPayment = koilibUtils.parseUnits(relayer ? _get(relayer, "payment") : "0", _get(_token, "decimals", 8));
 
       // bridge
       if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM) {
-        _bridge = await EvmBridgeContract(_bridgeFrom.bridgeAddress, signer.data);
-        if (_bridge) {
-          const tx = await _bridge.transferTokens(_token.address, fullAmount, _bridgeTo.chainId, recipient)
-          // console.log(transaction.id)
-          Snackbar.enqueueSnackbar(<Typography variant="h6">Transaction submitted</Typography>, {
-            variant: 'info',
-            persist: false,
-            action: actionClose,
-          })
-          await tx.wait()
-          _txhash = tx.hash;
+        let tx
+        _bridge = await EvmBridgeContract(_bridgeFrom.bridgeAddress, signer);
+        if (_token.native == true) {
+          if (_bridge) {
+            tx = await _bridge.wrapAndTransferETH(
+              ethers.utils.parseEther(relayer ? _get(relayer, "payment") : "0"),
+              (relayer ? _get(relayer, "address") : ""),
+              recipient,
+              "",
+              _bridgeTo.chainId,
+              { value: ethers.utils.parseEther(inputValue) }
+            )
+          }
+        } else {
+          if (_bridge) {
+            tx = await _bridge.transferTokens(
+              _token.address,
+              fullAmount,
+              fullPayment,
+              (relayer ? _get(relayer, "address") : ""),
+              recipient,
+              "",
+              _bridgeTo.chainId,
+            )
+          }
         }
+
+        Snackbar.enqueueSnackbar(<Typography variant="h6">Transaction submitted</Typography>, {
+          variant: 'info',
+          persist: false,
+          action: actionClose,
+        })
+        await tx.wait()
+        _txhash = tx.hash;
       }
       if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN) {
         let providerKoin = _get(walletSelector, "provider", null);
@@ -260,7 +297,7 @@ const Bridge = () => {
       let _bridge = BRIDGE_CHAINS.find(bridge => bridge.id == _get(fromChain, "id", null));
       let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
       if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM) {
-        _token = await EvmTokenContract(_network.address, signer.data);
+        _token = await EvmTokenContract(_network.address, signer);
         const tx = await _token.approve(
           _bridge.bridgeAddress,
           ethers.constants.MaxUint256
@@ -276,7 +313,7 @@ const Bridge = () => {
           persist: false,
           action: actionClose,
         })
-        setApproval(balance);
+        setApproval(ethers.constants.MaxUint256);
         setLoadingApproval(false);
       }
     } catch (error) {

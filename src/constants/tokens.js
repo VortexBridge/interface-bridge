@@ -85,6 +85,44 @@ let tokens = {
           ]
         }
       ]
+    },
+    {
+      id: "ethereum",
+      symbol: "ETH",
+      name: "Ethereum",
+      icon: ETH,
+      networks: [
+        {
+          native: false,
+          chain: BRIDGE_CHAINS_NAMES.KOIN,
+          decimals: 8,
+          address: "13bNUFNYBwPSWxZaq8JVZf2ZCLTjWphyQo",
+          relayers: [
+            // {
+            //   id: `vortex-${BRIDGE_CHAINS_NAMES.SEP}`,
+            //   name: "Vortex",
+            //   description: "Relayer to koin deployed by vortex",
+            //   address: "x",
+            //   payment: "0"
+            // }
+          ]
+        },
+        {
+          native: true,
+          chain: BRIDGE_CHAINS_NAMES.SEP,
+          decimals: 8,
+          address: "0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9",
+          relayers: [
+            // {
+            //   id: `vortex-${BRIDGE_CHAINS_NAMES.KOIN}`,
+            //   name: "Vortex",
+            //   description: "Relayer to sepolia deployed by vortex",
+            //   address: "x",
+            //   payment: "500000000"
+            // }
+          ]
+        }
+      ]
     }
   ]
 }
