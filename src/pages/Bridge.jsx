@@ -25,7 +25,6 @@ import { setNetworkFrom, setNetworkTo } from "../redux/actions/bridge";
 // utils
 import { numberPattern } from "../utils/regex";
 import { waitTransation } from "./../utils/transactions"
-import { walletClientToSigner } from "./../utils/ethers";
 
 // hooks
 import { useEthersSigner } from "../hooks/useSigner"
@@ -77,17 +76,14 @@ const Bridge = () => {
   }, []);
 
   const loadBlance = async () => {
-    console.log("load 1")
     let _balance = 0;
     let _approve = false;
     let _token = null;
-    console.log("load 3")
     setLoadingBalance(true);
     if (tokenToBridge == null) {
       setLoadingBalance(false);
       return;
     };
-    console.log("load 2")
     setInputValue("0");
     let _bridge = BRIDGE_CHAINS.find(bridge => bridge.id == _get(fromChain, "id", null));
     let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));

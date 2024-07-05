@@ -1,9 +1,7 @@
 /* eslint-disable */
 import moment from 'moment';
-import { Avatar, Container, Box, Button, Card, CardContent, CardHeader, Chip, FormControl, InputBase, Link, InputLabel, MenuItem, Select, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Button, Card, CardContent, CardHeader, Chip, CircularProgress, InputBase, Link, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useAccount } from 'wagmi';
-import { BigNumber } from "bignumber.js";
-import { utils as koilibUtils } from "koilib";
 import { get as _get } from "lodash";
 import { useSnackbar } from "notistack";
 import React, { Fragment, useEffect, useState } from "react";
@@ -23,6 +21,7 @@ import { setModal, setModalData } from "../redux/actions/modals";
 
 // hooks
 import { useEthersSigner } from '../hooks/useSigner';
+import { useEthersProvider } from '../hooks/useProvider';
 
 // api
 import BrigeService from "../services/bridge";
@@ -40,6 +39,7 @@ const Redeem = (props) => {
   const matches = useMediaQuery(theme.breakpoints.up('md'));
   const account = useAccount()
   const signer = useEthersSigner();
+  const provider = useEthersProvider();
   const navigate = useNavigate();
 
   // get tx and network route params
@@ -55,10 +55,11 @@ const Redeem = (props) => {
   const fromChain = _get(bridgeSelector, "from", null);
 
   // states
-  const [blockIrreversal, setBlockIrreversal] = useState(false);
+  const [checker, setChecker] = useState(null);
   const [recover, setRecover] = useState(null);
   const [loading, setLoading] = useState(false);
   const [sourceTX, setSourceTX] = useState("");
+  const [blockchainTX, setblockchainTX] = useState(false);
 
   const actionClose = (snackbarId) => (
     <Fragment>
@@ -72,7 +73,6 @@ const Redeem = (props) => {
   useEffect(() => {
     if (searchParams.get("tx")) {
       setSourceTX(searchParams.get("tx"))
-      checkApi(searchParams.get("tx"))
     }
     if (searchParams.get("from")) {
       let _chainRedeem = BRIDGE_CHAINS.find(chain => chain.id == searchParams.get("from"))
@@ -87,6 +87,17 @@ const Redeem = (props) => {
     dispatch(setModal("Disclaimer"))
   }, []);
 
+  useEffect(() => {
+    if(sourceTX) {
+      setRecover(null)
+      setblockchainTX(null)
+      if(checker) {
+        clearTimeout(checker);
+      }
+      checkApi(sourceTX)
+    }
+  }, [ sourceTX ]);
+
 
   const openModal = (side) => {
     dispatch(setModalData({ side: side }))
@@ -94,7 +105,6 @@ const Redeem = (props) => {
   }
 
   const redeem = async () => {
-    console.log("redeem")
     setLoading(true);
     if (loading) return;
     try {
@@ -215,6 +225,35 @@ const Redeem = (props) => {
     if (loading) return;
     setLoading(true)
     let result = null;
+    let existInBlockchain = false;
+    try {
+      if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM) {
+        let r = await provider.getTransactionReceipt(txIdParam);
+        if(!r) throw new Error("no transaction")
+        existInBlockchain = true;        
+      }
+      if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN) {
+        let providerKoin = _get(walletSelector, "provider", null);
+        console.log(providerKoin)
+        existInBlockchain = true;
+      }
+      setblockchainTX(existInBlockchain);
+    } catch (e) {
+      console.log(3)
+      Snackbar.enqueueSnackbar(<span><Typography variant="h6">Transaction not found</Typography>
+        <Typography variant="body1" color="white">the transaction has not been found on the blockchain</Typography></span>, {
+          variant: 'error',
+          persist: false,
+          action: actionClose,
+        })
+      setLoading(false)
+      setblockchainTX(existInBlockchain);
+      return;
+    }
+    
+    if(checker) {
+      clearTimeout(checker);
+    }
     try {
       let bridge = new BrigeService();
       if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM) {
@@ -226,12 +265,9 @@ const Redeem = (props) => {
     } catch (error) {
       result = null;
       console.log(error)
-      Snackbar.enqueueSnackbar(<span><Typography variant="h6">Transaction not found yet</Typography>
-      <Typography variant="body1" color="white">please wait a moment or check the source transaction id</Typography></span>, {
-        variant: 'error',
-        persist: false,
-        action: actionClose,
-      })
+      let _timer = setTimeout(() => checkApi(txIdParam), 3000)
+      setChecker(_timer);
+      return;
     }
     setLoading(false)
     setRecover(result);
@@ -255,6 +291,7 @@ const Redeem = (props) => {
   }
   const disabledButtonBridge = () => {
     if (loading) return true;
+    if(!recover) return true
     if (sourceTX == "" || sourceTX == null) return true;
     // if (_get(recover, "status", "") != "signed") return true;
     return false;
@@ -280,7 +317,7 @@ const Redeem = (props) => {
     if (!recover /*|| (recover && _get(recover, "signatures", []).length < 5)*/) return (
       <BaseConnections
         actions={
-            <Button variant="contained" size="large" onClick={() => checkApi()} sx={{ width: "100%" }}>RECOVER</Button>
+            <Button disabled={loading} variant="contained" size="large" onClick={() => checkApi(sourceTX)} sx={{ width: "100%" }}>RECOVER</Button>
           }
         />
     )
@@ -343,7 +380,19 @@ const Redeem = (props) => {
           </Box>
 
           {
-            recover ?
+            !recover && blockchainTX ?
+            <Box sx={{ border: `1px solid ${theme.palette.background.light}`, borderRadius: "10px", padding: "20px", display: "flex", flexDirection: "column" }} marginY={"1.4em"}>
+              <Box sx={{ marginX: "auto" }} >
+                <CircularProgress/>
+              </Box>
+              <Typography sx={{ marginTop: 2, marginX: "auto" }} variant="h5" component={"span"}>validators are verifying your transaction</Typography>
+              <Typography sx={{ marginTop: 1, marginX: "auto" }} variant="p" component={"span"}>this can take up to 3 minutes</Typography>
+            </Box>
+            : null
+          }
+
+          {
+            recover && blockchainTX ?
               <Box sx={{ border: `1px solid ${theme.palette.background.light}`, borderRadius: "10px", padding: "10px 20px", display: "flex", alignContent: "center", flexDirection: "column" }} marginY={"1.4em"} display={"flex"} justifyContent={"space-between"}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
                   <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Tx Status:</Typography>
