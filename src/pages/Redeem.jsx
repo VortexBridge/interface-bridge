@@ -21,6 +21,9 @@ import { EvmBridgeContract, EvmTokenContract, KoinosBridgeContract, KoinosTokenC
 import { setNetworkFrom, setNetworkTo } from "../redux/actions/bridge";
 import { setModal, setModalData } from "../redux/actions/modals";
 
+// hooks
+import { useEthersSigner } from '../hooks/useSigner';
+
 // api
 import BrigeService from "../services/bridge";
 
@@ -36,6 +39,7 @@ const Redeem = (props) => {
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.up('md'));
   const account = useAccount()
+  const signer = useEthersSigner();
   const navigate = useNavigate();
 
   // get tx and network route params
@@ -128,7 +132,7 @@ const Redeem = (props) => {
 
       // redeem
       if (_get(toChain, "id", "") == BRIDGE_CHAINS_NAMES.SEP) {
-        _bridge = await EvmBridgeContract(_bridgeInfo.bridgeAddress, signer.data);
+        _bridge = await EvmBridgeContract(_bridgeInfo.bridgeAddress, signer);
         if (_bridge) {
           const tx = await _bridge.completeTransfer(
             _get(recover, "id", ""),
