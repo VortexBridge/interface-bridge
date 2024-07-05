@@ -1,22 +1,27 @@
 import { Contract, Provider, Signer, utils } from "koilib";
-import { erc20ABI } from "wagmi";
-import { getContract } from "@wagmi/core";
+import { ethers } from "ethers";
+import { FormatTypes } from "ethers/lib/utils";
 
 // bridge
 import KoinosTokenAbi from "./../assets/contracts/Koinos-Token.json";
 import KoinosBridgeAbi from "./../assets/contracts/Koinos-Bridge.json";
-import EvmTokenAbi from "./../assets/contracts/Evm-Token.json";
-import EvmBridgeAbi from "./../assets/contracts/Evm-Bridge.json";
+import EvmTokenAbiBase from "./../assets/contracts/Evm-Token.json";
+import EvmBridgeAbiBase from "./../assets/contracts/Evm-Bridge.json";
+
+
+// abi evm
+const EvmTokenAbi = new ethers.utils.Interface(EvmTokenAbiBase)
+const EvmBridgeAbi = new ethers.utils.Interface(EvmBridgeAbiBase.abi);
 
 // variables
 const provider = new Provider(import.meta.env.KOINOS_RPC);
 const signer = Signer.fromSeed("demo seed");
 
-export let EvmTokenContract = (address, _provider) => getContract({
-  address: address,
-  abi: EvmTokenAbi,
-  signerOrProvider: _provider ? _provider : null
-});
+export let EvmTokenContract = (address, signer) => new ethers.Contract(
+  address,
+  EvmTokenAbi.format(FormatTypes.full),
+  signer
+)
 
 export let KoinosTokenContract = (address, _provider, _signer) => new Contract({
   id: address,
@@ -25,12 +30,11 @@ export let KoinosTokenContract = (address, _provider, _signer) => new Contract({
   signer: _signer ? _signer : signer,
 })
 
-export let EvmBridgeContract = (address, _provider) => getContract({
-  address: address,
-  abi: EvmBridgeAbi.abi,
-  signerOrProvider: _provider ? _provider : null
-});
-
+export let EvmBridgeContract = (address, signer) => new ethers.Contract(
+  address,
+  EvmBridgeAbi.format(FormatTypes.full),
+  signer
+)
 
 export let KoinosBridgeContract = (address, _provider, _signer) => new Contract({
   id: address,

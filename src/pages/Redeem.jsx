@@ -1,7 +1,7 @@
 /* eslint-disable */
 import moment from 'moment';
 import { Avatar, Container, Box, Button, Card, CardContent, CardHeader, Chip, FormControl, InputBase, Link, InputLabel, MenuItem, Select, Typography, useMediaQuery, useTheme } from '@mui/material';
-import { getAccount } from '@wagmi/core';
+import { useAccount } from 'wagmi';
 import { BigNumber } from "bignumber.js";
 import { utils as koilibUtils } from "koilib";
 import { get as _get } from "lodash";
@@ -9,7 +9,6 @@ import { useSnackbar } from "notistack";
 import React, { Fragment, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useProvider, useSigner } from "wagmi";
 import { shortedAddress } from "../utils/display";
 
 // constants
@@ -36,9 +35,7 @@ const Redeem = (props) => {
   const Snackbar = useSnackbar();
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.up('md'));
-  const account = getAccount()
-  const signer = useSigner()
-  const provider = useProvider()
+  const account = useAccount()
   const navigate = useNavigate();
 
   // get tx and network route params
