@@ -61,7 +61,7 @@ let chains = {
     {
       id: BRIDGE_CHAINS_NAMES.KOIN,
       name: "Koinos",
-      chainId: 100,
+      chainId: 1,
       chainType: BRIDGE_CHAINS_TYPES.KOIN,
       bridgeAddress: "19hcqMM8fKDvddEdc7QbQYyxxYtbtvzUdR",
       symbol: "KOIN",
@@ -72,7 +72,7 @@ let chains = {
       id: BRIDGE_CHAINS_NAMES.SEP,
       chainType: BRIDGE_CHAINS_TYPES.EVM,
       bridgeAddress: "0x57DDB84022fa635bf7534DBC2e05F73DE865d89B",
-      chainId: 100,
+      chainId: 2,
       symbol: "ETH",
       name: "Sepolia",
       icon: ETH,
