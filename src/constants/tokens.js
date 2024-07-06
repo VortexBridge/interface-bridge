@@ -1,5 +1,5 @@
 import { BRIDGE_CHAINS_NAMES } from "./chains";
-const CHAIN = import.meta.env.VITE_CHAIN
+const CHAIN = import.meta.env.VITE_CHAIN || "TESTNET"
 
 /**
  * ICONS

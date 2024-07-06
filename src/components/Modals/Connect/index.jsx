@@ -64,7 +64,7 @@ const ModalConnect = () => {
       let timeOut = setTimeout(() => reject("Error Connect"), 1000 * 60)
       if (kondor) {
         try {
-          let provider = new Provider(import.meta.env.VITE_KOINOS_RPC);
+          let provider = new Provider(import.meta.env.VITE_KOINOS_RPC || 'https://harbinger-api.koinos.io');
           let wallet = await kondor.getAccounts();
           let signer = await kondor.getSigner(_get(wallet, "[0].address", ""), { providerPrepareTransaction: provider });
           let chain_id = await kondor.provider.getChainId();

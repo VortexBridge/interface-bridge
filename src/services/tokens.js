@@ -2,7 +2,7 @@ import { Request as JSONRequest } from "../helpers/request";
 
 class Tokens extends JSONRequest {
   constructor() {
-    super({ url: import.meta.env.VITE_TOKEN_API });
+    super({ url: import.meta.env.VITE_TOKEN_API || "https://tokens.koindx.com" });
   }
   getMainnet() {
     return this.getPrepared("/mainnet.json", { timestamp: new Date().getTime() })
