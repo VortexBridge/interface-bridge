@@ -1,4 +1,4 @@
-const CHAIN = import.meta.env.VITE_CHAIN
+const CHAIN = import.meta.env.VITE_CHAIN || "TESTNET"
 
 /**
  * ICONS
