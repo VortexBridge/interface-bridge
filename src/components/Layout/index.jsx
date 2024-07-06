@@ -1,8 +1,12 @@
-import { ThemeProvider, CssBaseline, Container, IconButton, useMediaQuery, useTheme, Box, Switch } from "@mui/material";
+import { ThemeProvider, CssBaseline, Container, IconButton, useMediaQuery, useTheme, Box } from "@mui/material";
 import { createTheme, responsiveFontSizes } from "@mui/material/styles";
 import { SnackbarProvider } from "notistack";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
+
+// Font Awesome Icons
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSun, faMoon } from '@fortawesome/free-solid-svg-icons';
 
 // icons
 import CloseIcon from "@mui/icons-material/Close";
@@ -17,7 +21,11 @@ import lightThemeOptions from "../../theme/main-light";
 import darkThemeOptions from "../../theme/main-dark";
 
 const Layout = () => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  // Load the theme setting from localStorage, default to false (light theme)
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const savedTheme = localStorage.getItem('theme');
+    return savedTheme === 'dark';
+  });
 
   const themeOptions = isDarkMode ? darkThemeOptions : lightThemeOptions;
   const theme = responsiveFontSizes(createTheme(themeOptions));
@@ -32,8 +40,17 @@ const Layout = () => {
   );
 
   const handleThemeChange = () => {
-    setIsDarkMode(!isDarkMode);
+    const newTheme = !isDarkMode;
+    setIsDarkMode(newTheme);
+    localStorage.setItem('theme', newTheme ? 'dark' : 'light');
   };
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      setIsDarkMode(savedTheme === 'dark');
+    }
+  }, []);
 
   return (
     <ThemeProvider theme={createTheme(theme)}>
@@ -59,7 +76,7 @@ const Layout = () => {
               },
             }}
           >
-            <Switch checked={isDarkMode} onChange={handleThemeChange} />
+            <FontAwesomeIcon icon={isDarkMode ? faSun : faMoon} />
           </IconButton>
           <Header />
           <Container
