@@ -1,5 +1,7 @@
 # Bridge UI Interface
 
+kick ci / netlify
+
 ## About
 
 This repository contains the web ui for BridgeKoin.
