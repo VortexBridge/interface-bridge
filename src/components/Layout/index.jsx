@@ -1,7 +1,7 @@
-import { ThemeProvider, CssBaseline, Container, IconButton, useMediaQuery, useTheme, Box } from "@mui/material";
+import { ThemeProvider, CssBaseline, Container, IconButton, useMediaQuery, useTheme, Box, Switch } from "@mui/material";
 import { createTheme, responsiveFontSizes } from "@mui/material/styles";
 import { SnackbarProvider } from "notistack";
-import React from "react";
+import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 
 // icons
@@ -13,13 +13,16 @@ import Header from "../Header";
 import Modals from "../Modals";
 
 // themes
-import themeOptions from "../../theme/main";
+import lightThemeOptions from "../../theme/main-light";
+import darkThemeOptions from "../../theme/main-dark";
 
 const Layout = () => {
-  const theme = useTheme();
-  const matches = useMediaQuery(theme.breakpoints.down("md"));
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
-  const design = responsiveFontSizes(createTheme(themeOptions));
+  const themeOptions = isDarkMode ? darkThemeOptions : lightThemeOptions;
+  const theme = responsiveFontSizes(createTheme(themeOptions));
+
+  const matches = useMediaQuery(theme.breakpoints.down("md"));
 
   const notistackRef = React.createRef();
   const SnackbarActions = (key) => (
@@ -28,8 +31,12 @@ const Layout = () => {
     </IconButton>
   );
 
+  const handleThemeChange = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+
   return (
-    <ThemeProvider theme={createTheme(design)}>
+    <ThemeProvider theme={createTheme(theme)}>
       <CssBaseline />
       <SnackbarProvider
         ref={notistackRef}
@@ -37,7 +44,23 @@ const Layout = () => {
         autoHideDuration={15000}
         action={(key) => SnackbarActions(key)}
       >
-        <Box sx={{ backgroundColor: theme.palette.background.main }}>
+        <Box sx={{ backgroundColor: theme.palette.background.main, position: 'relative' }}>
+          <IconButton
+            onClick={handleThemeChange}
+            sx={{
+              position: 'absolute',
+              top: 16,
+              right: 16,
+              zIndex: 1300,
+              backgroundColor: theme.palette.background.paper,
+              color: theme.palette.text.main,
+              '&:hover': {
+                backgroundColor: theme.palette.action.hover,
+              },
+            }}
+          >
+            <Switch checked={isDarkMode} onChange={handleThemeChange} />
+          </IconButton>
           <Header />
           <Container
             maxWidth="false"
