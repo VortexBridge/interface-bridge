@@ -63,7 +63,7 @@ let chains = {
       name: "Koinos",
       chainId: 100,
       chainType: BRIDGE_CHAINS_TYPES.KOIN,
-      bridgeAddress: "1Fp3iNkmGKMPVdTpC7i3rttBBXVi7CDoX7",
+      bridgeAddress: "19hcqMM8fKDvddEdc7QbQYyxxYtbtvzUdR",
       symbol: "KOIN",
       icon: KOIN,
       explorer: "https://harbinger.koinosblocks.com/tx"
@@ -71,7 +71,7 @@ let chains = {
     {
       id: BRIDGE_CHAINS_NAMES.SEP,
       chainType: BRIDGE_CHAINS_TYPES.EVM,
-      bridgeAddress: "0xa983e3dA9d8371F288A8a5427E3b02a5b8848666",
+      bridgeAddress: "0x57DDB84022fa635bf7534DBC2e05F73DE865d89B",
       chainId: 100,
       symbol: "ETH",
       name: "Sepolia",
