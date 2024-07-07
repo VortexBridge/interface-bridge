@@ -153,7 +153,7 @@ let tokens = {
         {
           native: false,
           chain: BRIDGE_CHAINS_NAMES.SEP,
-          decimals: 8,
+          decimals: 6,
           symbol: "USDT",
           address: "0xaA8E23Fb1079EA71e0a56F48a2aA51851D8433D0",
           relayers: [
