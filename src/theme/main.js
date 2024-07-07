@@ -29,7 +29,7 @@ export const themeOptions = {
       // "#00cc80", yellow
       light: "#00b282",
       main: primary,
-      dark: "#33ffc8",
+      dark: primary,
       contrastText: "#000",
       // main: "#F1A122" orange
       // main: "#61CFF5" blue
