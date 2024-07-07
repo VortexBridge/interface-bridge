@@ -1,20 +1,22 @@
-
 import darkScrollbar from "@mui/material/darkScrollbar";
-// const white = "#ffffff";
-// const black = "#000000";
+import LogoWhite from "../assets/images/vortex-logo-main-dark.png";
 
-// const secondary_grey_3 = "rgba(40 40 40 / 70%)";
-const secondary_grey_4 = "#d8d7d7e3";
+//const white = "#ffffff";
+//const black = "#000000";
 
-const background = "#f6f6fa"
-const paper = "#ececec"
-const secondary_grey_1 = "#4C4C4C";
-const secondary_grey_2 = "#848484";
-const secondary_grey_3 = "#bfbfbf"
-const primary = "#6f00f6"
-const text_color = "#353f4f"
+//const secondary_grey_4 = "rgba(40 40 40 / 70%)";
+const secondary_grey_4 = "#2c2c2c";
+
+const background = "#121212"
+const paper = "#1e1e1e"
+const secondary_grey_1 = "#d1d1d1";
+const secondary_grey_2 = "#a0a0a0";
+const secondary_grey_3 = "#757575"
+const primary = "#a33e8a"
+const text_color = "#e0e0e0"
 
 export const themeOptions = {
+  LogoWhite,
   breakpoints: {
     values: {
       xs: 0,
@@ -26,17 +28,13 @@ export const themeOptions = {
   },
   palette: {
     primary: {
-      // "#00cc80", yellow
-      light: "#00b282",
+      light: "#bb86fc",
       main: primary,
       dark: primary,
-      contrastText: "#000",
-      // main: "#F1A122" orange
-      // main: "#61CFF5" blue
-      // main: "#fff"
+      contrastText: "#fff",
     },
     secondary: {
-      dark: "#353535",
+      dark: "#000000",
       main: secondary_grey_1,
       light: secondary_grey_2,
       contrastText: "red",
@@ -55,7 +53,7 @@ export const themeOptions = {
       grey3: secondary_grey_3,
     },
     action: {
-      focus: "#dcd8b6",
+      focus: "#b2a6ff",
       disabled: secondary_grey_2,
       disabledBackground: secondary_grey_1,
     }
@@ -69,61 +67,60 @@ export const themeOptions = {
     h2: {
       fontWeight: 900,
       color: text_color,
-
     },
     h3: {
       fontWeight: 700,
-      lineHeight: 1.2, color: text_color,
-
+      lineHeight: 1.2,
+      color: text_color,
     },
     h4: {
-      fontWeight: 700, color: text_color,
-
+      fontWeight: 700,
+      color: text_color,
     },
     h5: {
-      fontWeight: 700, color: text_color,
-
+      fontWeight: 700,
+      color: text_color,
     },
     h6: {
-      fontWeight: 700, color: text_color,
-
+      fontWeight: 700,
+      color: text_color,
     },
     subtitle1: {
       fontWeight: 700,
-      lineHeight: 1.2, color: text_color,
-
+      lineHeight: 1.2,
+      color: text_color,
     },
     subtitle2: {
-      fontWeight: 500, color: text_color,
-
+      fontWeight: 500,
+      color: text_color,
     },
     button: {
       fontWeight: 500,
-      lineHeight: 1.2, color: text_color,
-
+      lineHeight: 1.2,
+      color: text_color,
     },
     overline: {
-      fontWeight: 500, color: text_color,
-
+      fontWeight: 500,
+      color: text_color,
     },
     caption: {
-      fontWeight: 300, color: text_color,
-
+      fontWeight: 300,
+      color: text_color,
     },
     body1: {
       fontWeight: 500,
-      lineHeight: 1.2, color: text_color,
-
+      lineHeight: 1.2,
+      color: text_color,
     },
     body2: {
       fontWeight: 400,
-      lineHeight: 1.2, color: text_color,
-
+      lineHeight: 1.2,
+      color: text_color,
     },
     bodyInput: {
       fontWeight: 500,
-      lineHeight: 1.2, color: text_color,
-
+      lineHeight: 1.2,
+      color: text_color,
     },
     fontSize: 13,
     fontWeightLight: 300,
@@ -144,14 +141,11 @@ export const themeOptions = {
     MuiCssBaseline: {
       styleOverrides: {
         html: {
-          ...darkScrollbar(
-          ),
-          //scrollbarWidth for Firefox
+          ...darkScrollbar(),
           scrollbarWidth: "thin",
         },
       },
     },
-
     MuiButton: {
       variants: [
         {
@@ -171,7 +165,7 @@ export const themeOptions = {
           style: {
             height: "42px",
             backgroundColor: primary,
-            color: background,
+            color: "white",
             "&:hover": {
               backgroundColor: primary,
             },
@@ -214,9 +208,6 @@ export const themeOptions = {
             color: background,
             border: "0px",
             paddingTop: "0",
-            //     "&:hover": {
-            //       backgroundColor: secondary_grey_2,
-            //   },
           },
         },
       ],
@@ -240,5 +231,3 @@ export const themeOptions = {
 };
 
 export default themeOptions;
-
-
