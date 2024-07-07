@@ -1,6 +1,6 @@
 /* eslint-disable */
 import moment from 'moment';
-import { Box, Button, Card, CardContent, CardHeader, Chip, CircularProgress, InputBase, Link, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Button, ButtonGroup, Card, CardContent, CardHeader, Chip, CircularProgress, InputBase, Link, styled, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useAccount } from 'wagmi';
 import { get as _get } from "lodash";
 import { useSnackbar } from "notistack";
@@ -349,12 +349,55 @@ const Redeem = (props) => {
     )
   }
 
+  const isBridgePage = location.pathname === '/bridge';
+  const isRedeemPage = location.pathname === '/redeem';
+
+  const TabButton = styled(Button)(({ theme, active }) => ({
+    width: '50%',
+    backgroundColor: active ? theme.palette.primary.main : theme.palette.grey[700],
+    color: active ? theme.palette.common.white : theme.palette.grey[300],
+    position: 'relative',
+    zIndex: active ? 1 : 0,
+    borderRadius: active ? '10px 0 0 10px' : '0 10px 10px 0',
+    '&:before': {
+      content: '""',
+      position: 'absolute',
+      right: active ? '0' : 'auto',
+      left: active ? 'auto' : '0',
+      top: '50%',
+      transform: 'translateY(-50%)',
+      width: '0',
+      height: '0',
+      borderStyle: 'solid',
+      borderWidth: active ? '0 15px 15px 0' : '15px 15px 0 0',
+      borderColor: active
+        ? `${theme.palette.primary.main} transparent transparent transparent`
+        : `transparent ${theme.palette.primary.main} transparent transparent`,
+      zIndex: active ? -1 : 1,
+    },
+    '&:hover': {
+      backgroundColor: active ? theme.palette.primary.main : theme.palette.secondary.light,
+    },
+  }));
+
   return (
     <Box>
-      <Box sx={{ marginY: "3em", maxWidth: "600px", marginX: "auto", display: "flex", justifyContent: "space-around", alignItems: "center" }}>
-        <Button sx={{ height: "35px", padding: "3px" }} size={"small"} variant="outlined" onClick={() => navigate("/bridge")}>Bridge</Button>
-        <Button sx={{ height: "35px", padding: "3px" }} size={"small"} variant="contained" onClick={() => navigate("/redeem")}>Redeem</Button>
-      </Box>
+    <Box sx={{ marginY: '5em', maxWidth: '427px', marginX: 'auto', display: 'flex', justifyContent: 'center' }}>
+      <ButtonGroup variant="contained" aria-label="outlined primary button group" sx={{ width: '100%' }}>
+        <TabButton
+          active={isBridgePage ? 1 : 0}
+          onClick={() => navigate('/bridge')}
+        >
+          Bridge
+        </TabButton>
+        <TabButton
+          active={isRedeemPage ? 1 : 0}
+          onClick={() => navigate('/redeem')}
+        >
+          Redeem
+        </TabButton>
+      </ButtonGroup>
+    </Box>
       <Card variant="outlined" sx={{ maxWidth: "600px", marginX: "auto", marginBottom: "20px", borderRadius: "10px", padding: "15px 20px" }}>
         <CardHeader title="REDEEM" sx={{ paddingBottom: "4px" }} />
         <CardContent>
