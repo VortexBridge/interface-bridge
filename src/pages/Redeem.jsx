@@ -285,6 +285,7 @@ const Redeem = (props) => {
     if (!hasEnoughSignatures(result)) {
       let _timer = setTimeout(() => checkApi(txIdParam), 3000);
       setChecker(_timer);
+      return;
     }
     setLoading(false);
   };
