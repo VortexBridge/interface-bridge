@@ -60,6 +60,7 @@ const Redeem = (props) => {
   const [loading, setLoading] = useState(false);
   const [sourceTX, setSourceTX] = useState("");
   const [blockchainTX, setblockchainTX] = useState(false);
+  const [redeemSubmitted, setRedeemSubmitted] = useState(false);
 
   const actionClose = (snackbarId) => (
     <Fragment>
@@ -68,6 +69,10 @@ const Redeem = (props) => {
       </Button>
     </Fragment>
   );
+
+  const hasEnoughSignatures = (recoverData) => {
+    return _get(recoverData, "signatures", []).length >= import.meta.env.VITE_NUMBER_OF_VALIDATORS || 2;
+  }
 
   // efects
   useEffect(() => {
@@ -106,7 +111,7 @@ const Redeem = (props) => {
 
   const redeem = async () => {
     setLoading(true);
-    if (loading) return;
+    if (loading || redeemSubmitted) return; // Check redeemSubmitted state
     try {
       // checks
       const now = new Date()
@@ -166,6 +171,7 @@ const Redeem = (props) => {
             persist: false,
             action: actionClose,
           })
+          setRedeemSubmitted(true);
         }
       }
       if (_get(toChain, "id", "") == BRIDGE_CHAINS_NAMES.KOIN) {
@@ -195,6 +201,7 @@ const Redeem = (props) => {
             persist: false,
             action: actionClose,
           })
+          setRedeemSubmitted(true);
         }
       }
       setLoading(false)
@@ -223,55 +230,64 @@ const Redeem = (props) => {
 
   const checkApi = async (txIdParam = null) => {
     if (loading) return;
-    setLoading(true)
+    setLoading(true);
     let result = null;
     let existInBlockchain = false;
     try {
       if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM) {
         let r = await provider.getTransactionReceipt(txIdParam);
-        if(!r) throw new Error("no transaction")
-        existInBlockchain = true;        
+        if (!r) throw new Error("no transaction");
+        existInBlockchain = true;
       }
       if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN) {
         let providerKoin = _get(walletSelector, "provider", null);
-        console.log(providerKoin)
+        console.log(providerKoin);
         existInBlockchain = true;
       }
       setblockchainTX(existInBlockchain);
     } catch (e) {
-      console.log(3)
-      Snackbar.enqueueSnackbar(<span><Typography variant="h6">Transaction not found</Typography>
-        <Typography variant="body1" color="white">the transaction has not been found on the blockchain</Typography></span>, {
+      console.log(3);
+      Snackbar.enqueueSnackbar(
+        <span>
+          <Typography variant="h6">Transaction not found</Typography>
+          <Typography variant="body1" color="white">the transaction has not been found on the blockchain</Typography>
+        </span>,
+        {
           variant: 'error',
           persist: false,
           action: actionClose,
-        })
-      setLoading(false)
+        }
+      );
+      setLoading(false);
       setblockchainTX(existInBlockchain);
       return;
     }
-    
-    if(checker) {
+  
+    if (checker) {
       clearTimeout(checker);
     }
     try {
       let bridge = new BrigeService();
       if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM) {
-        result = await bridge.getEthTx(txIdParam ? txIdParam : sourceTX)
+        result = await bridge.getEthTx(txIdParam ? txIdParam : sourceTX);
       }
       if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN) {
-        result = await bridge.getKoinTx(txIdParam ? txIdParam : sourceTX)
+        result = await bridge.getKoinTx(txIdParam ? txIdParam : sourceTX);
       }
     } catch (error) {
       result = null;
-      console.log(error)
-      let _timer = setTimeout(() => checkApi(txIdParam), 3000)
+      console.log(error);
+      let _timer = setTimeout(() => checkApi(txIdParam), 3000);
       setChecker(_timer);
       return;
     }
-    setLoading(false)
     setRecover(result);
-  }
+    if (!hasEnoughSignatures(result)) {
+      let _timer = setTimeout(() => checkApi(txIdParam), 3000);
+      setChecker(_timer);
+    }
+    setLoading(false);
+  };
 
   const BaseConnections = (props) => (
     <>
@@ -293,7 +309,8 @@ const Redeem = (props) => {
     if (loading) return true;
     if(!recover) return true
     if (sourceTX == "" || sourceTX == null) return true;
-    // if (_get(recover, "status", "") != "signed") return true;
+    if (!hasEnoughSignatures(recover)) return true;
+    if (redeemSubmitted) return true;
     return false;
   }
   const ActionsBase = () => {
@@ -314,7 +331,7 @@ const Redeem = (props) => {
       <Connectors chain={toChain} />
     )
 
-    if (!recover /*|| (recover && _get(recover, "signatures", []).length < 5)*/) return (
+    if (!recover || (recover && !hasEnoughSignatures(recover))) return (
       <BaseConnections
         actions={
             <Button disabled={loading} variant="contained" size="large" onClick={() => checkApi(sourceTX)} sx={{ width: "100%" }}>RECOVER</Button>
