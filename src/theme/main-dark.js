@@ -1,4 +1,5 @@
 import darkScrollbar from "@mui/material/darkScrollbar";
+import LogoWhite from "../assets/images/vortex-logo-main-dark.png";
 
 //const white = "#ffffff";
 //const black = "#000000";
@@ -15,6 +16,7 @@ const primary = "#a33e8a"
 const text_color = "#e0e0e0"
 
 export const themeOptions = {
+  LogoWhite,
   breakpoints: {
     values: {
       xs: 0,
