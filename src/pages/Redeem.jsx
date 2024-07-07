@@ -382,7 +382,7 @@ const Redeem = (props) => {
   }));
 
   return (
-    <Box sx={{ paddingBlock: "100px" }}>
+    <Box sx={{ paddingBottom: "100px" }}>
       <Box sx={{ marginY: '5em', maxWidth: '427px', marginX: 'auto', display: 'flex', justifyContent: 'center' }}>
         <ButtonGroup variant="contained" aria-label="outlined primary button group" sx={{ width: '100%' }}>
           <TabButton
