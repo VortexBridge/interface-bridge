@@ -94,7 +94,6 @@ const Redeem = (props) => {
 
   useEffect(() => {
     if(sourceTX) {
-      console.log("update: ", sourceTX)
       setRecover(null)
       setblockchainTX(null)
       if(checker) {
