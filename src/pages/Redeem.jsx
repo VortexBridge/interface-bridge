@@ -333,7 +333,7 @@ const Redeem = (props) => {
       <Connectors chain={toChain} />
     )
 
-    if (!recover) return (
+    if (!recover || (recover && !hasEnoughSignatures(recover))) return (
       <BaseConnections
         actions={
             <Button disabled={loading} variant="contained" size="large" onClick={() => checkApi(sourceTX)} sx={{ width: "100%" }}>RECOVER</Button>
