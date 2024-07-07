@@ -75,13 +75,14 @@ const ModalSelectTokenToBridge = () => {
             Array.isArray(tokens) && tokens.length ?
               tokens.map((token, key) => (
                 <ListItem sx={{ padding: 0 }} key={key}>
-                  <ListItemButton onClick={() => onSelect(token)} divider={token.length - 1 !== key}>
-                    <ListItemText id={key} primary={_get(token, "name", "")} />
-                    <ListItemAvatar>
-                      <Avatar width="30px" height="30px" alt={_get(token, "name", "")} src={_get(token, "icon", "")} />
-                    </ListItemAvatar>
-                  </ListItemButton>
-                </ListItem>
+                  <ListItemButton onClick={() => onSelect(token)} divider={token.length - 1 !== key}>                        
+                  <ListItemText sx={{paddingRight: 4,  width: "50%"}}id={key} align="right" primary={_get(token, "name", "")}/>
+                  <ListItemText sx={{paddingLeft: 2, width: "50%"}} id={key} align="left" primary={_get(token, "symbol", "")} />                       
+                  <ListItemAvatar>
+                    <Avatar width="30px" height="30px" alt={_get(token, "name", "")} src={_get(token, "icon", "")} />
+                  </ListItemAvatar>
+                </ListItemButton>
+              </ListItem>
               ))
               : (
                 <Box sx={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>

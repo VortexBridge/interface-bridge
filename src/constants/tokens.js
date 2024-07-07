@@ -16,7 +16,7 @@ let tokens = {
     {
       id: "koin",
       symbol: "KOIN",
-      name: "Koin",
+      name: "Koinos",
       icon: KOIN,
       networks: [
         {
@@ -34,7 +34,7 @@ let tokens = {
     {
       id: "ETH",
       symbol: "ETH",
-      name: "Ether",
+      name: "Ethereum",
       icon: ETH,
       networks: [
         {
@@ -54,7 +54,7 @@ let tokens = {
     {
       id: "koin",
       symbol: "KOIN",
-      name: "Koin",
+      name: "Koinos",
       icon: KOIN,
       networks: [
         {
@@ -128,7 +128,7 @@ let tokens = {
     {
       id: "usdt",
       symbol: "USDT",
-      name: "Tether USDT",
+      name: "Tether",
       icon: USDT,
       networks: [
         {
