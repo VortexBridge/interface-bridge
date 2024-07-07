@@ -30,7 +30,7 @@ export const themeOptions = {
     primary: {
       light: "#bb86fc",
       main: primary,
-      dark: "#3700b3",
+      dark: primary,
       contrastText: "#fff",
     },
     secondary: {

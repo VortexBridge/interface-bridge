@@ -370,7 +370,7 @@ const Redeem = (props) => {
       width: '40px',
       height: '40px',
       borderStyle: 'solid',
-      borderWidth: active ? '0 15px 15px 0' : '36px 40px 0 0',
+      borderWidth: active ? '0 15px 15px 0' : '36px 41px 0 0',
       borderColor: active
         ? `${theme.palette.primary.main} transparent transparent transparent`
         : `${theme.palette.primary.main} transparent transparent transparent`,
