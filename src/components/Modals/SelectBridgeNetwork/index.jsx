@@ -51,11 +51,11 @@ const ModalSelectBridgeNetwork = () => {
         <ModalHeader title={_get(currentModalData, "side", "")} closeFunction={closeModal} />
         {BRIDGE_CHAINS.map((network, key) => (
           <ListItem sx={{ padding: 0 }} key={key}>
-            <ListItemButton onClick={() => onSelect(network)} divider={network.length - 1 !== key}>
-              <ListItemText id={key} primary={_get(network, "name", "")} />
+            <ListItemButton sx={{ padding: 1.7 }} onClick={() => onSelect(network)} divider={network.length - 1 !== key}>
               <ListItemAvatar>
                 <Avatar width="30px" height="30px" alt={_get(network, "name", "")} src={_get(network, "icon", "")} />
               </ListItemAvatar>
+              <ListItemText id={key} primary={_get(network, "name", "")} />
             </ListItemButton>
           </ListItem>
         ))}

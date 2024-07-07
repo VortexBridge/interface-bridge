@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { get as _get } from "lodash";
-import { Modal, Box, Avatar, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Typography } from "@mui/material";
+import { Modal, Box, Avatar, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Typography, useTheme } from "@mui/material";
 
 // Actions
 import { setModal, setModalData } from "../../../redux/actions/modals";
@@ -17,6 +17,7 @@ import { BRIDGE_TOKENS } from "../../../constants/tokens";
 const ModalSelectTokenToBridge = () => {
   // hooks
   const dispatch = useDispatch();
+  const theme = useTheme();
 
   // vars
   const [tokens, setTokens] = useState(null);
@@ -53,7 +54,6 @@ const ModalSelectTokenToBridge = () => {
 
   const findTokenSymbol = (token, fromChain) => {
     for (let network of token.networks) {
-      console.log("1", fromChain.id, network)
       if (network.chain === fromChain.id) {
         return _get(network, 'symbol', '');
       }
@@ -70,9 +70,9 @@ const ModalSelectTokenToBridge = () => {
       <Box
         sx={{
           minWidth: "sm",
-          maxHeight: "900px",
+          maxHeight: "900px",          
           width: "100%",
-          maxWidth: "420px",
+          maxWidth: "320px",
           marginY: "20px",
           bgcolor: "background.paper",
           borderRadius: "10px",
@@ -84,15 +84,17 @@ const ModalSelectTokenToBridge = () => {
           {
             Array.isArray(tokens) && tokens.length ?
               tokens.map((token, key) => (
-                <ListItem sx={{ padding: 0 }} key={key}>
-                  <ListItemButton onClick={() => onSelect(token)} divider={token.length - 1 !== key}>                        
-                  <ListItemText sx={{width: "50%"}} id={key} align="left" primary={_get(token, "name", "")}/>
-                  <ListItemText sx={{width: "50%"}} id={key} align="left" primary={findTokenSymbol(token, fromChain)} />                       
-                  <ListItemAvatar>
-                    <Avatar width="30px" height="30px" alt={_get(token, "name", "")} src={_get(token, "icon", "")} />
-                  </ListItemAvatar>
-                </ListItemButton>
-              </ListItem>
+                <ListItem sx={{ padding: 0, paddingLeft: 1, paddingRight: 1}} key={key}>
+                  <ListItemButton sx={{ padding: 1.7 }} onClick={() => onSelect(token)} divider={tokens.length - 1 !== key}>
+                    <ListItemAvatar>
+                      <Avatar width="30px" height="30px" alt={_get(token, "name", "")} src={_get(token, "icon", "")} />
+                    </ListItemAvatar>
+                    <Box sx={{ textAlign: 'left' }}>
+                      <ListItemText id={`${key}-symbol`} primary={findTokenSymbol(token, fromChain)} />
+                      <ListItemText id={`${key}-name`} secondary={_get(token, "name", "")} />
+                    </Box>
+                  </ListItemButton>
+                </ListItem>
               ))
               : (
                 <Box sx={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>

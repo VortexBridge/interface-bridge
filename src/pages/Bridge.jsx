@@ -453,6 +453,12 @@ const Bridge = () => {
     return _relayers;
   }
 
+  const findTokenSymbolForChain = (token, chain) => {
+    if (!token || !chain) return 'Unrecognized';
+    const network = token.networks.find(net => net.chain === chain);
+    return network ? _get(network, 'symbol', 'Unrecognized') : 'Unrecognized';
+  };
+
   return (
     <Box>
       <Box sx={{ marginY: "3em", maxWidth: "600px", marginX: "auto", display: "flex", justifyContent: "space-around", alignItems: "center" }}>
@@ -503,7 +509,7 @@ const Bridge = () => {
                     <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                       <Avatar sx={{ width: 24, height: 24, marginRight: "10px" }} alt={_get(tokenToBridge, "symbol", "token")} src={_get(tokenToBridge, "icon", "/x")} />
                       <Typography variant="h6" sx={{ color: "text.main", display: "block" }}>
-                        {_get(tokenToBridge, "symbol", "Unrecognized")}
+                        {findTokenSymbolForChain(tokenToBridge, fromChain?.id)}
                       </Typography>
                     </Box>
                     :
@@ -579,7 +585,7 @@ const Bridge = () => {
           <Box sx={{ border: `1px solid ${theme.palette.background.light}`, borderRadius: "10px", padding: "10px 20px", display: "flex", alignContent: "center", flexDirection: "column" }} marginY={"1.4em"} display={"flex"} justifyContent={"space-between"}>
             <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
               <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>You will receive:</Typography>
-              <Typography variant="h6" component={"span"}>0 {tokenToBridge != null ? _get(tokenToBridge, "symbol", "") : null}</Typography>
+              <Typography variant="h6" component={"span"}>0 {findTokenSymbolForChain(tokenToBridge, toChain?.id)}</Typography>
             </Box>
             <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
               <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Receiving address:</Typography>
