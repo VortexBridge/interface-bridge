@@ -171,6 +171,19 @@ const Bridge = () => {
     dispatch(setModal("SelectTokenToBridge"))
   }
 
+  const calculateReceiveAmount = (value) => {
+    // make sure value is a number
+    if (isNaN(value)) {
+      return 0;
+    }
+    if(value < 0) {
+      return 0;
+    }
+    // calculate receive amount
+    // we will want to subtract the fee here depending on the type of token, market price, etc
+    return value;
+  }
+
   const bridgeTokens = async () => {
     setLoadingBridge(true);
     if (loadingBridge) return;
@@ -632,7 +645,7 @@ const Bridge = () => {
           <Box sx={{ border: `1px solid ${theme.palette.background.light}`, borderRadius: "10px", padding: "10px 20px", display: "flex", alignContent: "center", flexDirection: "column" }} marginY={"1.4em"} display={"flex"} justifyContent={"space-between"}>
             <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
               <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>You will receive:</Typography>
-              <Typography variant="h6" component={"span"}>0 {findTokenSymbolForChain(tokenToBridge, toChain?.id)}</Typography>
+              <Typography variant="h6" component={"span"}>{calculateReceiveAmount(inputValue)} {findTokenSymbolForChain(tokenToBridge, toChain?.id)}</Typography>
             </Box>
             <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
               <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Receiving address:</Typography>
