@@ -60,7 +60,7 @@ const Footer = () => {
   return (
     <Box
       sx={{
-        position: "absolute",
+        position: "fixed",
         bottom: 0,
         width: "100%",
         minHeight: "48px",
