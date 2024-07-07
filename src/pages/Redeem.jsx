@@ -74,6 +74,10 @@ const Redeem = (props) => {
     return _get(recoverData, "signatures", []).length >= import.meta.env.VITE_NUMBER_OF_VALIDATORS || 2;
   }
 
+  const hasAtLeastOneSignature = (recoverData) => {
+    return _get(recoverData, "signatures", []).length >= 1;
+  }
+
   // efects
   useEffect(() => {
     if (searchParams.get("tx")) {
@@ -276,6 +280,11 @@ const Redeem = (props) => {
         result = await bridge.getKoinTx(txIdParam ? txIdParam : sourceTX);
       }
     } catch (error) {
+      if (hasAtLeastOneSignature(result) && !hasEnoughSignatures(result)) { // these may come through as errors so they have to be handled here
+        let _timer = setTimeout(() => checkApi(txIdParam), 3000);
+        setChecker(_timer);
+        setRecover(result); // set recover to show the data while it's waiting for more signatures
+      }
       result = null;
       console.log(error);
       let _timer = setTimeout(() => checkApi(txIdParam), 3000);
