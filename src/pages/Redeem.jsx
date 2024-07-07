@@ -381,23 +381,23 @@ const Redeem = (props) => {
   }));
 
   return (
-    <Box>
-    <Box sx={{ marginY: '5em', maxWidth: '427px', marginX: 'auto', display: 'flex', justifyContent: 'center' }}>
-      <ButtonGroup variant="contained" aria-label="outlined primary button group" sx={{ width: '100%' }}>
-        <TabButton
-          active={isBridgePage ? 1 : 0}
-          onClick={() => navigate('/bridge')}
-        >
-          Bridge
-        </TabButton>
-        <TabButton
-          active={isRedeemPage ? 1 : 0}
-          onClick={() => navigate('/redeem')}
-        >
-          Redeem
-        </TabButton>
-      </ButtonGroup>
-    </Box>
+    <Box sx={{ paddingBlock: "100px" }}>
+      <Box sx={{ marginY: '5em', maxWidth: '427px', marginX: 'auto', display: 'flex', justifyContent: 'center' }}>
+        <ButtonGroup variant="contained" aria-label="outlined primary button group" sx={{ width: '100%' }}>
+          <TabButton
+            active={isBridgePage ? 1 : 0}
+            onClick={() => navigate('/bridge')}
+          >
+            Bridge
+          </TabButton>
+          <TabButton
+            active={isRedeemPage ? 1 : 0}
+            onClick={() => navigate('/redeem')}
+          >
+            Redeem
+          </TabButton>
+        </ButtonGroup>
+      </Box>
       <Card variant="outlined" sx={{ maxWidth: "600px", marginX: "auto", marginBottom: "20px", borderRadius: "10px", padding: "15px 20px" }}>
         <CardHeader title="REDEEM" sx={{ paddingBottom: "4px" }} />
         <CardContent>
