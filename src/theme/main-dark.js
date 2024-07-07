@@ -165,7 +165,7 @@ export const themeOptions = {
           style: {
             height: "42px",
             backgroundColor: primary,
-            color: background,
+            color: "white",
             "&:hover": {
               backgroundColor: primary,
             },
