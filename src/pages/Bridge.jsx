@@ -105,6 +105,7 @@ const Bridge = () => {
         }
       }
     }
+
     if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN && _get(walletSelector, "wallet", null)) {
       let providerKoin = _get(walletSelector, "provider", null);
       let signerKoin = _get(walletSelector, "signer", null);
@@ -113,8 +114,9 @@ const Bridge = () => {
         let addressOwner = _get(walletSelector, "wallet[0].address", null);
         let bal = await _token.functions.balanceOf({ owner: addressOwner })
         _balance = koilibUtils.formatUnits(_get(bal, 'result.value', 0), _get(_network, "decimals", 8))
-        // set automatic max approval
-        _approve = ethers.constants.MaxUint256.toString();
+        // approval
+        let approve = await _token.functions.allowance({ owner: addressOwner, spender: _bridge.bridgeAddress  })
+        _approve = _get(approve, "result.value", "0");
       }
     }
     setBalance(_balance);
@@ -238,7 +240,7 @@ const Bridge = () => {
         let signerKoin = _get(walletSelector, "signer", null);
         let walletAddress = _get(walletSelector, "wallet[0].address", null);
         _bridge = await KoinosBridgeContract(_bridgeFrom.bridgeAddress, providerKoin, signerKoin);
-        _bridge.options.onlyOperation = true;        
+        _bridge.options.onlyOperation = true;
         if (_bridge) {
           let tx = new Transaction({ provider: providerKoin, signer: signerKoin })
           // create bridge
@@ -304,6 +306,7 @@ const Bridge = () => {
     setLoadingApproval(true);
     if (loadingApproval) return;
     try {
+      let result = new BigNumber(0);
       let _bridge = BRIDGE_CHAINS.find(bridge => bridge.id == _get(fromChain, "id", null));
       let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
       if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM) {
@@ -323,9 +326,57 @@ const Bridge = () => {
           persist: false,
           action: actionClose,
         })
-        setApproval(ethers.constants.MaxUint256);
-        setLoadingApproval(false);
+        result = ethers.constants.MaxUint256
       }
+
+      if(_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN) {
+        let providerKoin = _get(walletSelector, "provider", null);
+        let signerKoin = _get(walletSelector, "signer", null);
+        _token = await KoinosTokenContract(_network.address, providerKoin, signerKoin);
+        _token.options.onlyOperation = true;
+        if (_token) {
+          let addressOwner = _get(walletSelector, "wallet[0].address", null);
+          let tx = new Transaction({ provider: providerKoin, signer: signerKoin })
+
+          // add approve
+          let fullAmount = koilibUtils.parseUnits(inputValue, _get(_network, "decimals", 8));
+          let { operation } = await _token.functions.approve({
+            owner: addressOwner,
+            spender: _bridge.bridgeAddress,
+            value: fullAmount
+          })
+          tx.pushOperation(operation)
+
+          // sent transaction
+          let transaction = null;
+          try {
+            const _transaction = await tx.send();
+            transaction = _transaction
+          } catch (error) {
+            Snackbar.enqueueSnackbar("Error sending transaction", { variant: "error" });
+            console.log(error)
+            setLoadingApproval(false);
+            return;
+          }
+
+          // console.log(transaction.id)
+          Snackbar.enqueueSnackbar(<Typography variant="h6">Transaction submitted</Typography>, {
+            variant: 'info',
+            persist: false,
+            action: actionClose,
+          })
+          await waitTransation(providerKoin, transaction)
+
+          Snackbar.enqueueSnackbar(<Link underline="none" style={{ cursor: "pointer" }} target="_blank" href={`${fromChain.explorer}/${tx.id}`}><Typography sx={{ color: "white" }} variant="h6">Transaction success</Typography><Typography sx={{ color: "white" }} variant="subtitle1" component="p">View Block</Typography></Link>, {
+            variant: 'success',
+            persist: false,
+            action: actionClose,
+          })
+          result = fullAmount
+        }
+      }
+      setApproval(result);
+      setLoadingApproval(false);
     } catch (error) {
       setLoadingApproval(false);
       Snackbar.enqueueSnackbar(<span><Typography variant="h6">Transaction error</Typography></span>, {
@@ -407,7 +458,7 @@ const Bridge = () => {
     // check approval of tokens
     let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
     let fullAmount = koilibUtils.parseUnits(inputValue, _get(_network, "decimals", 8));
-    if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM && new BigNumber(approval).lt(fullAmount) || new BigNumber(fullAmount).isZero()) return (
+    if (_get(_network, "allowance", false) && new BigNumber(approval).lt(fullAmount) || new BigNumber(fullAmount).isZero()) return (
       <BaseConnections
         actions={
           <Button disabled={loadingApproval || new BigNumber(fullAmount).isZero()} variant="contained" size="large" sx={{ width: "100%" }} onClick={() => approveTransfers()}>{loadingApproval ? "loading..." : "APPROVE TOKEN"}</Button>
