@@ -94,6 +94,7 @@ const Redeem = (props) => {
 
   useEffect(() => {
     if(sourceTX) {
+      console.log("update: ", sourceTX)
       setRecover(null)
       setblockchainTX(null)
       if(checker) {
@@ -241,12 +242,15 @@ const Redeem = (props) => {
       }
       if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN) {
         let providerKoin = _get(walletSelector, "provider", null);
-        console.log(providerKoin);
+        let r = await providerKoin.getTransactionsById([ txIdParam ]);
+        if(_get(r, "transactions", []).length == 0) throw new Error("no transaction");
         existInBlockchain = true;
       }
       setblockchainTX(existInBlockchain);
     } catch (e) {
-      console.log(3);
+      console.log(e);
+      setLoading(false);
+      setblockchainTX(existInBlockchain);
       Snackbar.enqueueSnackbar(
         <span>
           <Typography variant="h6">Transaction not found</Typography>
@@ -258,8 +262,6 @@ const Redeem = (props) => {
           action: actionClose,
         }
       );
-      setLoading(false);
-      setblockchainTX(existInBlockchain);
       return;
     }
   
@@ -332,7 +334,7 @@ const Redeem = (props) => {
       <Connectors chain={toChain} />
     )
 
-    if (!recover || (recover && !hasEnoughSignatures(recover))) return (
+    if (!recover) return (
       <BaseConnections
         actions={
             <Button disabled={loading} variant="contained" size="large" onClick={() => checkApi(sourceTX)} sx={{ width: "100%" }}>RECOVER</Button>
