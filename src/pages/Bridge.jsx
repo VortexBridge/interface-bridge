@@ -455,7 +455,7 @@ const Bridge = () => {
   }
 
   const findTokenSymbolForChain = (token, chain) => {
-    if (!token || !chain) return 'Unrecognized';
+    if (!token || !chain) return '..';
     const network = token.networks.find(net => net.chain === chain);
     return network ? _get(network, 'symbol', 'Unrecognized') : 'Unrecognized';
   };
@@ -476,7 +476,7 @@ const Bridge = () => {
       content: '""',
       position: 'absolute',
       right: active ? '0' : 'auto',
-      left: active ? 'auto' : '-5px',
+      left: active ? 'auto' : '-1px',
       top: '1px',
       transform: 'rotate(90deg)',
       width: '40px',
@@ -636,7 +636,7 @@ const Bridge = () => {
             </Box>
             <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
               <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Receiving address:</Typography>
-              <Typography variant="h6" component={"span"}>{recipient ? shortedAddress(recipient) : "?"}</Typography>
+              <Typography variant="h6" component={"span"}>{recipient ? shortedAddress(recipient) : ".."}</Typography>
             </Box>
           </Box>
 

@@ -358,27 +358,29 @@ const Redeem = (props) => {
     color: active ? theme.palette.common.white : theme.palette.grey[300],
     position: 'relative',
     zIndex: active ? 1 : 0,
-    borderRadius: active ? '10px 0 0 10px' : '0 10px 10px 0',
+    borderRadius: !active ? '10px 0 0 10px' : '0 10px 10px 0',
     '&:before': {
       content: '""',
       position: 'absolute',
-      right: active ? '0' : 'auto',
-      left: active ? 'auto' : '0',
-      top: '50%',
-      transform: 'translateY(-50%)',
-      width: '0',
-      height: '0',
+      right: active ? 'auto' : '-1px',
+      left: active ? '0' : 'auto',
+      top: '1px',
+      transform: 'rotate(90deg)',
+      width: '40px',
+      height: '40px',
       borderStyle: 'solid',
-      borderWidth: active ? '0 15px 15px 0' : '15px 15px 0 0',
+      borderWidth: active ? '0 15px 15px 0' : '36px 42px 0 0',
       borderColor: active
         ? `${theme.palette.primary.main} transparent transparent transparent`
-        : `transparent ${theme.palette.primary.main} transparent transparent`,
+        : `${theme.palette.primary.main} transparent transparent transparent`,
       zIndex: active ? -1 : 1,
     },
     '&:hover': {
       backgroundColor: active ? theme.palette.primary.main : theme.palette.secondary.light,
     },
-  }));
+    '&:hover': {
+      backgroundColor: active ? theme.palette.primary.main : theme.palette.secondary.light,
+    },  }));
 
   return (
     <Box>
