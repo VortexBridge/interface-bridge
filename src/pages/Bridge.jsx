@@ -1,6 +1,6 @@
 /* eslint-disable */
 import React, { Fragment, useEffect, useState } from "react";
-import { Avatar, Box, Button, Card, CardContent, CardHeader, Link, Stack, Divider, InputBase, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Avatar, Box, Button, ButtonGroup, Card, CardContent, CardHeader, Link, Stack, Divider, InputBase, Typography, useMediaQuery, styled, useTheme } from '@mui/material';
 import { fetchBalance } from '@wagmi/core';
 import { BigNumber } from "bignumber.js";
 import { ethers } from 'ethers';
@@ -38,6 +38,7 @@ import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import CustomEthConnectButton from "../components/Bridge/CustomEthConnectButton";
 import CustomKoinConnectButton from "../components/Bridge/CustomKoinConnectButton";
 import SelectChain from "../components/SelectChain";
+import { Rotate90DegreesCcw, TextRotateUp } from "@mui/icons-material";
 
 const Bridge = () => {
   // Dispatch to call actions
@@ -168,6 +169,19 @@ const Bridge = () => {
   }
   const openModalSelectToken = () => {
     dispatch(setModal("SelectTokenToBridge"))
+  }
+
+  const calculateReceiveAmount = (value) => {
+    // make sure value is a number
+    if (isNaN(value)) {
+      return 0;
+    }
+    if(value < 0) {
+      return 0;
+    }
+    // calculate receive amount
+    // we will want to subtract the fee here depending on the type of token, market price, etc
+    return value;
   }
 
   const bridgeTokens = async () => {
@@ -453,11 +467,63 @@ const Bridge = () => {
     return _relayers;
   }
 
+  const findTokenSymbolForChain = (token, chain) => {
+    if (!token || !chain) return '..';
+    const network = token.networks.find(net => net.chain === chain);
+    return network ? _get(network, 'symbol', 'Unrecognized') : 'Unrecognized';
+  };
+
+
+
+  const isBridgePage = location.pathname === '/bridge';
+  const isRedeemPage = location.pathname === '/redeem';
+
+  const TabButton = styled(Button)(({ theme, active }) => ({
+    width: '50%',
+    backgroundColor: active ? theme.palette.primary.main : theme.palette.grey[700],
+    color: active ? theme.palette.common.white : theme.palette.grey[300],
+    position: 'relative',
+    zIndex: active ? 1 : 0,
+    borderRadius: active ? '10px 0 0 10px' : '0 10px 10px 0',
+    '&:before': {
+      content: '""',
+      position: 'absolute',
+      right: active ? '0' : 'auto',
+      left: active ? 'auto' : '-1px',
+      top: '1px',
+      transform: 'rotate(90deg)',
+      width: '40px',
+      height: '40px',
+      borderStyle: 'solid',
+      borderWidth: active ? '0 15px 15px 0' : '36px 40px 0 0',
+      borderColor: active
+        ? `${theme.palette.primary.main} transparent transparent transparent`
+        : `transparent ${theme.palette.primary.main} transparent transparent`,
+      zIndex: active ? -1 : 1,
+    },
+    '&:hover': {
+      backgroundColor: active ? theme.palette.primary.main : theme.palette.secondary.light,
+    },
+  }));
+
+
   return (
-    <Box>
-      <Box sx={{ marginY: "3em", maxWidth: "600px", marginX: "auto", display: "flex", justifyContent: "space-around", alignItems: "center" }}>
-        <Button sx={{ height: "35px", padding: "3px" }} size={"small"} variant="contained" onClick={() => navigate("/bridge")}>Bridge</Button>
-        <Button sx={{ height: "35px", padding: "3px" }} size={"small"} variant="outlined" onClick={() => navigate("/redeem")}>Redeem</Button>
+    <Box sx={{ paddingBottom: "100px" }}>
+      <Box sx={{ marginY: '5em', maxWidth: '427px', marginX: 'auto', display: 'flex', justifyContent: 'center' }}>
+        <ButtonGroup variant="contained" aria-label="outlined primary button group" sx={{ width: '100%' }}>
+          <TabButton
+            active={isBridgePage ? 1 : 0}
+            onClick={() => navigate('/bridge')}
+          >
+            Bridge
+          </TabButton>
+          <TabButton
+            active={isRedeemPage ? 1 : 0}
+            onClick={() => navigate('/redeem')}
+          >
+            Redeem
+          </TabButton>
+        </ButtonGroup>
       </Box>
       <Card variant="outlined" sx={{ maxWidth: "600px", marginX: "auto", marginBottom: "20px", borderRadius: "10px", padding: "15px 20px" }}>
         <CardHeader title="BRIDGE" sx={{ paddingBottom: "4px" }} />
@@ -503,7 +569,7 @@ const Bridge = () => {
                     <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                       <Avatar sx={{ width: 24, height: 24, marginRight: "10px" }} alt={_get(tokenToBridge, "symbol", "token")} src={_get(tokenToBridge, "icon", "/x")} />
                       <Typography variant="h6" sx={{ color: "text.main", display: "block" }}>
-                        {_get(tokenToBridge, "symbol", "Unrecognized")}
+                        {findTokenSymbolForChain(tokenToBridge, fromChain?.id)}
                       </Typography>
                     </Box>
                     :
@@ -579,11 +645,11 @@ const Bridge = () => {
           <Box sx={{ border: `1px solid ${theme.palette.background.light}`, borderRadius: "10px", padding: "10px 20px", display: "flex", alignContent: "center", flexDirection: "column" }} marginY={"1.4em"} display={"flex"} justifyContent={"space-between"}>
             <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
               <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>You will receive:</Typography>
-              <Typography variant="h6" component={"span"}>0 {tokenToBridge != null ? _get(tokenToBridge, "symbol", "") : null}</Typography>
+              <Typography variant="h6" component={"span"}>{calculateReceiveAmount(inputValue)} {findTokenSymbolForChain(tokenToBridge, toChain?.id)}</Typography>
             </Box>
             <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
               <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Receiving address:</Typography>
-              <Typography variant="h6" component={"span"}>{recipient ? shortedAddress(recipient) : "?"}</Typography>
+              <Typography variant="h6" component={"span"}>{recipient ? shortedAddress(recipient) : ".."}</Typography>
             </Box>
           </Box>
 

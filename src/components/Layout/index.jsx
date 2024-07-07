@@ -81,7 +81,7 @@ const Layout = () => {
           <Header />
           <Container
             maxWidth="false"
-            sx={{ minWidth: "calc(100vw - 18px)", minHeight: `calc(100vh - ${matches ? "56px" : "64px"})` }}
+            sx={{ minWidth: "calc(100vw - 18px)", /*minHeight: `calc(100vh - ${matches ? "56px" : "64px"})`*/ }}
           >
             <Outlet />
             <Modals />

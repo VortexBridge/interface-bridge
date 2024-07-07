@@ -2,7 +2,7 @@
 
 ## About
 
-This repository contains the web ui for BridgeKoin.
+This repository contains the web ui for Vortex Bridge.
 
 ## TODO
 

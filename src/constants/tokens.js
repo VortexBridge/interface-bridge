@@ -15,36 +15,38 @@ let tokens = {
   ["MAINNET"]: [
     {
       id: "koin",
-      symbol: "KOIN",
-      name: "Koin",
+      name: "Koinos",
       icon: KOIN,
       networks: [
         {
           chain: BRIDGE_CHAINS_NAMES.KOIN,
           decimals: 8,
+          symbol: "KOIN",
           address: "1FaSvLjQJsCJKq5ybmGsMMQs8RQYyVv8ju",
         },
         {
           chain: BRIDGE_CHAINS_NAMES.ETH,
           decimals: 8,
+          symbol: "wKOIN",
           address: "0x6b176fB1D3c420DBFd3AA51De597f8d2e5752556"
         }
       ]
     },
     {
       id: "ETH",
-      symbol: "ETH",
-      name: "Ether",
+      name: "Ethereum",
       icon: ETH,
       networks: [
         {
           chain: BRIDGE_CHAINS_NAMES.KOIN,
           decimals: 8,
+          symbol: "wETH",
           address: "13bNUFNYBwPSWxZaq8JVZf2ZCLTjWphyQo"
         },
         {
           chain: BRIDGE_CHAINS_NAMES.ETH,
           decimals: 18,
+          symbol: "ETH",
           address: "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"
         }
       ]
@@ -53,13 +55,13 @@ let tokens = {
   ["TESTNET"]: [
     {
       id: "koin",
-      symbol: "KOIN",
-      name: "Koin",
+      name: "Koinos",
       icon: KOIN,
       networks: [
         {
           chain: BRIDGE_CHAINS_NAMES.KOIN,
           decimals: 8,
+          symbol: "KOIN",
           address: "1FaSvLjQJsCJKq5ybmGsMMQs8RQYyVv8ju",
           relayers: [
             // {
@@ -74,6 +76,7 @@ let tokens = {
         {
           chain: BRIDGE_CHAINS_NAMES.SEP,
           decimals: 8,
+          symbol: "wKOIN",
           address: "0x7ea19d8a3920d2557fe03cc00Ae62344FF4e9e00",
           relayers: [
             // {
@@ -89,7 +92,6 @@ let tokens = {
     },
     {
       id: "ethereum",
-      symbol: "ETH",
       name: "Ethereum",
       icon: ETH,
       networks: [
@@ -97,6 +99,7 @@ let tokens = {
           native: false,
           chain: BRIDGE_CHAINS_NAMES.KOIN,
           decimals: 8,
+          symbol: "wETH",
           address: "14Ha3UZnrjyXE5F9mvEfS28QhaNY1ehWXw",
           relayers: [
             // {
@@ -112,6 +115,7 @@ let tokens = {
           native: true,
           chain: BRIDGE_CHAINS_NAMES.SEP,
           decimals: 8,
+          symbol: "ETH",
           address: "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14",
           relayers: [
             // {
@@ -127,14 +131,14 @@ let tokens = {
     },
     {
       id: "usdt",
-      symbol: "USDT",
-      name: "Tether USDT",
+      name: "Tether",
       icon: USDT,
       networks: [
         {
           native: false,
           chain: BRIDGE_CHAINS_NAMES.KOIN,
           decimals: 8,
+          symbol: "wUSDT",
           address: "19DDFiZuf66XhxVBveZ2CPbMpb8wyiA6ja",
           relayers: [
             // {
@@ -149,7 +153,8 @@ let tokens = {
         {
           native: false,
           chain: BRIDGE_CHAINS_NAMES.SEP,
-          decimals: 8,
+          decimals: 6,
+          symbol: "USDT",
           address: "0xaA8E23Fb1079EA71e0a56F48a2aA51851D8433D0",
           relayers: [
             // {

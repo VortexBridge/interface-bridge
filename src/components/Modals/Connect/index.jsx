@@ -256,7 +256,7 @@ const ModalConnect = () => {
         borderRadius: "10px",
         overflowY: "hidden"
       }}>
-        <ModalHeader title={"Connect"} closeFunction={closeModal} backArrow={null} />
+        <ModalHeader title={"Connect Network"} closeFunction={closeModal} backArrow={null} />
         <Box sx={{ paddingX: "15px", marginY: "auto" }}>
           <div style={{ minWidth: "sm", width: "100%", maxWidth: "520px", justifyContent: "center", alignItems: "center" }}>
             <Typography variant="body1" component="span">

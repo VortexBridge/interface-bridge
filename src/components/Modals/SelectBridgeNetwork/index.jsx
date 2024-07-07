@@ -47,15 +47,15 @@ const ModalSelectBridgeNetwork = () => {
 
   return (
     <Modal open={currentModal === "SelectBridgeNetwork" && _get(currentModalData, "side", "") != ""} onClose={closeModal} sx={{ justifyContent: "center", display: "flex", alignItems: "center" }}>
-      <List sx={{ minWidth: "sm", maxHeight: "900px", width: "100%", maxWidth: "420px", marginY: "20px", bgcolor: "background.paper", borderRadius: "10px", overflowY: "auto" }}>
-        <ModalHeader title={_get(currentModalData, "side", "")} closeFunction={closeModal} />
+      <List sx={{ minWidth: "sm", maxHeight: "900px", width: "100%", maxWidth: "320px", marginY: "20px", bgcolor: "background.paper", borderRadius: "10px", overflowY: "auto" }}>
+        <ModalHeader title={_get(currentModalData, "side", "") + " Network"} closeFunction={closeModal} />
         {BRIDGE_CHAINS.map((network, key) => (
           <ListItem sx={{ padding: 0 }} key={key}>
-            <ListItemButton onClick={() => onSelect(network)} divider={network.length - 1 !== key}>
-              <ListItemText id={key} primary={_get(network, "name", "")} />
+            <ListItemButton sx={{ padding: 1.7 }} onClick={() => onSelect(network)} divider={network.length - 1 !== key}>
               <ListItemAvatar>
                 <Avatar width="30px" height="30px" alt={_get(network, "name", "")} src={_get(network, "icon", "")} />
               </ListItemAvatar>
+              <ListItemText id={key} primary={_get(network, "name", "")} />
             </ListItemButton>
           </ListItem>
         ))}
