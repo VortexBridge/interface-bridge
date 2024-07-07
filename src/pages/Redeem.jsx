@@ -71,7 +71,8 @@ const Redeem = (props) => {
   );
 
   const hasEnoughSignatures = (recoverData) => {
-    return _get(recoverData, "signatures", []).length >= import.meta.env.VITE_NUMBER_OF_VALIDATORS || 2;
+    const requiredQuorum = import.meta.env.VITE_NUMBER_OF_VALIDATORS || 2;
+    return _get(recoverData, "signatures", []).length >= requiredQuorum;
   }
 
   // efects
