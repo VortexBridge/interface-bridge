@@ -406,6 +406,14 @@ const Redeem = (props) => {
               <Typography sx={{ marginTop: 2, marginX: "auto" }} variant="h5" component={"span"}>validators are verifying your transaction</Typography>
               <Typography sx={{ marginTop: 1, marginX: "auto" }} variant="p" component={"span"}>this can take up to 3 minutes</Typography>
             </Box>
+            : recover && !hasEnoughSignatures(recover) ?
+              <Box sx={{ border: `1px solid ${theme.palette.background.light}`, borderRadius: "10px", padding: "20px", display: "flex", flexDirection: "column" }} marginY={"1.4em"}>
+                <Box sx={{ marginX: "auto" }} >
+                  <CircularProgress/>
+                </Box>
+                <Typography sx={{ marginTop: 2, marginX: "auto" }} variant="h5" component={"span"}>waiting for more signatures</Typography>
+                <Typography sx={{ marginTop: 1, marginX: "auto" }} variant="p" component={"span"}>this can take up to 3 minutes</Typography>
+              </Box>
             : null
           }
 
