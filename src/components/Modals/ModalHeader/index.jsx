@@ -15,7 +15,7 @@ const ModalHeader = ({ title, closeFunction, backArrow, hideCloseButton }) => {
           <ArrowBackIcon color="secondary" />
         </IconButton> : null}
       <Typography variant="h5" component="h3" id="modal-modal-title" sx={{ marginY: "auto", fontWeight: "bold" }}>
-        {title} Network
+        {title}
       </Typography>
       {!hideCloseButton ?
         <IconButton component="span" onClick={closeFunction}>

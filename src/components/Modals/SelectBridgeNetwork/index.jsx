@@ -48,7 +48,7 @@ const ModalSelectBridgeNetwork = () => {
   return (
     <Modal open={currentModal === "SelectBridgeNetwork" && _get(currentModalData, "side", "") != ""} onClose={closeModal} sx={{ justifyContent: "center", display: "flex", alignItems: "center" }}>
       <List sx={{ minWidth: "sm", maxHeight: "900px", width: "100%", maxWidth: "320px", marginY: "20px", bgcolor: "background.paper", borderRadius: "10px", overflowY: "auto" }}>
-        <ModalHeader title={_get(currentModalData, "side", "")} closeFunction={closeModal} />
+        <ModalHeader title={_get(currentModalData, "side", "") + " Network"} closeFunction={closeModal} />
         {BRIDGE_CHAINS.map((network, key) => (
           <ListItem sx={{ padding: 0 }} key={key}>
             <ListItemButton sx={{ padding: 1.7 }} onClick={() => onSelect(network)} divider={network.length - 1 !== key}>
