@@ -234,6 +234,7 @@ const Redeem = (props) => {
     setLoading(true);
     let result = null;
     let existInBlockchain = false;
+    let opIdKoinos = ""; // op id of transaction in koinos
     try {
       if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM) {
         let r = await provider.getTransactionReceipt(txIdParam);
@@ -244,6 +245,24 @@ const Redeem = (props) => {
         let providerKoin = _get(walletSelector, "provider", null);
         let r = await providerKoin.getTransactionsById([ txIdParam ]);
         if(_get(r, "transactions", []).length == 0) throw new Error("no transaction");
+        
+        // get op id
+        const blockResult = await providerKoin.call('block_store.get_blocks_by_id', {
+          block_ids: [_get(r, "transactions[0].containing_blocks[0]") ],
+          return_block: false,
+          return_receipt: true,
+        })
+        for (const receipt of _get(blockResult, 'block_items[0].receipt.transaction_receipts', [])) {
+          if (receipt.id === txIdParam) {
+            for (const event of receipt.events) {
+              if (event.name === 'bridge.tokens_locked_event') {
+                opIdKoinos = `${event.sequence}`
+              }
+            }
+          }
+        }
+
+        console.log(opIdKoinos)
         existInBlockchain = true;
       }
       setblockchainTX(existInBlockchain);
@@ -274,7 +293,7 @@ const Redeem = (props) => {
         result = await bridge.getEthTx(txIdParam ? txIdParam : sourceTX);
       }
       if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN) {
-        result = await bridge.getKoinTx(txIdParam ? txIdParam : sourceTX);
+        result = await bridge.getKoinTx(txIdParam ? txIdParam : sourceTX, opIdKoinos);
       }
     } catch (error) {
       result = null;
