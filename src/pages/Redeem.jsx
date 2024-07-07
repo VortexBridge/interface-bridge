@@ -351,7 +351,7 @@ const Redeem = (props) => {
 
   return (
     <Box>
-      <Box sx={{ marginY: "1em", maxWidth: "600px", marginX: "auto", display: "flex", justifyContent: "space-around", alignItems: "center" }}>
+      <Box sx={{ marginY: "3em", maxWidth: "600px", marginX: "auto", display: "flex", justifyContent: "space-around", alignItems: "center" }}>
         <Button sx={{ height: "35px", padding: "3px" }} size={"small"} variant="outlined" onClick={() => navigate("/bridge")}>Bridge</Button>
         <Button sx={{ height: "35px", padding: "3px" }} size={"small"} variant="contained" onClick={() => navigate("/redeem")}>Redeem</Button>
       </Box>
