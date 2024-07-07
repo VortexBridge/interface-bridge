@@ -76,7 +76,7 @@ const ModalConnect = () => {
           overflowY: "hidden",
         }}
       >
-        <ModalHeader title={"Disconnect"} closeFunction={closeModal} backArrow={null} />
+        <ModalHeader title={"Disconnect Network"} closeFunction={closeModal} backArrow={null} />
         <Box sx={{ paddingX: "15px" }}>
           <Box sx={{ marginY: "1.5em", display: "flex", flexDirection: "column", justifyContent: "space-around", alignItems: "center" }}>
             <Identicon string={_get(walletSelector, "wallet[0].address", null)} size={24} palette={["#9EFF00"]} />
