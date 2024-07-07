@@ -369,7 +369,7 @@ const Redeem = (props) => {
       width: '40px',
       height: '40px',
       borderStyle: 'solid',
-      borderWidth: active ? '0 15px 15px 0' : '36px 42px 0 0',
+      borderWidth: active ? '0 15px 15px 0' : '36px 40px 0 0',
       borderColor: active
         ? `${theme.palette.primary.main} transparent transparent transparent`
         : `${theme.palette.primary.main} transparent transparent transparent`,
@@ -378,9 +378,7 @@ const Redeem = (props) => {
     '&:hover': {
       backgroundColor: active ? theme.palette.primary.main : theme.palette.secondary.light,
     },
-    '&:hover': {
-      backgroundColor: active ? theme.palette.primary.main : theme.palette.secondary.light,
-    },  }));
+  }));
 
   return (
     <Box>
@@ -506,9 +504,6 @@ const Redeem = (props) => {
           </Box>
         </CardContent>
       </Card>
-      <Box sx={{maxWidth: "600px", marginX: "auto", marginTop: "2em"}}>
-        <Typography component={"p"} variant={"body2"}>This Interface is a web user interface software to BridgeKoin, a cross chain messaging protocol. THIS INTERFACE AND THE BRIDGEKOIN PROTOCOL ARE PROVIDED &quot;AS IS&quot;, AT YOUR OWN RISK, AND WITHOUT WARRANTIES OF ANY KIND. By using or accessing this Interface or BridgeKoin, you agree that no developer or entity involved in creating, deploying, maintaining, operating this Interface or BridgeKoin, or causing or supporting any of the foregoing, will be liable in any manner for any claims or damages whatsoever associated with your use, inability to use, or your interaction with other users of, this Interface or Bridgekoin, or this Interface or BridgeKoin themselves, including any direct, indirect, incidental, special, exemplary, punitive or consequential damages, or loss of profits, cryptocurrencies, tokens, or anything else of value. By using or accessing this Interface, you represent that you are not subject to sanctions or otherwise designated on any list of prohibited or restricted parties or excluded or denied persons, including but not limited to the lists maintained by the United States&apos; Department of Treasury&apos;s Office of Foreign Assets Control, the United Nations Security Council, the European Union or its Member States, or any other government authority. Use at your own risk, the protocols and interfaces are not audited and might not work correctly, what could end in a loss of your token.</Typography>
-      </Box>
     </Box >
   )
 }
