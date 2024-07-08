@@ -1,6 +1,6 @@
-import { ThemeProvider, CssBaseline, Container, IconButton, useMediaQuery, useTheme, Box } from "@mui/material";
+import { ThemeProvider, CssBaseline, Container, IconButton, useMediaQuery, useTheme, Box, styled } from "@mui/material";
 import { createTheme, responsiveFontSizes } from "@mui/material/styles";
-import { SnackbarProvider } from "notistack";
+import { SnackbarProvider, MaterialDesignContent } from "notistack";
 import React, { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 
@@ -19,6 +19,7 @@ import Modals from "../Modals";
 // themes
 import lightThemeOptions from "../../theme/main-light";
 import darkThemeOptions from "../../theme/main-dark";
+
 
 const Layout = () => {
   // Load the theme setting from localStorage, default to false (light theme)
@@ -52,6 +53,16 @@ const Layout = () => {
     }
   }, []);
 
+  const StyledMaterialDesignContent = styled(MaterialDesignContent)(() => ({
+    '&.notistack-MuiContent-info': {
+      backgroundColor: theme.palette.primary.main,
+      color: "#fff !important",
+      '& *': {
+        color: "#fff !important",
+      },
+    },
+  }));
+
   return (
     <ThemeProvider theme={createTheme(theme)}>
       <CssBaseline />
@@ -60,6 +71,9 @@ const Layout = () => {
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         autoHideDuration={15000}
         action={(key) => SnackbarActions(key)}
+        Components={{
+          info: StyledMaterialDesignContent,
+        }}
       >
         <Box sx={{ backgroundColor: theme.palette.background.main, position: 'relative' }}>
           <IconButton
