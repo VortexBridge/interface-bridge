@@ -114,9 +114,13 @@ const Bridge = () => {
         let addressOwner = _get(walletSelector, "wallet[0].address", null);
         let bal = await _token.functions.balanceOf({ owner: addressOwner })
         _balance = koilibUtils.formatUnits(_get(bal, 'result.value', 0), _get(_network, "decimals", 8))
-        // approval
-        let approve = await _token.functions.allowance({ owner: addressOwner, spender: _bridge.bridgeAddress  })
-        _approve = _get(approve, "result.value", "0");
+        if(_network.allowance) {
+          // approval
+          let approve = await _token.functions.allowance({ owner: addressOwner, spender: _bridge.bridgeAddress  })
+          _approve = _get(approve, "result.value", "0");
+        } else {
+          _approve = ethers.constants.MaxUint256.toString();
+        }
       }
     }
     setBalance(_balance);
