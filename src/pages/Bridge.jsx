@@ -180,10 +180,10 @@ const Bridge = () => {
   const calculateReceiveAmount = (value) => {
     // make sure value is a number
     if (isNaN(value)) {
-      return 0;
+      return "";
     }
-    if(value < 0) {
-      return 0;
+    if(value <= 0) {
+      return "";
     }
     // calculate receive amount
     // we will want to subtract the fee here depending on the type of token, market price, etc
@@ -455,6 +455,11 @@ const Bridge = () => {
     if(txHash) return (
       <>
         <BaseConnections />
+        <Box sx={{ border: `1px solid ${theme.palette.background.light}`, borderRadius: "10px", padding: "10px 20px", display: "flex", alignContent: "center", flexDirection: "column", textAlign: "center" }} marginY={"1.4em"} display={"flex"} justifyContent={"space-between"}>
+          <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "4px", fontSize: '1.0vh' }}>Transaction Hash</Typography>
+          <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "4px", fontSize: '1.0vh' }}>{txHash}</Typography>
+          <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "4px", fontSize: '1.0vh' }}>Click CLAIM TOKENS to Redeem on Receiving Network</Typography>
+        </Box>
         <Button variant="contained" size="large" sx={{ width: "100%" }} onClick={() => navigate(`/redeem?tx=${txHash}&network=${_get(toChain, "id", "")}`)}>CLAIM TOKENS</Button>
       </>
     )
