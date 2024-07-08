@@ -273,7 +273,8 @@ const Redeem = (props) => {
       Snackbar.enqueueSnackbar(
         <span>
           <Typography variant="h6">Transaction not found</Typography>
-          <Typography variant="body1" color="white">the transaction has not been found on the blockchain</Typography>
+          <Typography variant="body1" color="white">The transaction has not been found on the blockchain.</Typography>
+          <Typography variant="body1" color="white">Please wait up to 3 minutes and try again.</Typography>
         </span>,
         {
           variant: 'error',
