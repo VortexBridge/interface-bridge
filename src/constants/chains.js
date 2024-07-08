@@ -71,7 +71,7 @@ let chains = {
     {
       id: BRIDGE_CHAINS_NAMES.SEP,
       chainType: BRIDGE_CHAINS_TYPES.EVM,
-      bridgeAddress: "0x57DDB84022fa635bf7534DBC2e05F73DE865d89B",
+      bridgeAddress: "0xeB6b19A289dF8e5e4A356ff28Dbc2415B0A15214",
       chainId: 2,
       symbol: "ETH",
       name: "Sepolia",
