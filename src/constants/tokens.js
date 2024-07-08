@@ -81,7 +81,7 @@ let tokens = {
           decimals: 8,
           symbol: "wKOIN",
           allowance: true,
-          address: "0x7ea19d8a3920d2557fe03cc00Ae62344FF4e9e00",
+          address: "0x7A348BD7461593C66CB6876BDE70B96CC8393605",
           relayers: [
             // {
             //   id: `vortex-${BRIDGE_CHAINS_NAMES.KOIN}`,
