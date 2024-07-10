@@ -262,7 +262,7 @@ const Redeem = (props) => {
           }
         }
 
-        console.log(opIdKoinos)
+        //console.log(opIdKoinos)
         existInBlockchain = true;
       }
       setblockchainTX(existInBlockchain);
@@ -452,8 +452,19 @@ const Redeem = (props) => {
             <Box paddingY={"6px"} paddingX={"10px"} borderRadius={"10px"} sx={{ backgroundColor: "background.light" }}>
               <Box sx={{ display: "flex", width: "100%" }}>
                 <InputBase
-                  placeholder={"Source TX ID Paste here"}
+                  placeholder={
+                    !fromChain ? 
+                    "Select source network" : 
+                    !toChain ? 
+                    "Select redeem network" : 
+                    checkChain(fromChain) ? 
+                    "Please connect your wallet to continue" : 
+                    checkChain(toChain) ? 
+                    "Please connect your wallet to continue" : 
+                    "Source TX ID Can Be Pasted here"
+                  }
                   type={"text"}
+                  disabled={(!fromChain || !toChain || checkChain(fromChain) || checkChain(toChain))}
                   value={sourceTX}
                   sx={{ width: "100%", fontSize: "16px", height: "40px", color: "text.main" }}
                   onChange={(e) => setSourceTX(e.currentTarget.value)}
