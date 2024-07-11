@@ -50,7 +50,7 @@ const CustomConnectInfo = (props) => {
               )}
             </div>
             : null}
-          {CHAIN_IDS_TO_NAMES[networkChain] ? CHAIN_IDS_TO_NAMES[networkChain] : CHAIN_IDS_TO_NAMES["UNSUPPORTED"]}
+          {chain.name ? chain.name : CHAIN_IDS_TO_NAMES[networkChain] ? CHAIN_IDS_TO_NAMES[networkChain] : CHAIN_IDS_TO_NAMES["UNSUPPORTED"]}
         </Button>
 
         <Button type="button" onClick={() => dispatch(setModal("Disconnect"))}>
