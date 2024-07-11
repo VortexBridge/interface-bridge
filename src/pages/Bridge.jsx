@@ -37,6 +37,7 @@ import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 // components
 import CustomEthConnectButton from "../components/Bridge/CustomEthConnectButton";
 import CustomKoinConnectButton from "../components/Bridge/CustomKoinConnectButton";
+import CustomConnectInfo from "../components/Bridge/CustomConnectInfo";
 import SelectChain from "../components/SelectChain";
 import { Rotate90DegreesCcw, TextRotateUp } from "@mui/icons-material";
 
@@ -85,7 +86,6 @@ const Bridge = () => {
       setLoadingBalance(false);
       return;
     };
-    setInputValue("0");
     let _bridge = BRIDGE_CHAINS.find(bridge => bridge.id == _get(fromChain, "id", null));
     let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
     if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM && _get(account, 'isConnected', false)) {
@@ -415,7 +415,7 @@ const Bridge = () => {
 
   const BaseConnections = (props) => (
     <>
-      {_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM ? <CustomEthConnectButton {...props} /> : null}
+      {_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM ? <CustomConnectInfo walletAddress={account.address} {...props} /> : null}
       {_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN ? <CustomKoinConnectButton {...props} /> : null}
     </>
   )
