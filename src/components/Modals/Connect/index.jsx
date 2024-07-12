@@ -181,10 +181,6 @@ const ModalConnect = () => {
                   },
                 ])
               );
-              dispatch(setWalletName("walletconnect"));
-              dispatch(setInstance(walletConnectKoinos));
-              dispatch(setModal(null));
-              dispatch(setModalData(null));
               dispatch(setConnected(connected));
               dispatch(setNetwork((testnet == "true") ? 'EiBncD4pKRIQWco_WRqo5Q-xnXR7JuO3PtZv983mKdKHSQ==' : 'EiBZK_GGVP0H_fXVAM3j6EAuz3-B-l3ejxRSewi7qIBfSA=='));
               resolve(true);
@@ -195,8 +191,6 @@ const ModalConnect = () => {
           });
       } catch (e) {
         console.log(e);
-        setBackdrop(false);
-        setSelectedWallet("");
         setLoading(false);
         resetWalletState();
         walletConnectKoinos.disconnect();
