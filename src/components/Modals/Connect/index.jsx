@@ -107,8 +107,7 @@ const ModalConnect = () => {
   const initializeWalletConnect = () => {
     let testnet = import.meta.env.VITE_CHAIN || "TESTNET";
     if(testnet == "TESTNET") testnet = "true";
-    // need to update testnet walletconnect id for this to work, the below c64 is for mainnet
-    const projectId = (testnet == "true") ? 'c64ca949713c7b3ef89702e71583fb97' : 'c64ca949713c7b3ef89702e71583fb97';
+    const projectId = (testnet == "true") ? '55003640cab75f712d7a880ec2798cb9' : 'c64ca949713c7b3ef89702e71583fb97';
     const url = (testnet == "true") ? "https://test.vortexbridge.io" : "https://vortexbridge.io";
     return new window.WalletConnectKoinos(
       {
