@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setModal } from "../../../redux/actions/modals";
 import { Button } from '@mui/material'
 import { CHAIN_IDS_TO_NAMES } from "./../../../constants/chains"
+import { useAccountModal } from '@rainbow-me/rainbowkit';
 // utils
 import { shortedAddress } from "./../../../utils/display";
 
@@ -22,6 +23,9 @@ const CustomConnectInfo = (props) => {
   // state
   const chain = _get(bridgeSelector, "from", null);
   const networkChain = _get(settingsSelector, "network", null);
+
+  // for rainbowkit disconnect button
+  const { openAccountModal } = useAccountModal();
 
   return (
     <div>
@@ -53,7 +57,7 @@ const CustomConnectInfo = (props) => {
           {chain.name ? chain.name : CHAIN_IDS_TO_NAMES[networkChain] ? CHAIN_IDS_TO_NAMES[networkChain] : CHAIN_IDS_TO_NAMES["UNSUPPORTED"]}
         </Button>
 
-        <Button type="button" onClick={() => dispatch(setModal("Disconnect"))}>
+        <Button type="button" onClick={openAccountModal}>
           {shortedAddress(props.walletAddress)}
         </Button>
       </div>
