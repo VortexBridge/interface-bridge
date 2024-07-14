@@ -85,7 +85,7 @@ const ModalConnect = () => {
               {shortedAddress(_get(walletSelector, "wallet[0].address", ""))}
             </Typography>
           </Box>
-          <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, justifyContent: "space-evenly", height: "60px", gap: 6 }}>
+          <Box sx={{ display: "flex", flexDirection: "row", justifyContent: "space-evenly", height: "60px", gap: 6 }}>
             <Button sx={buttonStyle} onClick={() => copyTokenAddress()}>
               {copied ? (
                 <>

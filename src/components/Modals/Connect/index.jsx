@@ -1,11 +1,9 @@
 import * as kondor from "kondor-js";
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useState, useEffect } from "react";
 import { Provider } from "koilib";
 import { get as _get } from "lodash";
-import { isMobile } from "react-device-detect";
 import { useDispatch, useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
-import MyKoinosWallet from "@roamin/my-koinos-wallet-sdk";
 
 // components mui
 import { Box, Button, CircularProgress, Divider, List, Link, ListItem, ListItemButton, ListItemIcon, ListItemText, Modal, Typography } from "@mui/material";
@@ -22,8 +20,8 @@ import { CHAIN_IDS_TO_NAMES, CHAINS_IDS } from "./../../../constants/chains";
 import ModalHeader from "./../ModalHeader";
 
 // Assets
-import MKWLogo from "./../../../assets/images/wallets/mkw.png";
 import KondorLogo from "./../../../assets/images/wallets/kondor.svg";
+import WalletConnectLogo from "./../../../assets/images/wallets/walletconnect.svg";
 
 const ModalConnect = () => {
   // Dispatch to call actions
@@ -36,6 +34,21 @@ const ModalConnect = () => {
 
   // states
   const [loading, setLoading] = useState(false);
+  const [walletConnectLoaded, setWalletConnectLoaded] = useState(false);
+
+  // have to wait for the WalletConnect library to load before we can use it (it's shoved into the window object)
+  useEffect(() => {
+    console.log(window);
+    if (window.WalletConnectKoinos !== "undefined") {
+      // The Wallet object is defined, indicating the library is loaded.
+      setWalletConnectLoaded(true);
+    }
+  }, [walletConnectLoaded]);
+
+  if (!walletConnectLoaded) {
+    // Render a simple loading indicator or message while the walletconnect library is loading.
+    return <div>Loading Wallets...</div>;
+  }
 
   const closeModal = () => {
     dispatch(setModal(null))
@@ -91,93 +104,117 @@ const ModalConnect = () => {
     })
   }
 
+  const initializeWalletConnect = () => {
+    let testnet = import.meta.env.VITE_CHAIN || "TESTNET";
+    if(testnet == "TESTNET") testnet = "true";
+    const projectId = (testnet == "true") ? '55003640cab75f712d7a880ec2798cb9' : 'c64ca949713c7b3ef89702e71583fb97';
+    const url = (testnet == "true") ? "https://test.vortexbridge.io" : "https://vortexbridge.io";
+    return new window.WalletConnectKoinos(
+      {
+        projectId,
+        // your application information
+        metadata: {
+          name: "Vortex Bridge",
+          description: "Vortex Bridge - the native bridge for Koinos",
+          url: url,
+          icons: [
+            "~/public/apple-touch-icon.png",
+          ],
+        },
+        modalOptions: {
+          explorerRecommendedWalletIds: ["de9e8421961e35c5e35cb63e3cd7be9af328a62c7b5a11f95ca116bf128a7424"],
+        },
+      }
+    );
+  }
+
   const checkPopUps = () => {
-    var newWin = window.open("http://vortexbridge.io");
+    let newWin = window.open("https://vortexbridge.io");
     if (!newWin || newWin.closed || typeof newWin.closed == "undefined") {
       return false
     }
     return true
   }
 
-  const MyKW =  () => {
-    // eslint-disable-next-line no-async-promise-executor
-    return new Promise(async (resolve, reject) => {
-      let timeOut = setTimeout(() => reject("Error, cannot Connect"), 1000 * 60);
-      const walletConnectorUrl = "https://mykw.vercel.app/embed/wallet-connector"
+  const WC = () => {
+    return new Promise((resolve, reject) => {
+      const walletConnectKoinos = initializeWalletConnect();
+      let testnet = import.meta.env.VITE_CHAIN || "TESTNET";
+      if(testnet == "TESTNET") testnet = "true";
       try {
-        const mkw = new MyKoinosWallet(walletConnectorUrl)
-        const connected = await mkw.connect()
-        if (connected) {
-          // request permissions to access some of the My Koinos Wallet APIs
-          mkw.requestPermissions({
-            "accounts": ["getAccounts"],
-            "provider": ["getChainId", "readContract", "wait", "getAccountRc"],
-            "signer": ["prepareTransaction", "signMessage", "signAndSendTransaction"]
-          }).then(async () => {
-            // get data from connected wallet
-            let provider = new Provider(import.meta.env.KOINOS_RPC);
-            let wallet = await mkw.getAccounts()
-            let signer = await mkw.getSigner(_get(wallet, "[0].address", ""));
-            let chain_id = await provider.getChainId();
-
-            // set connection
-            dispatch(setSigner(signer));
-            dispatch(setProvider(provider));
-            dispatch(setWallet(wallet));
-            dispatch(setConnected(connected));
-            dispatch(setModal(null));
-            dispatch(setModalData(null));
-
-            // check chain
-            if (CHAIN_IDS_TO_NAMES[chain_id] == undefined) {
-              chain_id = CHAINS_IDS.UNSUPPORTED;
+        // initiate connection with a wallet
+        walletConnectKoinos
+          .connect(
+            [
+              (testnet == "true")
+                ? "koinos:EiBncD4pKRIQWco_WRqo5Q-xnXR7JuO3PtZv983mKdKHSQ=="
+                : window.WC_ChainIds.Mainnet,
+            ],
+            [
+              window.WC_Methods.SignAndSendTransaction,
+              window.WC_Methods.PrepareTransaction,
+              window.WC_Methods.WaitForTransaction,
+              window.WC_Methods.GetAccountRc,
+              window.WC_Methods.ReadContract,
+              window.WC_Methods.GetTransactionsById,
+            ]
+          )
+          .then((accounts) => {
+            if (accounts) {
+              const provider = new Provider([ // manually specify provider because the ones in walletconnect are old
+                (testnet == "true")
+                  ? "https://harbinger-api.koinos.io"
+                  : "https://api.koinos.io",
+              ]);
+              const signer = walletConnectKoinos.getSigner(accounts[0]);
+              const connected = accounts ? true : false;
+              dispatch(setSigner(signer));
+              dispatch(setProvider(provider));
+              dispatch(
+                setWallet([
+                  {
+                    name: "walletconnect",
+                    address: accounts[0],
+                    signers: [signer],
+                    object: walletConnectKoinos,
+                  },
+                ])
+              );
+              dispatch(setConnected(connected));
+              dispatch(setNetwork((testnet == "true") ? 'EiBncD4pKRIQWco_WRqo5Q-xnXR7JuO3PtZv983mKdKHSQ==' : 'EiBZK_GGVP0H_fXVAM3j6EAuz3-B-l3ejxRSewi7qIBfSA=='));
+              resolve(true);
             }
-            dispatch(setNetwork(chain_id));
           })
-
-        } else {
-          Snackbar.enqueueSnackbar(<span><Typography variant="h6">MKW Could not connect - Check that cross-site cookies are activated</Typography></span>, {
-            variant: "error",
-            persist: false,
-            action: actionClose,
-          })
-          // throw new Error("MKW could not connect")
-        }
+          .catch((e) => {
+            console.log(e);
+          });
+      } catch (e) {
+        console.log(e);
+        setLoading(false);
+        resetWalletState();
+        walletConnectKoinos.disconnect();
+        reject(e);
       }
-      catch (e) {
-        // if user declines mkw access "request was cancelled" will be returned
-        if (e !== "request was cancelled") {
-          Snackbar.enqueueSnackbar(<span><Typography variant="h6">MKW Could not connect</Typography></span>, {
-            variant: "error",
-            persist: false,
-            action: actionClose,
-          })
-        }
-        resetWalletState()
-      }
-
-      if (timeOut) {
-        clearTimeout(timeOut);
-      }
-      resolve();
-    })
-  }
+      closeModal();
+    });
+  };
 
   // methods
   const selectWallet = async (typed) => {
-    setLoading(true);
     try {
       switch (typed) {
       case "kondor-wallet":
+        setLoading(true);
         await KondorWallet()
         break;
-      case "mkw-wallet":
-        await MyKW()
+      case "wallet-connect":
+        await WC()
         break;
       default:
         break;
       }
     } catch (e) {
+      console.log(e);
       Snackbar.enqueueSnackbar(<span><Typography variant="h6">Could not connect to wallet</Typography></span>, {
         variant: "error",
         persist: false,
@@ -203,11 +240,11 @@ const ModalConnect = () => {
             </ListItemButton>
           </ListItem>
           <ListItem sx={{ "&:hover": { backgroundColor: "background.light", borderRadius: "10px" } }} >
-            <ListItemButton sx={{ "&:hover": { backgroundColor: "background.light" } }} disabled={false} variant="outlined" onClick={() => selectWallet("mkw-wallet")}>
+            <ListItemButton sx={{ "&:hover": { backgroundColor: "background.light" } }} disabled={false} variant="outlined" onClick={() => selectWallet("wallet-connect")}>
               <ListItemIcon>
-                <img src={MKWLogo} style={{ width: "40px", height: "40px" }} alt="My Koinos Wallet wallet logo" />
+                <img src={WalletConnectLogo} style={{ width: "40px", height: "40px" }} alt="WalletConnect logo" />
               </ListItemIcon>
-              <ListItemText primary="My Koinos Wallet" />
+              <ListItemText primary="WalletConnect" secondary="Mobile Wallets (Konio, etc)" />
             </ListItemButton>
           </ListItem>
         </List>
@@ -220,13 +257,10 @@ const ModalConnect = () => {
         <Box sx={{ textAlign: "center" }}>
           <CircularProgress sx={{ marginBottom: "20px" }} color="secondary" />
         </Box>
-        <Typography variant="subtitle1" component={"p"}>Popups {checkPopUps ? "allowed" : "forbidden"}</Typography>
-        <Typography variant="body1" component="p" sx={{ marginBottom: "20px" }}>If you do not have Kondor or My Koinos Wallet installed you can do so by clicking one of the following buttons.</Typography>
+        <Typography variant="subtitle1" component={"p"}>{checkPopUps ? "" : "You need to enable popups for this site."}</Typography>
+        <Typography variant="body1" component="p" sx={{ marginBottom: "20px" }}>If you do not have Kondor installed you can do so by clicking the following buttons</Typography>
         <Button variant="contained" sx={{ width: "100%" }} href="https://chrome.google.com/webstore/detail/kondor/ghipkefkpgkladckmlmdnadmcchefhjl" target="_blank">
           Install Kondor Wallet
-        </Button>
-        <Button variant="contained" sx={{ marginTop: "10px", width: "100%" }} component={Link} href="https://mykw.vercel.app" target="_blank">
-          Use My Koinos Wallet
         </Button>
 
         <Button size="large" color="error" variant="outlined" sx={{ marginTop: "10px", width: "100%" }} onClick={() => {
@@ -260,7 +294,7 @@ const ModalConnect = () => {
         <Box sx={{ paddingX: "15px", marginY: "auto" }}>
           <div style={{ minWidth: "sm", width: "100%", maxWidth: "520px", justifyContent: "center", alignItems: "center" }}>
             <Typography variant="body1" component="span">
-              {isMobile ? <p>Sorry, there is currently no mobile wallet available.</p> : (loading ? <LoadingWallet /> : <SelectWallet />)}
+              {loading ? <LoadingWallet /> : <SelectWallet />}
             </Typography>
           </div>
         </Box>

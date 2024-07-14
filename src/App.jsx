@@ -17,9 +17,12 @@ import "@fontsource/roboto/900.css";
 
 // configs
 const store = generateStore();
+let testnet = import.meta.env.VITE_CHAIN || "TESTNET";
+if(testnet == "TESTNET") testnet = "true";
+const projectId = (testnet == "true") ? '55003640cab75f712d7a880ec2798cb9' : 'c64ca949713c7b3ef89702e71583fb97';
 const config = getDefaultConfig({
-  appName: 'Koinos Bridge',
-  projectId: 'c4f79cc821944d9680842e34466bfb',
+  appName: 'Vortex Bridge',
+  projectId: projectId,
   ssr: false,
   chains: [sepolia],
 });
