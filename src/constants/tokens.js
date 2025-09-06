@@ -7,6 +7,7 @@ const CHAIN = import.meta.env.VITE_CHAIN || "TESTNET"
 import ETH from "./../assets/images/tokens/eth.svg"
 import KOIN from "./../assets/images/tokens/koin.svg"
 import USDT from "./../assets/images/tokens/usdt.svg"
+import USDC from "./../assets/images/tokens/usdc.svg"
 
 /**
  * TOKENS
@@ -54,7 +55,7 @@ let tokens = {
     {
       id: "USDT",
       name: "Tether",
-      icon: ETH,
+      icon: USDT,
       networks: [
         {
           chain: BRIDGE_CHAINS_NAMES.KOIN,
@@ -73,7 +74,7 @@ let tokens = {
     {
       id: "USDC",
       name: "USD Coin",
-      icon: ETH,
+      icon: USDC,
       networks: [
         {
           chain: BRIDGE_CHAINS_NAMES.KOIN,
