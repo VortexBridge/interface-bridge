@@ -41,7 +41,7 @@ let chains = {
       name: "Koinos",
       chainId: 1,
       chainType: BRIDGE_CHAINS_TYPES.KOIN,
-      bridgeAddress: "1Fp3iNkmGKMPVdTpC7i3rttBBXVi7CDoX7",
+      bridgeAddress: "1aqHtNRDkiAZeFtuM8fRFuurcje6eHqF8",
       symbol: "KOIN",
       icon: KOIN,
       explorer: "https://koinosblocks.com/tx"
@@ -49,7 +49,7 @@ let chains = {
     {
       id: BRIDGE_CHAINS_NAMES.ETH,
       chainType: BRIDGE_CHAINS_TYPES.EVM,
-      bridgeAddress: "0x3cf2e6F03b126476E6BDb0305fA0C67AfE737D87",
+      bridgeAddress: "0x2F2f36A88DD5ff8d53Ba2505b2DbC0C153d910Ab",
       chainId: 3,
       symbol: "ETH",
       name: "Ethereum",
