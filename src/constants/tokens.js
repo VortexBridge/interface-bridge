@@ -45,7 +45,7 @@ let tokens = {
         {
           chain: BRIDGE_CHAINS_NAMES.KOIN,
           decimals: 8,
-          symbol: "wETH",
+          symbol: "vETH",
           allowance: true,
           native: false,
           address: "1Tf1QKv3gVYLjq34yURSHw5ErTYbFjqTG"
@@ -134,7 +134,7 @@ let tokens = {
           native: false,
           chain: BRIDGE_CHAINS_NAMES.SEP,
           decimals: 8,
-          symbol: "wKOIN",
+          symbol: "vKOIN",
           allowance: true,
           address: "0x7A348BD7461593C66CB6876BDE70B96CC8393605",
           relayers: [
@@ -159,7 +159,7 @@ let tokens = {
           chain: BRIDGE_CHAINS_NAMES.KOIN,
           decimals: 8,
           allowance: true,
-          symbol: "wETH",
+          symbol: "vETH",
           address: "14Ha3UZnrjyXE5F9mvEfS28QhaNY1ehWXw",
           relayers: [
             // {
@@ -200,7 +200,7 @@ let tokens = {
           chain: BRIDGE_CHAINS_NAMES.KOIN,
           decimals: 8,
           allowance: true,
-          symbol: "wUSDT",
+          symbol: "vUSDT",
           address: "19DDFiZuf66XhxVBveZ2CPbMpb8wyiA6ja",
           relayers: [
             // {
