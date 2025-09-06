@@ -23,12 +23,16 @@ let tokens = {
           chain: BRIDGE_CHAINS_NAMES.KOIN,
           decimals: 8,
           symbol: "KOIN",
+          allowance: true,
+          native: false,
           address: "19GYjDBVXU7keLbYvMLazsGQn3GTWHjHkK",
         },
         {
           chain: BRIDGE_CHAINS_NAMES.ETH,
           decimals: 8,
           symbol: "vKOIN",
+          allowance: true,
+          native: false,
           address: "0xa50ad3a559A10f384a5bB2e27516f63E0B937b1A"
         }
       ]
@@ -42,12 +46,16 @@ let tokens = {
           chain: BRIDGE_CHAINS_NAMES.KOIN,
           decimals: 8,
           symbol: "wETH",
+          allowance: true,
+          native: false,
           address: "1Tf1QKv3gVYLjq34yURSHw5ErTYbFjqTG"
         },
         {
           chain: BRIDGE_CHAINS_NAMES.ETH,
           decimals: 18,
           symbol: "ETH",
+          allowance: true,
+          native: true,
           address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
         }
       ]
@@ -61,12 +69,16 @@ let tokens = {
           chain: BRIDGE_CHAINS_NAMES.KOIN,
           decimals: 8,
           symbol: "vUSDT",
+          allowance: true,
+          native: false,
           address: "12VoHz41a4HtfiyhTWbg9RXqGMRbYk6pXh"
         },
         {
           chain: BRIDGE_CHAINS_NAMES.ETH,
           decimals: 18,
           symbol: "USDT",
+          allowance: true,
+          native: true,
           address: "0xdac17f958d2ee523a2206206994597c13d831ec7"
         }
       ]
@@ -80,12 +92,16 @@ let tokens = {
           chain: BRIDGE_CHAINS_NAMES.KOIN,
           decimals: 8,
           symbol: "vUSDC",
+          allowance: true,
+          native: false,
           address: "1N8iYrYEJdCVK1rhbqv3qZUzHcpoeKmFnj"
         },
         {
           chain: BRIDGE_CHAINS_NAMES.ETH,
           decimals: 18,
           symbol: "USDC",
+          allowance: true,
+          native: false,
           address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
         }
       ]
