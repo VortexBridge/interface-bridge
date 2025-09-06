@@ -146,7 +146,7 @@ const Redeem = (props) => {
       let _bridgeInfo = BRIDGE_CHAINS.find(bridge => bridge.id == _get(toChain, "id", null));
 
       // redeem
-      if (_get(toChain, "id", "") == BRIDGE_CHAINS_NAMES.SEP) {
+      if (_get(toChain, "id", "") == BRIDGE_CHAINS_NAMES.ETH) {
         _bridge = await EvmBridgeContract(_bridgeInfo.bridgeAddress, signer);
         if (_bridge) {
           const tx = await _bridge.completeTransfer(

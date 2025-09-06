@@ -4,7 +4,7 @@ import generateStore from "./redux/index";
 import { Provider as ReactProvider } from "react-redux";
 import { getDefaultConfig, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { WagmiProvider } from 'wagmi';
-import { sepolia } from 'wagmi/chains';
+import { mainnet } from 'wagmi/chains';
 import { QueryClientProvider, QueryClient, } from "@tanstack/react-query";
 
 // css
@@ -24,7 +24,7 @@ const config = getDefaultConfig({
   appName: 'Vortex Bridge',
   projectId: projectId,
   ssr: false,
-  chains: [sepolia],
+  chains: [mainnet],
 });
 const queryClient = new QueryClient();
 
