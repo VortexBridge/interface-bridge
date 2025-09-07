@@ -8,6 +8,7 @@ import React, { Fragment, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { shortedAddress } from "../utils/display";
+import { waitTransation } from "../utils/transactions";
 
 // constants
 import { BRIDGE_CHAINS, BRIDGE_CHAINS_NAMES, BRIDGE_CHAINS_TYPES } from "../constants/chains";
@@ -191,12 +192,17 @@ const Redeem = (props) => {
             signatures: _get(recover, "signatures", ""),
             expiration: _get(recover, "expiration", ""),
           })
+          
           Snackbar.enqueueSnackbar(<Typography variant="h6">Transaction submitted</Typography>, {
             variant: 'info',
             persist: false,
             action: actionClose,
           })
-          await transaction.wait();
+          
+          // For Koinos, we need to wait for the transaction to be confirmed
+          // Using the same waitTransation function that works well in Bridge.jsx
+          await waitTransation(providerKoin, transaction)
+          
           Snackbar.enqueueSnackbar(<Typography sx={{ color: "white" }} variant="h6">Transaction successful</Typography>, {
             variant: 'success',
             persist: false,

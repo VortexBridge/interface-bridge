@@ -1,10 +1,9 @@
-import { Provider } from "koilib";
 import { SET_WALLET, SET_PROVIDER, SET_SIGNER, SET_CONNECTED } from "../constants"
 
 // Constants
 const initialState = {
   wallet: null,
-  provider: new Provider(import.meta.env.VITE_KOINOS_RPC || 'https://harbinger-api.koinos.io'),
+  provider: null,
   signer: null,
   connected: false
 }
