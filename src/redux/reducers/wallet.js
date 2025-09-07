@@ -1,5 +1,5 @@
+import { Provider } from "koilib";
 import { SET_WALLET, SET_PROVIDER, SET_SIGNER, SET_CONNECTED } from "../constants"
-
 
 // Constants
 const initialState = {
