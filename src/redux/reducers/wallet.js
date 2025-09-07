@@ -4,7 +4,7 @@ import { SET_WALLET, SET_PROVIDER, SET_SIGNER, SET_CONNECTED } from "../constant
 // Constants
 const initialState = {
   wallet: null,
-  provider: null,
+  provider: new Provider(import.meta.env.VITE_KOINOS_RPC || 'https://harbinger-api.koinos.io'),
   signer: null,
   connected: false
 }
