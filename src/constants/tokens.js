@@ -75,10 +75,10 @@ let tokens = {
         },
         {
           chain: BRIDGE_CHAINS_NAMES.ETH,
-          decimals: 18,
+          decimals: 6,
           symbol: "USDT",
           allowance: true,
-          native: true,
+          native: false,
           address: "0xdac17f958d2ee523a2206206994597c13d831ec7"
         }
       ]
@@ -98,7 +98,7 @@ let tokens = {
         },
         {
           chain: BRIDGE_CHAINS_NAMES.ETH,
-          decimals: 18,
+          decimals: 6,
           symbol: "USDC",
           allowance: true,
           native: false,
