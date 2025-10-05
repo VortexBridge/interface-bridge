@@ -300,7 +300,22 @@ const Redeem = (props) => {
         result = await bridge.getEthTx(txIdParam ? txIdParam : sourceTX);
       }
       if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN) {
-        result = await bridge.getKoinTx(txIdParam ? txIdParam : sourceTX, opIdKoinos);
+        // Hacer dos consultas paralelas: una con opIdKoinos y otra con opIdKoinos + 1
+        // Usar la primera que responda exitosamente
+        const opIdCurrent = parseInt(opIdKoinos);
+        const opIdNext = opIdCurrent + 1;
+        
+        try {
+          // Intentar ambas consultas en paralelo y usar la primera que responda
+          result = await Promise.race([
+            bridge.getKoinTx(txIdParam ? txIdParam : sourceTX, opIdKoinos),
+            bridge.getKoinTx(txIdParam ? txIdParam : sourceTX, opIdNext.toString())
+          ]);
+        } catch (raceError) {
+          // Si ambas consultas paralelas fallan, no hacer un tercer intento
+          // Dejar que el catch externo maneje el error y programe el reintento
+          throw raceError;
+        }
       }
     } catch (error) {
       result = null;
