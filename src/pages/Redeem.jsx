@@ -307,7 +307,7 @@ const Redeem = (props) => {
         
         try {
           // Intentar ambas consultas en paralelo y usar la primera que responda
-          result = await Promise.race([
+          result = await Promise.any([
             bridge.getKoinTx(txIdParam ? txIdParam : sourceTX, opIdKoinos),
             bridge.getKoinTx(txIdParam ? txIdParam : sourceTX, opIdNext.toString())
           ]);
