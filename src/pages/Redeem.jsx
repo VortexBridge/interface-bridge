@@ -62,6 +62,8 @@ const Redeem = (props) => {
   const [sourceTX, setSourceTX] = useState("");
   const [blockchainTX, setblockchainTX] = useState(false);
   const [redeemSubmitted, setRedeemSubmitted] = useState(false);
+  const [renewSubmitted, setRenewSubmitted] = useState(false);
+
 
   const actionClose = (snackbarId) => (
     <Fragment>
@@ -223,6 +225,74 @@ const Redeem = (props) => {
       return;
     }
   }
+
+  const renewSignatures = async () => {
+    setRenewSubmitted(true);
+    if (loading || renewSubmitted) return; // Check redeemSubmitted state
+    try {
+      let _bridge = null;
+      let _bridgeInfo = BRIDGE_CHAINS.find(bridge => bridge.id == _get(fromChain, "id", null));
+
+      // redeem
+      if (_get(fromChain, "id", "") == BRIDGE_CHAINS_NAMES.ETH) {
+        _bridge = await EvmBridgeContract(_bridgeInfo.bridgeAddress, signer);
+        if (_bridge) {
+          console.log("requestNewSignatures", _bridge)
+          const tx = await _bridge.RequestNewSignatures(
+            sourceTX,
+          )
+          Snackbar.enqueueSnackbar(<Typography variant="h6">Transaction submitted</Typography>, {
+            variant: 'info',
+            persist: false,
+            action: actionClose,
+          })
+          await tx.wait()
+          Snackbar.enqueueSnackbar(<Link underline="none" style={{ cursor: "pointer" }} target="_blank" href={`${fromChain.explorer}/${tx.id}`}><Typography sx={{ color: "white" }} variant="h6">Transaction successful</Typography><Typography sx={{ color: "white" }} variant="subtitle1" component="p">View Block</Typography></Link>, {
+            variant: 'success',
+            persist: false,
+            action: actionClose,
+          })
+        }
+      }
+      if (_get(fromChain, "id", "") == BRIDGE_CHAINS_NAMES.KOIN) {
+        let providerKoin = _get(walletSelector, "provider", null);
+        let signerKoin = _get(walletSelector, "signer", null);
+        _bridge = await KoinosBridgeContract(_bridgeInfo.bridgeAddress, providerKoin, signerKoin);
+        if (_bridge) {
+          let { transaction } = await _bridge.functions.request_new_signatures({
+            transactionId: sourceTX,
+            operationId: _get(recover, "opId", ""),
+          })
+          
+          Snackbar.enqueueSnackbar(<Typography variant="h6">Transaction submitted</Typography>, {
+            variant: 'info',
+            persist: false,
+            action: actionClose,
+          })
+          
+          // For Koinos, we need to wait for the transaction to be confirmed
+          // Using the same waitTransation function that works well in Bridge.jsx
+          await waitTransation(providerKoin, transaction)
+          
+          Snackbar.enqueueSnackbar(<Typography sx={{ color: "white" }} variant="h6">Transaction successful</Typography>, {
+            variant: 'success',
+            persist: false,
+            action: actionClose,
+          })
+        }
+      }
+      checkApi(sourceTX, true)
+    } catch (error) {
+      console.log(error)
+      setRenewSubmitted(false);
+      Snackbar.enqueueSnackbar(<span><Typography variant="h6">Transaction error</Typography></span>, {
+        variant: 'error',
+        persist: false,
+        action: actionClose,
+      })
+      return;
+    }
+  }
   const checkChain = (_chain) => {
     let evm_conector = _get(account, 'isConnected', false);
     let koin_conector = _get(walletSelector, "connected", false);    
@@ -235,7 +305,7 @@ const Redeem = (props) => {
     return false
   }
 
-  const checkApi = async (txIdParam = null) => {
+  const checkApi = async (txIdParam = null, isRenew = false) => {
     if (loading) return;
     setLoading(true);
     let result = null;
@@ -320,25 +390,42 @@ const Redeem = (props) => {
     } catch (error) {
       result = null;
       console.log(error);
-      let _timer = setTimeout(() => checkApi(txIdParam), 3000);
+      let _timer = setTimeout(() => checkApi(txIdParam, isRenew), 3000);
       setChecker(_timer);
       return;
+    }
+
+    if(isRenew) {
+      const expirationRecover = parseInt(_get(result, "expiration", "0"));
+      const expirationResult = parseInt(_get(recover, "expiration", "0"));
+      if(expirationRecover == expirationResult) {
+        setLoading(false);
+        let _timer = setTimeout(() => checkApi(txIdParam, isRenew), 3000);
+        setChecker(_timer);
+        return;
+      }
+    }
+
+    if (!hasEnoughSignatures(result)) {
+      setLoading(false);
+      let _timer = setTimeout(() => checkApi(txIdParam, isRenew), 3000);
+      setChecker(_timer);
+      return;
+    }
+    if(isRenew) {
+      setRenewSubmitted(false);
     }
     setRecover(result);
-    if (!hasEnoughSignatures(result)) {
-      let _timer = setTimeout(() => checkApi(txIdParam), 3000);
-      setChecker(_timer);
-      return;
-    }
     setLoading(false);
   };
 
   const BaseConnections = (props) => (
     <>
-      {_get(toChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM ? <CustomEthConnectButton {...props} /> : null}
-      {_get(toChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN ? <CustomKoinConnectButton {...props} /> : null}
+      {_get(props.base == "from" ? fromChain  : toChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM ? <CustomEthConnectButton {...props} /> : null}
+      {_get(props.base == "from" ? fromChain  : toChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN ? <CustomKoinConnectButton {...props} /> : null}
     </>
   )
+
   const Connectors = ({ chain }) => {
     // conect from Ethereum
     if (_get(chain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM) return (
@@ -378,10 +465,26 @@ const Redeem = (props) => {
     if (!recover || (recover && !hasEnoughSignatures(recover))) return (
       <BaseConnections
         actions={
-            <Button disabled={loading} variant="contained" size="large" onClick={() => checkApi(sourceTX)} sx={{ width: "100%" }}>RECOVER</Button>
-          }
-        />
+          <Button disabled={loading} variant="contained" size="large" onClick={() => checkApi(sourceTX)} sx={{ width: "100%" }}>RECOVER</Button>
+        }
+      />
     )
+
+    // check if the transaction has expired
+    if (recover && _get(recover, "expiration")) {
+      const expirationTime = parseInt(_get(recover, "expiration", "0"));
+      const currentTime = Date.now();
+      if (currentTime > expirationTime) {
+        return (
+          <BaseConnections
+            actions={
+              <Button disabled={loading || renewSubmitted} onClick={() => renewSignatures()} variant="contained" size="large" sx={{ width: "100%" }}>RENEW SIGNATURES</Button>
+            }
+          />
+        );
+      }
+    }
+
     return (
       <BaseConnections
         actions={
