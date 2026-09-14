@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Alert, Box, Button, Checkbox, Chip, FormControlLabel, Paper, Stack, Typography } from "@mui/material";
 import WorkerSetup from "./WorkerSetup.jsx";
 import ProgressWindow from "./ProgressWindow.jsx";
+import Backups from "./Backups.jsx";
 
 export default function Worker({ client, onChange }) {
   const [worker, setWorker] = useState(null);
@@ -84,6 +85,7 @@ export default function Worker({ client, onChange }) {
         {worker.state === "running" && <Stack alignItems="flex-start" gap={1}><FormControlLabel control={<Checkbox checked={stopApproved} onChange={(e) => setStopApproved(e.target.checked)} />} label="Stop this worker and suspend its event observation" /><Button variant="outlined" disabled={busy || !stopApproved} onClick={() => act("stop")}>Stop worker gracefully</Button></Stack>}
       </>}
     </Paper>}
+    {worker?.registered && <Backups client={client} worker={worker} />}
     {worker?.registered && <ProgressWindow client={client} running={worker.state === "running"} />}
   </Stack>;
 }

@@ -18,6 +18,7 @@ function OperatorWorkspace({ client, initialStatus, capabilities }) {
   const [status, setStatus] = useState(initialStatus);
   const [tab, setTab] = useState("overview");
   const [error, setError] = useState("");
+  const [connectionError, setConnectionError] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [clock, setClock] = useState(Date.now());
@@ -34,8 +35,8 @@ function OperatorWorkspace({ client, initialStatus, capabilities }) {
     if (!client) return undefined;
     let cancelled = false;
     const timer = setInterval(async () => {
-      try { const next = await client("/v1/status"); if (!cancelled) setStatus(next); }
-      catch { if (!cancelled) setError("Operator connection lost. Displayed observations may be stale."); }
+      try { const next = await client("/v1/status"); if (!cancelled) { setStatus(next); setConnectionError(""); } }
+      catch { if (!cancelled) setConnectionError("Operator connection lost. Displayed observations may be stale."); }
     }, 10000);
     return () => { cancelled = true; clearInterval(timer); };
   }, [client]);
@@ -69,6 +70,7 @@ function OperatorWorkspace({ client, initialStatus, capabilities }) {
   });
 
   return <Box sx={{ maxWidth: 1120, mx: "auto", pb: 6 }}>
+    {connectionError && <Alert severity="error" role="alert" sx={{ mb: 2 }}>{connectionError}</Alert>}
     {error && <Alert severity="error" role="alert" sx={{ mb: 2 }}>{error}</Alert>}
     {message && <Alert severity="info" role="status" sx={{ mb: 2 }}>{message}</Alert>}
     <Alert severity="info" sx={{ mb: 2 }}>The operator service holds no bridge signing keys. Registered observation workers can be started and stopped independently. Managed signing and transaction submission remain unavailable.</Alert>
