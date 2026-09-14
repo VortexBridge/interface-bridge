@@ -4,7 +4,7 @@ import { Alert, Box, Button, Checkbox, Chip, FormControlLabel, Paper, Stack, Tex
 import Maintenance from "./Maintenance.jsx";
 
 export default function Updates({ client, revision, instanceId, onChange }) {
-  const [state, setState] = useState({ approvals: [], trustedPublishers: [], requiredSignatures: 0, staged: [] });
+  const [state, setState] = useState({ approvals: [], trustedPublishers: [], requiredSignatures: 0, installedVersion: null, installedProblem: "", staged: [] });
   const [raw, setRaw] = useState("");
   const [verified, setVerified] = useState(null);
   const [consent, setConsent] = useState(false);
@@ -32,6 +32,20 @@ export default function Updates({ client, revision, instanceId, onChange }) {
     <Alert severity="info">Release verification and local approvals are available. The local CLI can stage artifacts and run isolated observation checks, including synthetic transfer persistence with current checkers. Full release qualification and the staged installer remain unavailable.</Alert>
     {error && <Alert severity="error" role="alert">{error}</Alert>}
     {message && <Alert severity="success" role="status">{message}</Alert>}
+    <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}>
+      <Stack gap={1.5}>
+        <Typography variant="h6" component="h3">Current validator release</Typography>
+        {state.installedVersion ? <>
+          <Chip label={state.installedVersion.state} color="success" variant="outlined" sx={{ alignSelf: "flex-start" }} />
+          <Typography>{state.installedVersion.component} {state.installedVersion.version} · sequence {state.installedVersion.sequence} · {state.installedVersion.platform}</Typography>
+          <Typography variant="body2" sx={{ overflowWrap: "anywhere" }}>Release digest: {state.installedVersion.digest}</Typography>
+          <Typography variant="body2" sx={{ overflowWrap: "anywhere" }}>Pinned validator SHA-256: {state.installedVersion.artifactSha256}</Typography>
+          <Typography variant="body2" sx={{ overflowWrap: "anywhere" }}>Source commit: {state.installedVersion.sourceCommit}</Typography>
+          <Typography variant="body2">Compatibility: config schema {state.installedVersion.configSchema}, database schema {state.installedVersion.databaseSchema}, signing codec {state.installedVersion.signingCodec}.</Typography>
+          <Typography variant="caption">Recorded locally {new Date(state.installedVersion.recordedAt).toLocaleString()}. The operator rechecks the pinned binary, worker registration and configuration before returning this identity.</Typography>
+        </> : <Alert severity="warning">{state.installedProblem || "The current validator release has not been recorded."} After staging the signed release whose artifact exactly matches the registered worker, run the local release-adopt command with that digest and platform. Adoption records identity only; it does not install or start software.</Alert>}
+      </Stack>
+    </Paper>
     <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}>
       <Typography variant="h6" component="h3">Verify a release</Typography>
       <Typography sx={{ my: 2 }}>Locally trusted publishers: {state.trustedPublishers.length ? state.trustedPublishers.join(", ") : "None configured"}. Required publisher signatures: {state.requiredSignatures || "Not configured"}.</Typography>
@@ -68,6 +82,11 @@ export default function Updates({ client, revision, instanceId, onChange }) {
         <Typography sx={{ overflowWrap: "anywhere" }}>Manifest digest: {item.digest}</Typography>
         <Typography sx={{ overflowWrap: "anywhere" }}>Artifact SHA-256: {item.artifactSha256 || "Not verified"}</Typography>
         <Typography>{item.message}</Typography>
+        {item.compatibility && <Alert severity={item.compatibility.rollingUpdate ? "success" : item.compatibility.state === "already-installed" ? "info" : "warning"}>
+          <Typography component="div" fontWeight={600}>{item.compatibility.state}</Typography>
+          <Typography component="div">Rolling update metadata: {item.compatibility.rollingUpdate ? "Compatible for further qualification" : "Not eligible"}.</Typography>
+          {item.compatibility.reasons.map((reason) => <Typography component="div" variant="body2" key={reason}>{reason}</Typography>)}
+        </Alert>}
         {item.candidate ? <>
           <Alert severity={["checks-passed", "smoke-passed"].includes(item.candidate.report.state) ? "info" : "error"}>Candidate isolated checks: {["checks-passed", "smoke-passed"].includes(item.candidate.report.state) ? "Passed" : "Failed"}. Full release qualification remains required.</Alert>
           <Typography>Completed: {new Date(item.candidate.finishedAt).toLocaleString()}</Typography>
