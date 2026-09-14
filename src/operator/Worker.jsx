@@ -41,7 +41,7 @@ export default function Worker({ client, onChange }) {
   };
   return <Stack gap={2}>
     <Typography variant="h6" component="h2">Validator process</Typography>
-    <Typography>Your validator runs independently of this panel and its operator service. This build manages observation workers; they do not load keys or exchange signatures.</Typography>
+    <Typography>Your validator runs independently of this panel and its operator service. Observation workers can be created and started here. An existing signing worker can be attached for status, fixed maintenance proofs and a reviewed stop; its host service retains its keys and start authority.</Typography>
     {error && <Alert severity="error">{error}</Alert>}
     {setupCreated && <Alert severity="success">Observation worker created. Run preflight checks and review the results before starting it. Signing is not enabled.</Alert>}
     <Button variant="outlined" disabled={busy} onClick={preflight} sx={{ alignSelf: "flex-start" }}>Run preflight checks</Button>
@@ -81,8 +81,9 @@ export default function Worker({ client, onChange }) {
             <Typography variant="caption">{activity.lastWriteAt && !activity.lastWriteAt.startsWith("0001") ? `Last write ${new Date(activity.lastWriteAt).toLocaleString()}` : "No transaction writes recorded in this process"}</Typography>
           </Paper>)}
         </>}
-        {worker.state === "unavailable" && <Button variant="contained" disabled={busy} onClick={() => act("start")}>Start observation worker</Button>}
-        {worker.state === "running" && <Stack alignItems="flex-start" gap={1}><FormControlLabel control={<Checkbox checked={stopApproved} onChange={(e) => setStopApproved(e.target.checked)} />} label="Stop this worker and suspend its event observation" /><Button variant="outlined" disabled={busy || !stopApproved} onClick={() => act("stop")}>Stop worker gracefully</Button></Stack>}
+        {worker.state === "unavailable" && worker.mode !== "signing" && <Button variant="contained" disabled={busy} onClick={() => act("start")}>Start observation worker</Button>}
+        {worker.state === "unavailable" && worker.mode === "signing" && <Alert severity="info">Start this signing worker through its independently reviewed host service, then reload its status here.</Alert>}
+        {worker.state === "running" && <Stack alignItems="flex-start" gap={1}><FormControlLabel control={<Checkbox checked={stopApproved} onChange={(e) => setStopApproved(e.target.checked)} />} label={worker.mode === "signing" ? "Stop this signing worker and suspend its bridge activity" : "Stop this worker and suspend its event observation"} /><Button variant="outlined" disabled={busy || !stopApproved} onClick={() => act("stop")}>Stop worker gracefully</Button></Stack>}
       </>}
     </Paper>}
     {worker?.registered && <Backups client={client} worker={worker} />}

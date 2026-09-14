@@ -39,7 +39,7 @@ export default function Participation({ client, envelope }) {
   return <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, minWidth: 0 }}><Stack gap={2}>
     <Typography component="h3" variant="h6">Check fresh operator responses</Typography>
     <Typography>Create a short-lived request for this operator’s scheduled release, then exchange it with the other operators. Each response captures that operator’s own worker through its private service.</Typography>
-    <Alert severity="info">Signed responses authenticate local observations. Observation-only workers, unavailable workers and missing responses do not establish signing quorum or authorize installation.</Alert>
+    <Alert severity="info">Signed responses authenticate local observations. A signing worker can also prove possession of both locally mapped bridge keys for this request. This still does not prove membership, productive signing, external stages or permission to install.</Alert>
     {error && <Alert severity="error">{error}</Alert>}
     {state?.error && <Alert severity="warning">{state.error}</Alert>}
     <Button variant="outlined" disabled={busy || (!pending && !envelope)} onClick={begin}>{pending ? "Retry the same participation request" : "Create participation request for reviewed plan"}</Button>
@@ -79,10 +79,17 @@ export default function Participation({ client, envelope }) {
       }} />
     </Button>
     {report && <>
-      <Alert severity={expired ? "warning" : "info"}>{expired ? "This inspection is stale. Collect and verify fresh responses before relying on it." : report.allResponded ? "Every operator responded. Signing quorum remains unverified." : "Some operator responses are missing."}</Alert>
+      <Alert severity={expired ? "warning" : "info"}>{expired ? "This inspection is stale. Collect and verify fresh responses before relying on it." : report.contractKeyThresholdsMet ? "Enough non-updating operators proved locally mapped keys for both contract stages. External stages and current membership remain unverified." : report.allResponded ? "Every operator responded, but the contract key thresholds were not proved." : "Some operator responses are missing."}</Alert>
       <Typography>Checked {new Date(report.checkedAt).toLocaleString()} · Valid until {new Date(report.expiresAt).toLocaleString()}</Typography>
       {report.members.map((member) => <Typography key={member.instanceId} sx={{ overflowWrap: "anywhere" }}>{member.instanceId}: {member.state}. {member.notice}</Typography>)}
       <Typography sx={{ overflowWrap: "anywhere" }}>Missing: {report.missing.join(", ") || "None"}</Typography>
+      {!!report.stages?.length && <Stack gap={1}>
+        <Typography component="h5" fontWeight={600}>Route-stage evidence</Typography>
+        {report.stages.map((stage) => <Paper variant="outlined" sx={{ p: 1.5 }} key={`${stage.routeId}-${stage.stage}`}>
+          <Typography sx={{ overflowWrap: "anywhere" }}>{stage.routeId} · {stage.stage}: {stage.state} ({stage.eligible.length}/{stage.required})</Typography>
+          <Typography>{stage.notice}</Typography>
+        </Paper>)}
+      </Stack>}
       <Typography>{report.notice}</Typography>
       <Button onClick={() => exportJSON("participation-inspection.json", report)}>Export dated participation inspection</Button>
     </>}

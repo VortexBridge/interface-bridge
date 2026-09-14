@@ -43,6 +43,9 @@ export default function Maintenance({ client, revision, onChange }) {
     {state?.policyConfigured && <>
       <Typography sx={{ overflowWrap: "anywhere" }}>Policy {state.policy.id} · {state.policy.members.length} members · Expires {new Date(state.policy.expiresAt).toLocaleString()}</Typography>
       <Typography sx={{ overflowWrap: "anywhere" }}>Policy SHA-256: {state.policyDigest}</Typography>
+      {state.policy.members.map((member) => <Typography key={member.instanceId} sx={{ overflowWrap: "anywhere" }}>
+        {member.instanceId} · EVM {member.evmAddress || "unmapped"} · Koinos {member.koinosAddress || "unmapped"}
+      </Typography>)}
       {state.policy.routes.map((route) => <Stack key={route.id} gap={1}>
         <Typography fontWeight={600}>{route.id}</Typography>
         <Typography sx={{ overflowWrap: "anywhere" }}>EVM {route.evm.networkId} · {route.evm.contract}</Typography>
