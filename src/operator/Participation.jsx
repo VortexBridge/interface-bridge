@@ -39,7 +39,7 @@ export default function Participation({ client, envelope }) {
   return <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, minWidth: 0 }}><Stack gap={2}>
     <Typography component="h3" variant="h6">Check fresh operator responses</Typography>
     <Typography>Create a short-lived request for this operator’s scheduled release, then exchange it with the other operators. Each response captures that operator’s own worker through its private service.</Typography>
-    <Alert severity="info">Signed responses authenticate local observations. A signing worker can also prove possession of both locally mapped bridge keys for this request. This still does not prove membership, productive signing, external stages or permission to install.</Alert>
+    <Alert severity="info">Signed responses authenticate local observations. A signing worker can prove possession of both locally mapped bridge keys. The requesting operator then reads each contract from its own saved RPC profile and checks those keys against the current validator set. Productive signing, external stages and permission to install remain separate.</Alert>
     {error && <Alert severity="error">{error}</Alert>}
     {state?.error && <Alert severity="warning">{state.error}</Alert>}
     <Button variant="outlined" disabled={busy || (!pending && !envelope)} onClick={begin}>{pending ? "Retry the same participation request" : "Create participation request for reviewed plan"}</Button>
@@ -79,14 +79,26 @@ export default function Participation({ client, envelope }) {
       }} />
     </Button>
     {report && <>
-      <Alert severity={expired ? "warning" : "info"}>{expired ? "This inspection is stale. Collect and verify fresh responses before relying on it." : report.contractKeyThresholdsMet ? "Enough non-updating operators proved locally mapped keys for both contract stages. External stages and current membership remain unverified." : report.allResponded ? "Every operator responded, but the contract key thresholds were not proved." : "Some operator responses are missing."}</Alert>
+      <Alert severity={expired ? "warning" : "info"}>{expired ? "This inspection is stale. Collect and verify fresh responses before relying on it." : report.contractMembershipThresholdsMet ? "Enough non-updating operators proved their keys and finalized contract membership for every route. Productive signing and external stages remain unverified." : report.contractKeyThresholdsMet ? "Enough keys were proved, but at least one contract membership check is missing, mismatched, unfinalized or below its required threshold." : report.allResponded ? "Every operator responded, but the contract key thresholds were not proved." : "Some operator responses are missing."}</Alert>
       <Typography>Checked {new Date(report.checkedAt).toLocaleString()} · Valid until {new Date(report.expiresAt).toLocaleString()}</Typography>
       {report.members.map((member) => <Typography key={member.instanceId} sx={{ overflowWrap: "anywhere" }}>{member.instanceId}: {member.state}. {member.notice}</Typography>)}
       <Typography sx={{ overflowWrap: "anywhere" }}>Missing: {report.missing.join(", ") || "None"}</Typography>
+      {!!report.contractObservations?.length && <Stack gap={1}>
+        <Typography component="h5" fontWeight={600}>Fresh contract membership</Typography>
+        {report.contractObservations.map((observation) => <Paper variant="outlined" sx={{ p: 1.5, minWidth: 0 }} key={`${observation.routeId}-${observation.stage}`}>
+          <Typography sx={{ overflowWrap: "anywhere" }}>{observation.routeId} · {observation.family.toUpperCase()}: {observation.state}</Typography>
+          <Typography sx={{ overflowWrap: "anywhere" }}>Profile {observation.profileId} · Block {observation.block || "Unknown"} · {observation.finality || "Finality unknown"}</Typography>
+          <Typography>Contract validators {observation.validators?.length || 0} · Observed quorum {observation.quorum || "Unknown"}</Typography>
+          <Typography sx={{ overflowWrap: "anywhere" }}>Policy members seen on-chain: {observation.observedMemberIds?.join(", ") || "None observed"}</Typography>
+          <Typography sx={{ overflowWrap: "anywhere" }}>Non-updating key-proved members seen: {observation.observedEligibleIds?.join(", ") || "None observed"}</Typography>
+          <Typography>{observation.notice}</Typography>
+        </Paper>)}
+      </Stack>}
       {!!report.stages?.length && <Stack gap={1}>
         <Typography component="h5" fontWeight={600}>Route-stage evidence</Typography>
         {report.stages.map((stage) => <Paper variant="outlined" sx={{ p: 1.5 }} key={`${stage.routeId}-${stage.stage}`}>
-          <Typography sx={{ overflowWrap: "anywhere" }}>{stage.routeId} · {stage.stage}: {stage.state} ({stage.eligible.length}/{stage.required})</Typography>
+          <Typography sx={{ overflowWrap: "anywhere" }}>{stage.routeId} · {stage.stage}: {stage.state}</Typography>
+          <Typography sx={{ overflowWrap: "anywhere" }}>Key proof: {stage.eligible.length}/{stage.required}{stage.stage.endsWith("-contract") ? ` · Verified membership: ${stage.membershipEligible?.length || 0}/${Math.max(stage.required, stage.observedRequired || 0)} · Contract quorum: ${stage.observedRequired || "Unknown"}` : ""}</Typography>
           <Typography>{stage.notice}</Typography>
         </Paper>)}
       </Stack>}
