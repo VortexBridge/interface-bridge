@@ -29,7 +29,7 @@ export default function Updates({ client, revision, instanceId, onChange }) {
     <Typography variant="h6" component="h2">Security updates</Typography>
     <Typography>Review one exact release and control its approval on your operator. A publisher’s signature cannot install software on your behalf.</Typography>
     <Typography variant="body2" sx={{ overflowWrap: "anywhere" }}>Operator instance: {instanceId || "Unknown"}</Typography>
-    <Alert severity="info">Release verification and local approvals are available. The local CLI can stage artifacts and run an isolated observation smoke check. Full release qualification and the staged installer remain unavailable.</Alert>
+    <Alert severity="info">Release verification and local approvals are available. The local CLI can stage artifacts and run isolated observation checks, including synthetic transfer persistence with current checkers. Full release qualification and the staged installer remain unavailable.</Alert>
     {error && <Alert severity="error" role="alert">{error}</Alert>}
     {message && <Alert severity="success" role="status">{message}</Alert>}
     <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}>
@@ -69,12 +69,12 @@ export default function Updates({ client, revision, instanceId, onChange }) {
         <Typography sx={{ overflowWrap: "anywhere" }}>Artifact SHA-256: {item.artifactSha256 || "Not verified"}</Typography>
         <Typography>{item.message}</Typography>
         {item.candidate ? <>
-          <Alert severity={item.candidate.report.state === "smoke-passed" ? "info" : "error"}>Candidate observation smoke check: {item.candidate.report.state === "smoke-passed" ? "Passed" : "Failed"}. Full release qualification remains required.</Alert>
+          <Alert severity={["checks-passed", "smoke-passed"].includes(item.candidate.report.state) ? "info" : "error"}>Candidate isolated checks: {["checks-passed", "smoke-passed"].includes(item.candidate.report.state) ? "Passed" : "Failed"}. Full release qualification remains required.</Alert>
           <Typography>Completed: {new Date(item.candidate.finishedAt).toLocaleString()}</Typography>
           <Typography sx={{ overflowWrap: "anywhere" }}>Reviewed checker SHA-256: {item.candidate.checkerSha256}</Typography>
           <Typography>{item.candidate.notice}</Typography>
           {item.candidate.report.error && <Box component="details"><Typography component="summary" sx={{ cursor: "pointer" }}>Test failure details</Typography><Typography component="pre" color="error" sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere", maxHeight: 240, overflow: "auto", fontSize: "0.8rem" }}>{item.candidate.report.error}</Typography></Box>}
-        </> : <Typography>No candidate smoke report recorded. The local candidate-test command runs a restricted container with synthetic data.</Typography>}
+        </> : <Typography>No candidate report recorded. The local candidate-test command runs a restricted container with synthetic data.</Typography>}
       </Stack>
     </Paper>)}
     <Maintenance client={client} revision={revision} onChange={onChange} />
