@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Alert, Box, Button, Checkbox, Chip, FormControlLabel, Paper, Stack, TextField, Typography } from "@mui/material";
 
+import Maintenance from "./Maintenance.jsx";
+
 export default function Updates({ client, revision, instanceId, onChange }) {
   const [state, setState] = useState({ approvals: [], trustedPublishers: [], requiredSignatures: 0, staged: [] });
   const [raw, setRaw] = useState("");
@@ -75,6 +77,7 @@ export default function Updates({ client, revision, instanceId, onChange }) {
         </> : <Typography>No candidate smoke report recorded. The local candidate-test command runs a restricted container with synthetic data.</Typography>}
       </Stack>
     </Paper>)}
+    <Maintenance client={client} revision={revision} onChange={onChange} />
     <Typography variant="h6" component="h3">Local approval history</Typography>
     {!state.approvals.length && <Typography color="text.secondary">No releases approved on this operator.</Typography>}
     {state.approvals.map((approval) => <Paper key={approval.digest} variant="outlined" sx={{ p: 2 }}>

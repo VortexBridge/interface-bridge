@@ -71,7 +71,7 @@ function OperatorWorkspace({ client, initialStatus, capabilities }) {
   return <Box sx={{ maxWidth: 1120, mx: "auto", pb: 6 }}>
     {error && <Alert severity="error" role="alert" sx={{ mb: 2 }}>{error}</Alert>}
     {message && <Alert severity="info" role="status" sx={{ mb: 2 }}>{message}</Alert>}
-    <Alert severity="info" sx={{ mb: 2 }}>The operator service holds no signing keys. Registered observation workers can be started and stopped independently. Managed signing and transaction submission remain unavailable.</Alert>
+    <Alert severity="info" sx={{ mb: 2 }}>The operator service holds no bridge signing keys. Registered observation workers can be started and stopped independently. Managed signing and transaction submission remain unavailable.</Alert>
     <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2, minWidth: 0 }}>
       <Tabs value={tab} onChange={(_, value) => setTab(value)} variant="scrollable" scrollButtons="auto" allowScrollButtonsMobile aria-label="Operator sections" sx={{ minWidth: 0, width: "100%" }}>
         {Object.entries(labels).map(([value, label]) => <Tab key={value} value={value} label={label} id={`operator-tab-${value}`} aria-controls={`operator-panel-${value}`} />)}
