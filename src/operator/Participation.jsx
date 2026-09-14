@@ -1,0 +1,90 @@
+import React, { useEffect, useState } from "react";
+import { Alert, Button, Paper, Stack, TextField, Typography } from "@mui/material";
+import { exportJSON } from "./client";
+
+export default function Participation({ client, envelope }) {
+  const [state, setState] = useState(null);
+  const [requestJSON, setRequestJSON] = useState("");
+  const [response, setResponse] = useState(null);
+  const [responsesJSON, setResponsesJSON] = useState("[]");
+  const [report, setReport] = useState(null);
+  const [pending, setPending] = useState(null);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    let cancelled = false;
+    client("/v1/maintenance/participation").then((next) => { if (!cancelled) setState(next); }).catch((e) => { if (!cancelled) setError(e.message); });
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => { cancelled = true; clearInterval(timer); };
+  }, [client]);
+  const run = async (work) => { setBusy(true); setError(""); try { await work(); } catch (e) { setError(e.message); } finally { setBusy(false); } };
+  const begin = () => run(async () => {
+    const current = await client("/v1/maintenance/participation");
+    const request = pending || { id: `participation-${crypto.randomUUID()}`, expectedRevision: current.revision, envelope };
+    setPending(request); setReport(null);
+    const next = await client("/v1/maintenance/participation/begin", request);
+    setState({ request: next }); setPending(null);
+  });
+  const respond = () => run(async () => {
+    setResponse(null);
+    const next = await client("/v1/maintenance/participation/respond", JSON.parse(requestJSON));
+    setResponse(next);
+  });
+  const verify = () => run(async () => {
+    setReport(null);
+    setReport(await client("/v1/maintenance/participation/verify", JSON.parse(responsesJSON)));
+  });
+  const expired = report && now >= Date.parse(report.expiresAt);
+  return <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, minWidth: 0 }}><Stack gap={2}>
+    <Typography component="h3" variant="h6">Check fresh operator responses</Typography>
+    <Typography>Create a short-lived request for this operator’s scheduled release, then exchange it with the other operators. Each response captures that operator’s own worker through its private service.</Typography>
+    <Alert severity="info">Signed responses authenticate local observations. Observation-only workers, unavailable workers and missing responses do not establish signing quorum or authorize installation.</Alert>
+    {error && <Alert severity="error">{error}</Alert>}
+    {state?.error && <Alert severity="warning">{state.error}</Alert>}
+    <Button variant="outlined" disabled={busy || (!pending && !envelope)} onClick={begin}>{pending ? "Retry the same participation request" : "Create participation request for reviewed plan"}</Button>
+    {!envelope && <Typography>Review a fully endorsed schedule above to create a request. Only an operator with its own approved maintenance window can create it.</Typography>}
+    {pending && <Button disabled={busy} onClick={() => setPending(null)}>Discard pending participation request</Button>}
+    {state?.request && <>
+      <Typography sx={{ overflowWrap: "anywhere" }}>Request {state.request.probe.challenge.id} · Release {state.request.probe.challenge.releaseDigest}</Typography>
+      <Typography>Request expires {new Date(state.request.probe.challenge.expiresAt).toLocaleString()}{now >= Date.parse(state.request.probe.challenge.expiresAt) ? " · Expired" : ""}</Typography>
+      <TextField label="Participation request to share" multiline minRows={2} maxRows={5} fullWidth value={JSON.stringify(state.request, null, 2)} InputProps={{ readOnly: true }} />
+      <Button onClick={() => exportJSON("participation-request.json", state.request)}>Export participation request</Button>
+    </>}
+    <Typography component="h4" fontWeight={600}>Respond from this operator</Typography>
+    <TextField label="Incoming participation request JSON" multiline minRows={3} maxRows={6} fullWidth disabled={busy} value={requestJSON} onChange={(e) => { setRequestJSON(e.target.value); setResponse(null); }} />
+    <Button variant="outlined" disabled={busy || !requestJSON} onClick={respond}>Capture and sign local observation</Button>
+    {response && <>
+      <Typography>Observed {new Date(response.observation.observedAt).toLocaleString()}. The response must be verified within 30 seconds.</Typography>
+      <Typography>{response.observation.problem || "Local worker observation captured; signing participation remains unverified."}</Typography>
+      <TextField label="Local participation response JSON" multiline minRows={2} maxRows={5} fullWidth value={JSON.stringify(response, null, 2)} InputProps={{ readOnly: true }} />
+      <Button onClick={() => exportJSON("participation-response.json", response)}>Export local participation response</Button>
+      <Button disabled={busy} onClick={() => run(async () => { const responses = JSON.parse(responsesJSON); if (!Array.isArray(responses)) throw new Error("Enter a JSON array of responses first."); setResponsesJSON(JSON.stringify([...responses.filter((item) => item.observation?.instanceId !== response.observation.instanceId), response], null, 2)); setReport(null); })}>Use local response in collection</Button>
+    </>}
+    <Typography component="h4" fontWeight={600}>Verify responses on the requesting operator</Typography>
+    <TextField label="Participation responses JSON array" multiline minRows={3} maxRows={6} fullWidth disabled={busy} value={responsesJSON} onChange={(e) => { setResponsesJSON(e.target.value); setReport(null); }} />
+    <Button variant="outlined" disabled={busy} onClick={verify}>Verify fresh responses</Button>
+    <Button component="label" variant="outlined" disabled={busy}>Import and verify responses file
+      <input type="file" accept="application/json,.json" hidden onChange={(e) => {
+        const file = e.target.files?.[0]; e.target.value = "";
+        if (!file) return;
+        run(async () => {
+          setReport(null);
+          if (file.size > 1024 * 1024) throw new Error("Responses file exceeds 1 MiB.");
+          const raw = await file.text(); const responses = JSON.parse(raw);
+          if (!Array.isArray(responses)) throw new Error("Responses file must contain a JSON array.");
+          setResponsesJSON(raw);
+          setReport(await client("/v1/maintenance/participation/verify", responses));
+        });
+      }} />
+    </Button>
+    {report && <>
+      <Alert severity={expired ? "warning" : "info"}>{expired ? "This inspection is stale. Collect and verify fresh responses before relying on it." : report.allResponded ? "Every operator responded. Signing quorum remains unverified." : "Some operator responses are missing."}</Alert>
+      <Typography>Checked {new Date(report.checkedAt).toLocaleString()} · Valid until {new Date(report.expiresAt).toLocaleString()}</Typography>
+      {report.members.map((member) => <Typography key={member.instanceId} sx={{ overflowWrap: "anywhere" }}>{member.instanceId}: {member.state}. {member.notice}</Typography>)}
+      <Typography sx={{ overflowWrap: "anywhere" }}>Missing: {report.missing.join(", ") || "None"}</Typography>
+      <Typography>{report.notice}</Typography>
+      <Button onClick={() => exportJSON("participation-inspection.json", report)}>Export dated participation inspection</Button>
+    </>}
+  </Stack></Paper>;
+}

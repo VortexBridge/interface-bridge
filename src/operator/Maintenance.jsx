@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Alert, Button, Checkbox, FormControlLabel, Paper, Stack, TextField, Typography } from "@mui/material";
 import { exportJSON } from "./client";
+import Participation from "./Participation.jsx";
 
 export default function Maintenance({ client, revision, onChange }) {
   const [state, setState] = useState(null);
@@ -65,5 +66,6 @@ export default function Maintenance({ client, revision, onChange }) {
         <Button onClick={() => exportJSON("local-maintenance-endorsement.json", entry)}>Export recorded endorsement</Button>
       </Stack>)}
     </>}
+    <Participation client={client} envelope={review?.report.state === "reserved" ? review.envelope : null} />
   </Stack></Paper>;
 }
