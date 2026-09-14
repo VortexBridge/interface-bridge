@@ -1,7 +1,8 @@
 import React from "react"; // , {useState}
 
 // components mui
-import { AppBar, Container, useMediaQuery, useTheme } from "@mui/material";
+import { AppBar, Button, Container, Stack, useMediaQuery, useTheme } from "@mui/material";
+import { NavLink } from "react-router-dom";
 
 
 
@@ -17,6 +18,11 @@ const Header = () => {
       <Container maxWidth="xl" sx={{ px: matches ? 2 : 2, alignContent: "center", justifyContent: "center", display: "flex", paddingY: "1em" }}>
         <img src={theme.LogoWhite} alt="Vortex logo" style={{ maxHeight: matches ? "80px" : "80px" }} />
       </Container>
+      <Stack component="nav" aria-label="Main navigation" direction="row" justifyContent="center" spacing={1} sx={{ pb: 2 }}>
+        <Button component={NavLink} to="/bridge">Bridge</Button>
+        <Button component={NavLink} to="/redeem">Redeem</Button>
+        <Button component={NavLink} to="/operate">Operate</Button>
+      </Stack>
     </AppBar>
   );
 };
