@@ -58,9 +58,10 @@ export default function Worker({ client }) {
         <Typography variant="caption">Reviewed configuration SHA-256</Typography><Typography sx={{ overflowWrap: "anywhere", mb: 2 }}>{worker.configSha256}</Typography>
         {worker.health && <>
           <Typography>Mode: {worker.health.mode} · Process: {worker.health.pid}</Typography>
+          {worker.health.networkBinding ? <Typography sx={{ overflowWrap: "anywhere", my: 1 }}>Pinned networks: EVM {worker.health.networkBinding.evmNetworkId} · Koinos {worker.health.networkBinding.koinosNetworkId}</Typography> : <Alert severity="warning" sx={{ my: 1 }}>This worker does not report pinned network identities. Its chain progress does not verify which networks supplied the data.</Alert>}
           <Typography sx={{ mb: 2 }}>Started: {new Date(worker.health.startedAt).toLocaleString()}</Typography>
           <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2, my: 2 }}>
-            {Object.entries(worker.health.chains).map(([chain, health]) => <Box key={chain}><Typography component="h4" fontWeight={600}>{chain === "evm" ? "Ethereum / EVM" : "Koinos"}</Typography><Typography>Status: {health.status}</Typography><Typography>Saved block: {health.height}</Typography><Typography variant="caption">{health.updatedAt && !health.updatedAt.startsWith("0001") ? `Checked ${new Date(health.updatedAt).toLocaleString()}` : "No chain observation yet"}</Typography></Box>)}
+            {Object.entries(worker.health.chains).map(([chain, health]) => <Box key={chain}><Typography component="h4" fontWeight={600}>{chain === "evm" ? "Ethereum / EVM" : "Koinos"}</Typography><Typography>Status: {health.status}</Typography>{health.status === "network-unverified" && <Alert severity="error" sx={{ my: 1 }}>Observation is paused because this RPC network identity cannot be verified. Check RPC access and the configured network; saved progress is retained.</Alert>}<Typography>Saved block: {health.height}</Typography><Typography variant="caption">{health.updatedAt && !health.updatedAt.startsWith("0001") ? `Checked ${new Date(health.updatedAt).toLocaleString()}` : "No chain observation yet"}</Typography></Box>)}
           </Box>
         </>}
         {worker.state === "unavailable" && <Button variant="contained" disabled={busy} onClick={() => act("start")}>Start observation worker</Button>}
