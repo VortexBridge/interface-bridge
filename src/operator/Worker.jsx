@@ -6,6 +6,13 @@ export default function Worker({ client }) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [stopApproved, setStopApproved] = useState(false);
+  const [doctor, setDoctor] = useState(null);
+  const preflight = async () => {
+    setBusy(true); setError(""); setDoctor(null);
+    try { setDoctor(await client("/v1/worker/doctor", {})); }
+    catch (e) { setError(e.message); }
+    finally { setBusy(false); }
+  };
   useEffect(() => {
     let cancelled = false;
     const refresh = async () => {
@@ -32,6 +39,15 @@ export default function Worker({ client }) {
     <Typography variant="h6" component="h2">Validator process</Typography>
     <Typography>Your validator runs independently of this panel and its operator service. This build manages observation workers; they do not load keys or exchange signatures.</Typography>
     {error && <Alert severity="error">{error}</Alert>}
+    <Button variant="outlined" disabled={busy} onClick={preflight} sx={{ alignSelf: "flex-start" }}>Run preflight checks</Button>
+    {doctor && <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}>
+      <Typography component="h3" variant="h6">{doctor.status === "checks-passed" ? "Observation checks passed" : "Setup needs attention"}</Typography>
+      <Typography variant="caption">Checked {new Date(doctor.checkedAt).toLocaleString()} · Configuration revision {doctor.revision}</Typography>
+      <Typography sx={{ my: 2 }}>{doctor.notice}</Typography>
+      <Stack gap={1}>{[...doctor.checks].sort((a, b) => ({ failed: 0, unknown: 1, passed: 2 }[a.status] - { failed: 0, unknown: 1, passed: 2 }[b.status])).map((check) => <Alert key={check.id} severity={check.status === "failed" ? "error" : check.status === "passed" ? "success" : "info"}>
+        <Typography fontWeight={600}>{check.id.replaceAll("-", " ")} · {check.status}</Typography>{check.message}
+      </Alert>)}</Stack>
+    </Paper>}
     {!worker && !error && <Typography role="status">Reading worker status…</Typography>}
     {worker && <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, minWidth: 0 }}>
       <Stack direction="row" justifyContent="space-between" gap={2} sx={{ mb: 2 }}><Typography component="h3" variant="h6" sx={{ overflowWrap: "anywhere" }}>{worker.instanceId || "No worker registered"}</Typography><Chip size="small" label={worker.state} /></Stack>
