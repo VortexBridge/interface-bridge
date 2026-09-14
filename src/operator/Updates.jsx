@@ -17,6 +17,7 @@ export default function Updates({ client, revision, instanceId, onChange }) {
   const [readinessTarget, setReadinessTarget] = useState(null);
   const [backupId, setBackupId] = useState("");
   const [participationRaw, setParticipationRaw] = useState("[]");
+  const [priorWaveRaw, setPriorWaveRaw] = useState("");
   const [readiness, setReadiness] = useState(null);
   const [pendingReadiness, setPendingReadiness] = useState(null);
   useEffect(() => { let cancelled = false; client("/v1/updates").then((result) => { if (!cancelled) setState(result); }).catch((e) => { if (!cancelled) setError(e.message); }); return () => { cancelled = true; }; }, [client, revision]);
@@ -34,7 +35,9 @@ export default function Updates({ client, revision, instanceId, onChange }) {
   const checkReadiness = () => run(async () => {
     const responses = JSON.parse(participationRaw);
     if (!Array.isArray(responses)) throw new Error("Participation responses must be a JSON array.");
-    const request = pendingReadiness || { id: `readiness-${crypto.randomUUID()}`, expectedRevision: revision, releaseDigest: readinessTarget.digest, platform: readinessTarget.platform, backupId, participationResponses: responses };
+    const priorWaveResult = priorWaveRaw ? JSON.parse(priorWaveRaw) : null;
+    if (priorWaveResult !== null && (Array.isArray(priorWaveResult) || typeof priorWaveResult !== "object")) throw new Error("Prior-wave result must be one signed JSON object.");
+    const request = pendingReadiness || { id: `readiness-${crypto.randomUUID()}`, expectedRevision: revision, releaseDigest: readinessTarget.digest, platform: readinessTarget.platform, backupId, participationResponses: responses, priorWaveResult };
     setPendingReadiness(request); setReadiness(null);
     const receipt = await client("/v1/updates/readiness", request);
     setReadiness(receipt); setPendingReadiness(null); setState(await client("/v1/updates"));
@@ -43,7 +46,7 @@ export default function Updates({ client, revision, instanceId, onChange }) {
     <Typography variant="h6" component="h2">Security updates</Typography>
     <Typography>Review one exact release and control its approval on your operator. A publisher’s signature cannot install software on your behalf.</Typography>
     <Typography variant="body2" sx={{ overflowWrap: "anywhere" }}>Operator instance: {instanceId || "Unknown"}</Typography>
-    <Alert severity="info">Release verification, local approvals and durable point-in-time readiness receipts are available. The local CLI can stage artifacts and run isolated observation checks, including synthetic transfer persistence with current checkers. Verified signing quorum, later-wave receipts and the staged installer remain unavailable.</Alert>
+    <Alert severity="info">Release verification, local approvals, point-in-time readiness receipts and signed preceding-wave results are available. The local CLI can stage artifacts and run isolated observation checks. Verified signing quorum and the staged installer remain unavailable.</Alert>
     {error && <Alert severity="error" role="alert">{error}</Alert>}
     {message && <Alert severity="success" role="status">{message}</Alert>}
     <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}>
@@ -122,6 +125,14 @@ export default function Updates({ client, revision, instanceId, onChange }) {
           const file = e.target.files?.[0]; e.target.value = "";
           if (!file) return;
           run(async () => { if (file.size > 128 * 1024) throw new Error("Responses file exceeds 128 KiB."); const value = await file.text(); if (!Array.isArray(JSON.parse(value))) throw new Error("Responses file must contain a JSON array."); setParticipationRaw(value); setReadiness(null); setPendingReadiness(null); });
+        }} />
+      </Button>
+      <TextField label="Signed result from the preceding wave" multiline minRows={3} maxRows={7} fullWidth disabled={busy} value={priorWaveRaw} onChange={(e) => { setPriorWaveRaw(e.target.value); setReadiness(null); setPendingReadiness(null); }} helperText="Leave empty for the first scheduled operator. Later operators must import the immediately preceding operator’s signed result." inputProps={{ spellCheck: false }} />
+      <Button component="label" variant="outlined" disabled={busy}>Load preceding-wave result
+        <input type="file" accept="application/json,.json" hidden onChange={(e) => {
+          const file = e.target.files?.[0]; e.target.value = "";
+          if (!file) return;
+          run(async () => { if (file.size > 64 * 1024) throw new Error("Wave result file exceeds 64 KiB."); const value = await file.text(); const parsed = JSON.parse(value); if (!parsed || Array.isArray(parsed) || typeof parsed !== "object") throw new Error("Wave result file must contain one signed JSON object."); setPriorWaveRaw(value); setReadiness(null); setPendingReadiness(null); });
         }} />
       </Button>
       <Button variant="contained" disabled={busy || !readinessTarget} onClick={checkReadiness}>{pendingReadiness ? "Retry exact readiness check" : "Record update readiness"}</Button>

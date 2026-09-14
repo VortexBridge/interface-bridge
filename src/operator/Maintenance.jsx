@@ -10,6 +10,9 @@ export default function Maintenance({ client, revision, onChange }) {
   const [consent, setConsent] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [progressId, setProgressId] = useState("");
+  const [waveResult, setWaveResult] = useState(null);
+  const [pendingWave, setPendingWave] = useState(null);
   useEffect(() => { let cancelled = false; client("/v1/maintenance").then((value) => { if (!cancelled) setState(value); }).catch((e) => { if (!cancelled) setError(e.message); }); return () => { cancelled = true; }; }, [client, revision]);
   const run = async (work) => { setBusy(true); setError(""); try { await work(); } catch (e) { setError(e.message); } finally { setBusy(false); } };
   const verify = () => run(async () => {
@@ -24,6 +27,12 @@ export default function Maintenance({ client, revision, onChange }) {
     const report = await client("/v1/maintenance/verify", envelope);
     setReview({ envelope, report, revision: review.revision });
     setState(await client("/v1/maintenance")); await onChange();
+  });
+  const recordWaveResult = () => run(async () => {
+    const request = pendingWave || { id: `wave-result-${crypto.randomUUID()}`, expectedRevision: state.revision, envelope: review.envelope, progressId };
+    setPendingWave(request); setWaveResult(null);
+    const result = await client("/v1/maintenance/wave-result", request);
+    setWaveResult(result); setPendingWave(null); setState(await client("/v1/maintenance")); await onChange();
   });
   return <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}><Stack gap={2}>
     <Typography component="h3" variant="h6">Coordinate maintenance</Typography>
@@ -65,6 +74,27 @@ export default function Maintenance({ client, revision, onChange }) {
         <Typography sx={{ overflowWrap: "anywhere" }}>{entry.endorsements[0].planDigest}</Typography>
         <Button onClick={() => exportJSON("local-maintenance-endorsement.json", entry)}>Export recorded endorsement</Button>
       </Stack>)}
+    </>}
+    <Typography component="h4" fontWeight={600}>Share the completed wave result</Typography>
+    <Alert severity="info">After the planned release is installed, observe real signing progress in both bridge directions. This operator can then sign and export that retained evidence for the next wave. It does not authorize the next update by itself.</Alert>
+    <TextField label="Completed signing-progress window ID" value={progressId} disabled={busy || !!pendingWave} onChange={(e) => { setProgressId(e.target.value); setPendingWave(null); setWaveResult(null); }} />
+    <Button variant="outlined" disabled={busy || !progressId || review?.report.state !== "reserved"} onClick={recordWaveResult}>{pendingWave ? "Retry the same wave result" : "Record signed wave result"}</Button>
+    {!review || review.report.state !== "reserved" ? <Typography>Review the fully endorsed schedule above before recording this operator’s result.</Typography> : null}
+    {pendingWave && <Button disabled={busy} onClick={() => setPendingWave(null)}>Discard pending wave result ID</Button>}
+    {waveResult && <>
+      <Alert severity="success">Signed local result recorded for wave {waveResult.claim.wave + 1}. The next operator must still verify it against their own policy and fresh readiness checks.</Alert>
+      <Typography sx={{ overflowWrap: "anywhere" }}>Result: {waveResult.claim.id} · Release {waveResult.claim.release.digest}</Typography>
+      <Button onClick={() => exportJSON(`${waveResult.claim.id}.json`, waveResult)}>Export signed wave result</Button>
+    </>}
+    {state?.waveResultProblem && <Alert severity="error">{state.waveResultProblem}</Alert>}
+    {!!state?.waveResults?.length && <>
+      <Typography component="h4" fontWeight={600}>Recorded wave results</Typography>
+      <Typography>{state.waveResultNotice}</Typography>
+      {state.waveResults.map((result) => <Paper variant="outlined" sx={{ p: 2 }} key={result.claim.id}>
+        <Typography>{result.claim.id} · Wave {result.claim.wave + 1} · {result.claim.state}</Typography>
+        <Typography sx={{ overflowWrap: "anywhere" }}>Release: {result.claim.release.digest}</Typography>
+        <Button onClick={() => exportJSON(`${result.claim.id}.json`, result)}>Export signed result</Button>
+      </Paper>)}
     </>}
     <Participation client={client} envelope={review?.report.state === "reserved" ? review.envelope : null} />
   </Stack></Paper>;
