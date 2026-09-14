@@ -6,7 +6,7 @@ export function createOperatorClient(endpoint, token) {
   }
   if (!/^[a-f0-9]{64}$/.test(token)) throw new Error("Enter the 64-character token from your private operator access-token file.");
   return async (path, body) => {
-    if (!path.startsWith("/v1/")) throw new Error("Invalid operator API path");
+    if (!/^\/v1\/[a-z0-9-]+(?:\/[a-z0-9-]+)*$/.test(path)) throw new Error("Invalid operator API path");
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 18000);
     try {
@@ -25,6 +25,16 @@ export function createOperatorClient(endpoint, token) {
     } finally {
       clearTimeout(timeout);
     }
+  };
+}
+
+export function scopeOperatorClient(client, instance) {
+  if (!/^[a-z][a-z0-9-]{0,62}$/.test(instance)) throw new Error("Invalid local instance");
+  return (path, body) => {
+    if (!/^\/v1\/[a-z0-9-]+(?:\/[a-z0-9-]+)*$/.test(path) || path === "/v1/instances" || path.startsWith("/v1/instances/")) {
+      return Promise.reject(new Error("Invalid scoped operator API path"));
+    }
+    return client(`/v1/instances/${instance}/${path.slice(4)}`, body);
   };
 }
 

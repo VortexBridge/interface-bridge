@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createOperatorClient, observedStatus } from "./client.js";
+import { createOperatorClient, scopeOperatorClient, observedStatus } from "./client.js";
 
 test("management token cannot be sent to a remote URL or a URL with credentials", () => {
   const token = "a".repeat(64);
@@ -8,6 +8,21 @@ test("management token cannot be sent to a remote URL or a URL with credentials"
     assert.throws(() => createOperatorClient(endpoint, token));
   }
   assert.throws(() => createOperatorClient("http://127.0.0.1:3021", "short"));
+});
+
+test("instance clients keep pending actions bound to their original scope", async () => {
+  const calls = [];
+  const root = async (path, body) => { calls.push({ path, body }); return { path }; };
+  const a = scopeOperatorClient(root, "route-a");
+  const b = scopeOperatorClient(root, "route-b");
+  const request = { registrationDigest: "reviewed-a" };
+  const pending = a("/v1/worker/start", request);
+  await b("/v1/status");
+  await pending;
+  assert.deepEqual(calls, [{ path: "/v1/instances/route-a/worker/start", body: request }, { path: "/v1/instances/route-b/status", body: undefined }]);
+  for (const path of ["/v1/instances/route-b/status", "/v1/../status", "/v1/%2e%2e/status", "/v1/worker?instance=route-b", "/v1//status"]) await assert.rejects(a(path));
+  assert.throws(() => scopeOperatorClient(root, "../route-b"));
+  assert.equal(calls.length, 2);
 });
 
 test("client sends scoped requests with no cookie credentials or redirects", async () => {
