@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Alert, Box, Button, Checkbox, Chip, FormControlLabel, Paper, Stack, TextField, Typography } from "@mui/material";
 
 import Maintenance from "./Maintenance.jsx";
+import { exportJSON } from "./client";
 
 export default function Updates({ client, revision, instanceId, onChange }) {
-  const [state, setState] = useState({ approvals: [], trustedPublishers: [], requiredSignatures: 0, installedVersion: null, installedProblem: "", staged: [] });
+  const [state, setState] = useState({ approvals: [], trustedPublishers: [], requiredSignatures: 0, installedVersion: null, installedProblem: "", staged: [], readiness: [], readinessProblem: "", readinessNotice: "" });
   const [raw, setRaw] = useState("");
   const [verified, setVerified] = useState(null);
   const [consent, setConsent] = useState(false);
@@ -13,6 +14,11 @@ export default function Updates({ client, revision, instanceId, onChange }) {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [readinessTarget, setReadinessTarget] = useState(null);
+  const [backupId, setBackupId] = useState("");
+  const [participationRaw, setParticipationRaw] = useState("[]");
+  const [readiness, setReadiness] = useState(null);
+  const [pendingReadiness, setPendingReadiness] = useState(null);
   useEffect(() => { let cancelled = false; client("/v1/updates").then((result) => { if (!cancelled) setState(result); }).catch((e) => { if (!cancelled) setError(e.message); }); return () => { cancelled = true; }; }, [client, revision]);
   const run = async (work) => { setBusy(true); setError(""); setMessage(""); try { await work(); } catch (e) { setError(e.message); } finally { setBusy(false); } };
   const verify = () => run(async () => {
@@ -25,11 +31,19 @@ export default function Updates({ client, revision, instanceId, onChange }) {
     setMessage("Approval recorded only on this operator. Nothing has been installed."); setConsent(false); setVerified(null); await onChange();
   });
   const revoke = (digest) => run(async () => { await client("/v1/updates/revoke", { digest, expectedRevision: revision }); setMessage("Local approval revoked. The release sequence remains recorded to prevent replay."); await onChange(); });
+  const checkReadiness = () => run(async () => {
+    const responses = JSON.parse(participationRaw);
+    if (!Array.isArray(responses)) throw new Error("Participation responses must be a JSON array.");
+    const request = pendingReadiness || { id: `readiness-${crypto.randomUUID()}`, expectedRevision: revision, releaseDigest: readinessTarget.digest, platform: readinessTarget.platform, backupId, participationResponses: responses };
+    setPendingReadiness(request); setReadiness(null);
+    const receipt = await client("/v1/updates/readiness", request);
+    setReadiness(receipt); setPendingReadiness(null); setState(await client("/v1/updates"));
+  });
   return <Stack gap={2}>
     <Typography variant="h6" component="h2">Security updates</Typography>
     <Typography>Review one exact release and control its approval on your operator. A publisher’s signature cannot install software on your behalf.</Typography>
     <Typography variant="body2" sx={{ overflowWrap: "anywhere" }}>Operator instance: {instanceId || "Unknown"}</Typography>
-    <Alert severity="info">Release verification and local approvals are available. The local CLI can stage artifacts and run isolated observation checks, including synthetic transfer persistence with current checkers. Full release qualification and the staged installer remain unavailable.</Alert>
+    <Alert severity="info">Release verification, local approvals and durable point-in-time readiness receipts are available. The local CLI can stage artifacts and run isolated observation checks, including synthetic transfer persistence with current checkers. Verified signing quorum, later-wave receipts and the staged installer remain unavailable.</Alert>
     {error && <Alert severity="error" role="alert">{error}</Alert>}
     {message && <Alert severity="success" role="status">{message}</Alert>}
     <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}>
@@ -94,9 +108,48 @@ export default function Updates({ client, revision, instanceId, onChange }) {
           <Typography>{item.candidate.notice}</Typography>
           {item.candidate.report.error && <Box component="details"><Typography component="summary" sx={{ cursor: "pointer" }}>Test failure details</Typography><Typography component="pre" color="error" sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere", maxHeight: 240, overflow: "auto", fontSize: "0.8rem" }}>{item.candidate.report.error}</Typography></Box>}
         </> : <Typography>No candidate report recorded. The local candidate-test command runs a restricted container with synthetic data.</Typography>}
+        {item.compatibility?.state !== "already-installed" && <Button variant="outlined" disabled={busy} onClick={() => { setReadinessTarget(item); setReadiness(null); setPendingReadiness(null); }}>Evaluate all update gates</Button>}
       </Stack>
     </Paper>)}
+    {readinessTarget && <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}><Stack gap={2}>
+      <Typography variant="h6" component="h3">Update readiness receipt</Typography>
+      <Typography sx={{ overflowWrap: "anywhere" }}>{readinessTarget.version} · {readinessTarget.platform} · {readinessTarget.digest}</Typography>
+      <Alert severity="info">This point-in-time check joins the current worker, staged artifact, candidate report, local approval, encrypted backup, maintenance reservation, fresh participation and wave order. A receipt cannot install software.</Alert>
+      <TextField label="Completed backup ID" disabled={busy} value={backupId} onChange={(e) => { setBackupId(e.target.value); setReadiness(null); setPendingReadiness(null); }} helperText="Use a completed encrypted backup created after approving this release." />
+      <TextField label="Fresh participation responses JSON array" multiline minRows={3} maxRows={7} fullWidth disabled={busy} value={participationRaw} onChange={(e) => { setParticipationRaw(e.target.value); setReadiness(null); setPendingReadiness(null); }} inputProps={{ spellCheck: false }} />
+      <Button component="label" variant="outlined" disabled={busy}>Load response file
+        <input type="file" accept="application/json,.json" hidden onChange={(e) => {
+          const file = e.target.files?.[0]; e.target.value = "";
+          if (!file) return;
+          run(async () => { if (file.size > 128 * 1024) throw new Error("Responses file exceeds 128 KiB."); const value = await file.text(); if (!Array.isArray(JSON.parse(value))) throw new Error("Responses file must contain a JSON array."); setParticipationRaw(value); setReadiness(null); setPendingReadiness(null); });
+        }} />
+      </Button>
+      <Button variant="contained" disabled={busy || !readinessTarget} onClick={checkReadiness}>{pendingReadiness ? "Retry exact readiness check" : "Record update readiness"}</Button>
+      {pendingReadiness && <Button disabled={busy} onClick={() => setPendingReadiness(null)}>Discard pending readiness ID</Button>}
+      {readiness && <Stack gap={1.5}>
+        <Alert severity="warning">{readiness.state}. Activation ready: {readiness.activationReady ? "Yes" : "No"}. {readiness.notice}</Alert>
+        <Typography>Checked {new Date(readiness.checkedAt).toLocaleString()} · Expires {new Date(readiness.expiresAt).toLocaleString()}</Typography>
+        {readiness.checks.map((check) => <Paper variant="outlined" sx={{ p: 1.5 }} key={check.id}>
+          <Stack direction={{ xs: "column", sm: "row" }} gap={1} alignItems={{ sm: "center" }}>
+            <Chip size="small" label={check.state} color={check.state === "passed" ? "success" : check.state === "blocked" ? "warning" : "default"} />
+            <Typography><strong>{check.id}</strong>: {check.message}</Typography>
+          </Stack>
+        </Paper>)}
+        <Button onClick={() => exportJSON(`update-readiness-${readiness.id}.json`, readiness)}>Export readiness receipt</Button>
+      </Stack>}
+    </Stack></Paper>}
     <Maintenance client={client} revision={revision} onChange={onChange} />
+    {state.readinessProblem && <Alert severity="error">{state.readinessProblem}</Alert>}
+    {!!state.readiness?.length && <>
+      <Typography variant="h6" component="h3">Recorded readiness history</Typography>
+      <Typography>{state.readinessNotice}</Typography>
+      {state.readiness.map((receipt) => <Paper key={receipt.id} variant="outlined" sx={{ p: 2 }}>
+        <Typography>{receipt.id} · {receipt.currentVersion || "unknown"} → {receipt.candidateVersion || "unknown"} · {receipt.state}</Typography>
+        <Typography variant="body2">Checked {new Date(receipt.checkedAt).toLocaleString()} · {new Date(receipt.expiresAt).getTime() <= Date.now() ? "Expired" : "Current"}</Typography>
+        <Typography variant="body2" sx={{ overflowWrap: "anywhere" }}>{receipt.releaseDigest}</Typography>
+        <Button onClick={() => exportJSON(`update-readiness-${receipt.id}.json`, receipt)}>Export receipt</Button>
+      </Paper>)}
+    </>}
     <Typography variant="h6" component="h3">Local approval history</Typography>
     {!state.approvals.length && <Typography color="text.secondary">No releases approved on this operator.</Typography>}
     {state.approvals.map((approval) => <Paper key={approval.digest} variant="outlined" sx={{ p: 2 }}>
