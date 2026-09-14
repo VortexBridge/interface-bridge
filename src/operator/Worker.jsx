@@ -67,6 +67,17 @@ export default function Worker({ client, onChange }) {
           <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2, my: 2 }}>
             {Object.entries(worker.health.chains).map(([chain, health]) => <Box key={chain}><Typography component="h4" fontWeight={600}>{chain === "evm" ? "Ethereum / EVM" : "Koinos"}</Typography><Typography>Status: {health.status}</Typography>{health.status === "network-unverified" && <Alert severity="error" sx={{ my: 1 }}>Observation is paused because this RPC network identity cannot be verified. Check RPC access and the configured network; saved progress is retained.</Alert>}<Typography>Saved block: {health.height}</Typography><Typography variant="caption">{health.updatedAt && !health.updatedAt.startsWith("0001") ? `Checked ${new Date(health.updatedAt).toLocaleString()}` : "No chain observation yet"}</Typography></Box>)}
           </Box>
+          <Typography component="h4" fontWeight={600}>Recorded transfer activity</Typography>
+          <Typography variant="body2">Counters cover this process only. Compare the same process and tracking start time across an observation window. Stored signature changes and completion states do not prove valid signatures, finality or available quorum.</Typography>
+          {!worker.health.activity && <Alert severity="info">This worker does not report transfer activity. Block polling alone cannot establish progress after an update.</Alert>}
+          {Object.entries(worker.health.activity || {}).map(([direction, activity]) => <Paper key={direction} variant="outlined" sx={{ p: 2, my: 1 }}>
+            <Typography fontWeight={600}>{direction === "evm-to-koinos" ? "EVM → Koinos" : "Koinos → EVM"}</Typography>
+            {!activity.enabled || !activity.complete ? <Alert severity="warning">Activity evidence is incomplete{activity.problem ? `: ${activity.problem}` : "."}. These counters cannot establish progress.</Alert> : <Typography variant="caption">Tracking since {new Date(activity.startedAt).toLocaleString()}</Typography>}
+            <Typography>New records: {activity.newRecords} · Successful writes: {activity.writes}</Typography>
+            <Typography>Local-address signature changes: {activity.localSignatureChanges} · Other signature changes: {activity.otherSignatureChanges}</Typography>
+            <Typography>Completion transitions: {activity.completionTransitions}</Typography>
+            <Typography variant="caption">{activity.lastWriteAt && !activity.lastWriteAt.startsWith("0001") ? `Last write ${new Date(activity.lastWriteAt).toLocaleString()}` : "No transaction writes recorded in this process"}</Typography>
+          </Paper>)}
         </>}
         {worker.state === "unavailable" && <Button variant="contained" disabled={busy} onClick={() => act("start")}>Start observation worker</Button>}
         {worker.state === "running" && <Stack alignItems="flex-start" gap={1}><FormControlLabel control={<Checkbox checked={stopApproved} onChange={(e) => setStopApproved(e.target.checked)} />} label="Stop this worker and suspend its event observation" /><Button variant="outlined" disabled={busy || !stopApproved} onClick={() => act("stop")}>Stop worker gracefully</Button></Stack>}
