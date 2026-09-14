@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Alert, Box, Button, Checkbox, Chip, FormControlLabel, Paper, Stack, Typography } from "@mui/material";
+import WorkerSetup from "./WorkerSetup.jsx";
 
-export default function Worker({ client }) {
+export default function Worker({ client, onChange }) {
   const [worker, setWorker] = useState(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [stopApproved, setStopApproved] = useState(false);
   const [doctor, setDoctor] = useState(null);
+  const [setupCreated, setSetupCreated] = useState(false);
   const preflight = async () => {
     setBusy(true); setError(""); setDoctor(null);
     try { setDoctor(await client("/v1/worker/doctor", {})); }
@@ -39,6 +41,7 @@ export default function Worker({ client }) {
     <Typography variant="h6" component="h2">Validator process</Typography>
     <Typography>Your validator runs independently of this panel and its operator service. This build manages observation workers; they do not load keys or exchange signatures.</Typography>
     {error && <Alert severity="error">{error}</Alert>}
+    {setupCreated && <Alert severity="success">Observation worker created. Run preflight checks and review the results before starting it. Signing is not enabled.</Alert>}
     <Button variant="outlined" disabled={busy} onClick={preflight} sx={{ alignSelf: "flex-start" }}>Run preflight checks</Button>
     {doctor && <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}>
       <Typography component="h3" variant="h6">{doctor.status === "checks-passed" ? "Observation checks passed" : "Setup needs attention"}</Typography>
@@ -49,10 +52,11 @@ export default function Worker({ client }) {
       </Alert>)}</Stack>
     </Paper>}
     {!worker && !error && <Typography role="status">Reading worker status…</Typography>}
+    {worker?.state === "unregistered" && <WorkerSetup client={client} onCreated={async () => { setSetupCreated(true); setWorker(await client("/v1/worker")); if (onChange) await onChange(); }} />}
     {worker && <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, minWidth: 0 }}>
       <Stack direction="row" justifyContent="space-between" gap={2} sx={{ mb: 2 }}><Typography component="h3" variant="h6" sx={{ overflowWrap: "anywhere" }}>{worker.instanceId || "No worker registered"}</Typography><Chip size="small" label={worker.state} /></Stack>
       <Typography sx={{ mb: 2 }}>{worker.message}</Typography>
-      {!worker.registered && <Typography>Use the local worker-register command to select your private validator directory and reviewed binary hash. Registration instructions are in OPERATOR.md.</Typography>}
+      {!worker.registered && <Typography>Complete setup above, or use the local worker-register command for an existing reviewed worker directory. Instructions are in OPERATOR.md.</Typography>}
       {worker.registered && <>
         <Typography variant="caption">Registered binary SHA-256</Typography><Typography sx={{ overflowWrap: "anywhere", mb: 2 }}>{worker.binarySha256}</Typography>
         <Typography variant="caption">Reviewed configuration SHA-256</Typography><Typography sx={{ overflowWrap: "anywhere", mb: 2 }}>{worker.configSha256}</Typography>

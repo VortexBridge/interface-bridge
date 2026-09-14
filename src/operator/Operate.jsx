@@ -78,7 +78,7 @@ function OperatorWorkspace({ client, initialStatus, capabilities }) {
       </Tabs>
     </Stack>
     <Box role="tabpanel" id={`operator-panel-${tab}`} aria-labelledby={`operator-tab-${tab}`}>
-      {tab === "worker" && <Worker client={client} />}
+      {tab === "worker" && <Worker client={client} onChange={async () => setStatus(await client("/v1/status"))} />}
       {tab === "updates" && <Updates client={client} revision={status.revision} instanceId={status.instanceId} onChange={async () => setStatus(await client("/v1/status"))} />}
       {tab === "overview" && <Stack gap={2}>
         <Typography variant="h6" component="h2">Your deployments</Typography>

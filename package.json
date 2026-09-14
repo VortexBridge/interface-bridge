@@ -55,7 +55,7 @@
     "lint": "eslint \"src/**/*.{js,jsx}\"",
     "lint:fix": "eslint \"src/**/*.{js,jsx}\" --fix",
     "test:operator": "node --test src/operator/*.test.mjs",
-    "lint:operator": "eslint src/operator/Operate.jsx src/operator/Updates.jsx src/operator/Worker.jsx src/operator/client.js"
+    "lint:operator": "eslint src/operator/Operate.jsx src/operator/Updates.jsx src/operator/Worker.jsx src/operator/WorkerSetup.jsx src/operator/client.js"
   },
   "eslintConfig": {
     "extends": [
