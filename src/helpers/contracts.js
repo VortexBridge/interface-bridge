@@ -1,4 +1,4 @@
-import { Contract, Provider, Signer, utils } from "koilib";
+import { Contract, Provider, Signer } from "koilib";
 import { ethers } from "ethers";
 import { FormatTypes } from "ethers/lib/utils";
 
@@ -43,3 +43,9 @@ export let KoinosBridgeContract = (address, _provider, _signer) => new Contract(
   signer: _signer ? _signer : signer
 })
 
+// Read-only contract access must not construct or attach the demo signer.
+export let KoinosBridgeReadOnlyContract = (address, _provider) => new Contract({
+  id: address,
+  abi: KoinosBridgeAbi,
+  provider: _provider ? _provider : provider,
+})

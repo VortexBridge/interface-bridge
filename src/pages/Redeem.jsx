@@ -9,12 +9,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { shortedAddress } from "../utils/display";
 import { waitTransation } from "../utils/transactions";
+import { makeQuorumSnapshot, signaturesMeetQuorum } from "../utils/bridgeQuorum.mjs";
 
 // constants
 import { BRIDGE_CHAINS, BRIDGE_CHAINS_NAMES, BRIDGE_CHAINS_TYPES } from "../constants/chains";
 
 // helpers
-import { EvmBridgeContract, EvmTokenContract, KoinosBridgeContract, KoinosTokenContract } from "../helpers/contracts";
+import { EvmBridgeContract, EvmTokenContract, KoinosBridgeContract, KoinosBridgeReadOnlyContract, KoinosTokenContract } from "../helpers/contracts";
 
 // Actions
 import { setNetworkFrom, setNetworkTo } from "../redux/actions/bridge";
@@ -63,6 +64,7 @@ const Redeem = (props) => {
   const [blockchainTX, setblockchainTX] = useState(false);
   const [redeemSubmitted, setRedeemSubmitted] = useState(false);
   const [renewSubmitted, setRenewSubmitted] = useState(false);
+  const [quorumSnapshot, setQuorumSnapshot] = useState(null);
 
 
   const actionClose = (snackbarId) => (
@@ -74,8 +76,31 @@ const Redeem = (props) => {
   );
 
   const hasEnoughSignatures = (recoverData) => {
-    const requiredQuorum = import.meta.env.VITE_NUMBER_OF_VALIDATORS || 2;
-    return _get(recoverData, "signatures", []).length >= requiredQuorum;
+    return signaturesMeetQuorum(recoverData, quorumSnapshot);
+  }
+
+  const readDestinationQuorum = async (bridgeInfo) => {
+    if (!bridgeInfo) throw new Error("destination bridge is not selected");
+    let members = [];
+    const family = bridgeInfo.chainType == BRIDGE_CHAINS_TYPES.EVM ? "evm" : "koinos";
+    if (family === "evm") {
+      if (!provider) throw new Error("connect the destination EVM wallet to inspect current validators");
+      const bridge = await EvmBridgeContract(bridgeInfo.bridgeAddress, provider);
+      const length = Number((await bridge.getValidatorsLength()).toString());
+      if (!Number.isInteger(length) || length < 1 || length > 256) throw new Error("destination validator set is invalid");
+      for (let index = 0; index < length; index += 1) members.push(await bridge.validators(index));
+    } else {
+      const providerKoin = _get(walletSelector, "provider", null);
+      if (!providerKoin) throw new Error("connect the destination Koinos wallet to inspect current validators");
+      const bridge = await KoinosBridgeReadOnlyContract(bridgeInfo.bridgeAddress, providerKoin);
+      const response = await bridge.functions.get_validators({});
+      members = _get(response, "result.addresses", _get(response, "addresses", _get(response, "result", [])));
+      if (!Array.isArray(members)) throw new Error("destination validator response is invalid");
+    }
+    const snapshot = makeQuorumSnapshot({ family, contract: bridgeInfo.bridgeAddress, members });
+    if (!snapshot) throw new Error("destination validator set is invalid");
+    setQuorumSnapshot(snapshot);
+    return snapshot;
   }
 
   // efects
@@ -99,6 +124,7 @@ const Redeem = (props) => {
   useEffect(() => {
     if(sourceTX) {
       setRecover(null)
+      setQuorumSnapshot(null)
       setblockchainTX(null)
       if(checker) {
         clearTimeout(checker);
@@ -106,6 +132,11 @@ const Redeem = (props) => {
       checkApi(sourceTX)
     }
   }, [ sourceTX ]);
+
+  useEffect(() => {
+    setQuorumSnapshot(null);
+    setRecover(null);
+  }, [ _get(toChain, "id", ""), _get(toChain, "bridgeAddress", "") ]);
 
 
   const openModal = (side) => {
@@ -147,6 +178,14 @@ const Redeem = (props) => {
 
       let _bridge = null;
       let _bridgeInfo = BRIDGE_CHAINS.find(bridge => bridge.id == _get(toChain, "id", null));
+      const freshQuorum = await readDestinationQuorum(_bridgeInfo);
+      if (!signaturesMeetQuorum(recover, freshQuorum)) {
+        setLoading(false);
+        Snackbar.enqueueSnackbar(<Typography variant="h6">Validator set or signatures changed; refresh required</Typography>, {
+          variant: 'warning', persist: false, action: actionClose,
+        });
+        return;
+      }
 
       // redeem
       if (_get(toChain, "id", "") == BRIDGE_CHAINS_NAMES.ETH) {
@@ -406,7 +445,21 @@ const Redeem = (props) => {
       }
     }
 
-    if (!hasEnoughSignatures(result)) {
+    let freshQuorum;
+    try {
+      const destination = BRIDGE_CHAINS.find(bridge => bridge.id == _get(toChain, "id", null));
+      freshQuorum = await readDestinationQuorum(destination);
+    } catch (error) {
+      console.log(error);
+      setQuorumSnapshot(null);
+      setRecover(null);
+      setLoading(false);
+      let _timer = setTimeout(() => checkApi(txIdParam, isRenew), 3000);
+      setChecker(_timer);
+      return;
+    }
+    if (!signaturesMeetQuorum(result, freshQuorum)) {
+      setRecover(null);
       setLoading(false);
       let _timer = setTimeout(() => checkApi(txIdParam, isRenew), 3000);
       setChecker(_timer);
