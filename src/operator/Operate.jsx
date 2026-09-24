@@ -2,10 +2,14 @@ import React, { useEffect, useState } from "react";
 import { Alert, Box, Button, Chip, Divider, FormControlLabel, MenuItem, Paper, Stack, Switch, Tab, Tabs, TextField, Typography } from "@mui/material";
 
 import { createOperatorClient, scopeOperatorClient, exportJSON, observedStatus } from "./client";
+import Incidents from "./Incidents.jsx";
+import Lifecycle from "./Lifecycle.jsx";
+import Recovery from "./Recovery.jsx";
+import Transfers from "./Transfers.jsx";
 import Updates from "./Updates.jsx";
 import Worker from "./Worker.jsx";
 
-const labels = { overview: "Overview", worker: "Validator", setup: "Add deployment", contracts: "Contracts", proposals: "Proposals", updates: "Updates", history: "History" };
+const labels = { overview: "Overview", lifecycle: "Lifecycle", worker: "Validator", setup: "Add deployment", contracts: "Contracts", transfers: "Transfers", incidents: "Incidents", recovery: "Recovery", proposals: "Proposals", updates: "Updates", history: "History" };
 const sentence = (value) => value.replaceAll("_", " ");
 const fieldStyle = { minWidth: 0, flex: "1 1 240px" };
 const blankProfile = { schemaVersion: 1, id: "", name: "", family: "evm", environment: "local", networkId: "31337", bridgeChainId: 2, contract: "", codec: "", sourceCommit: "", codeHash: "", reviewed: false, reviewEvidence: "" };
@@ -73,7 +77,7 @@ function OperatorWorkspace({ client, initialStatus, capabilities }) {
     {connectionError && <Alert severity="error" role="alert" sx={{ mb: 2 }}>{connectionError}</Alert>}
     {error && <Alert severity="error" role="alert" sx={{ mb: 2 }}>{error}</Alert>}
     {message && <Alert severity="info" role="status" sx={{ mb: 2 }}>{message}</Alert>}
-    <Alert severity="info" sx={{ mb: 2 }}>The operator service holds no bridge signing keys. Registered observation workers can be started and stopped independently. Managed signing and transaction submission remain unavailable.</Alert>
+    <Alert severity="info" sx={{ mb: 2 }}>The browser receives public operational evidence only. Managed signer secrets stay in the protected host terminal, and this service exposes no unlock, arbitrary-signing or command-execution endpoint.</Alert>
     <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2, minWidth: 0 }}>
       <Tabs value={tab} onChange={(_, value) => setTab(value)} variant="scrollable" scrollButtons="auto" allowScrollButtonsMobile aria-label="Operator sections" sx={{ minWidth: 0, width: "100%" }}>
         {Object.entries(labels).map(([value, label]) => <Tab key={value} value={value} label={label} id={`operator-tab-${value}`} aria-controls={`operator-panel-${value}`} />)}
@@ -81,6 +85,10 @@ function OperatorWorkspace({ client, initialStatus, capabilities }) {
     </Stack>
     <Box role="tabpanel" id={`operator-panel-${tab}`} aria-labelledby={`operator-tab-${tab}`}>
       {tab === "worker" && <Worker client={client} onChange={async () => setStatus(await client("/v1/status"))} />}
+      {tab === "lifecycle" && <Lifecycle client={client} />}
+      {tab === "transfers" && <Transfers client={client} />}
+      {tab === "incidents" && <Incidents client={client} />}
+      {tab === "recovery" && <Recovery client={client} />}
       {tab === "updates" && <Updates client={client} revision={status.revision} instanceId={status.instanceId} onChange={async () => setStatus(await client("/v1/status"))} />}
       {tab === "overview" && <Stack gap={2}>
         <Typography variant="h6" component="h2">Your deployments</Typography>
@@ -201,7 +209,8 @@ export default function Operate() {
     {error && <Alert severity="error" role="alert" sx={{ mb: 2 }}>{error}</Alert>}
     {!rootClient ? <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}>
       <Typography variant="h6" component="h2">Connect your operator</Typography>
-      <Typography sx={{ my: 2 }}>Start the private operator service on your host. For a remote host, forward its port through an SSH tunnel. Use the token in your operator directory’s access-token file; it stays in this page’s memory.</Typography>
+      <Typography sx={{ my: 2 }}>Install the reviewed signed host bundle with <code>vortex-host install</code>, run its <code>doctor</code> and <code>authorize</code> checks, then start the bundled user service. For a remote host, forward its loopback port through an SSH tunnel. Use the token in the private state directory’s access-token file; it stays in this page’s memory.</Typography>
+      <Alert severity="info" sx={{ mb: 2 }}>Installation never activates signing. After connecting, Lifecycle shows the exact installed artifact, first-run state and the documented protected-terminal activation command.</Alert>
       <Box component="form" onSubmit={(e) => { e.preventDefault(); connect(); }}>
         <Stack gap={2}><TextField label="Local operator address" value={endpoint} disabled={busy} onChange={(e) => setEndpoint(e.target.value)} fullWidth required />
           <TextField label="Operator access token" type="password" autoComplete="off" value={token} disabled={busy} onChange={(e) => setToken(e.target.value)} fullWidth required />

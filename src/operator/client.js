@@ -8,7 +8,7 @@ export function createOperatorClient(endpoint, token) {
   return async (path, body) => {
     if (!/^\/v1\/[a-z0-9-]+(?:\/[a-z0-9-]+)*$/.test(path)) throw new Error("Invalid operator API path");
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 18000);
+    const timeout = setTimeout(() => controller.abort(), 30000);
     try {
       const response = await fetch(url.origin + path, {
         method: body === undefined ? "GET" : "POST",

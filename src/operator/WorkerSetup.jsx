@@ -80,6 +80,6 @@ export default function WorkerSetup({ client, onCreated }) {
       <Button onClick={() => exportJSON("worker-setup-preview.json", preview)}>Export public preview</Button>
       <Button variant="contained" disabled={busy} onClick={create}>Create observation worker</Button>
     </Stack>}
-    {receipt && <Alert severity="success">Worker configuration created. Run preflight checks and review the results before starting observation. Signing is not enabled.</Alert>}
+    {receipt && <Alert severity="success">Worker configuration created. Run preflight checks and review the results before starting observation. This worker has no signing authority.</Alert>}
   </Stack></Paper>;
 }

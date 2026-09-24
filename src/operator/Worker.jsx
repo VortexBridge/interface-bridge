@@ -43,7 +43,7 @@ export default function Worker({ client, onChange }) {
     <Typography variant="h6" component="h2">Validator process</Typography>
     <Typography>Your validator runs independently of this panel and its operator service. Observation workers can be created and started here. An existing signing worker can be attached for status, fixed maintenance proofs and a reviewed stop; its host service retains its keys and start authority.</Typography>
     {error && <Alert severity="error">{error}</Alert>}
-    {setupCreated && <Alert severity="success">Observation worker created. Run preflight checks and review the results before starting it. Signing is not enabled.</Alert>}
+    {setupCreated && <Alert severity="success">Observation worker created. Run preflight checks and review the results before starting it. This worker has no signing authority.</Alert>}
     <Button variant="outlined" disabled={busy} onClick={preflight} sx={{ alignSelf: "flex-start" }}>Run preflight checks</Button>
     {doctor && <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}>
       <Typography component="h3" variant="h6">{doctor.status === "checks-passed" ? "Observation checks passed" : "Setup needs attention"}</Typography>

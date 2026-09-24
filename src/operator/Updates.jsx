@@ -46,7 +46,7 @@ export default function Updates({ client, revision, instanceId, onChange }) {
     <Typography variant="h6" component="h2">Security updates</Typography>
     <Typography>Review one exact release and control its approval on your operator. A publisher’s signature cannot install software on your behalf.</Typography>
     <Typography variant="body2" sx={{ overflowWrap: "anywhere" }}>Operator instance: {instanceId || "Unknown"}</Typography>
-    <Alert severity="info">Release verification, local approvals, point-in-time readiness receipts and signed preceding-wave results are available. The local CLI can stage artifacts and run isolated observation checks. Verified signing quorum and the staged installer remain unavailable.</Alert>
+    <Alert severity="info">Release verification, local approvals, point-in-time readiness receipts and signed preceding-wave results are available. The local CLI can stage artifacts and run isolated observation checks. Installation remains disabled until the staged-update state machine has verified drain, quorum, maintenance authority and recovery for this exact artifact.</Alert>
     {error && <Alert severity="error" role="alert">{error}</Alert>}
     {message && <Alert severity="success" role="status">{message}</Alert>}
     <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}>
