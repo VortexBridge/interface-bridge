@@ -13,7 +13,7 @@ export default function Transfers({ client }) {
     catch (e) { setError(e.message); }
     finally { setBusy(false); }
   }, [client]);
-  useEffect(() => { refresh(); const timer = setInterval(refresh, 30000); return () => clearInterval(timer); }, [refresh]);
+  useEffect(() => { refresh(); }, [refresh]);
   const stages = [["sourceEvent", "Source event"], ["observation", "Independent observation"], ["signatures", "Local signatures"], ["quorum", "Aggregate quorum"], ["submission", "Destination submission"], ["finality", "Destination finality"], ["expiry", "Expiry"], ["rejection", "Rejection"]];
   return <Stack gap={2}>
     <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ xs: "flex-start", sm: "center" }} gap={1}><Box><Typography variant="h6" component="h2">Transfer history</Typography><Typography color="text.secondary">Both directions, from accepted source evidence through destination finality.</Typography></Box><Button variant="outlined" disabled={busy} onClick={refresh}>{busy ? "Reading…" : "Refresh receipts"}</Button></Stack>

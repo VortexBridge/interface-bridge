@@ -17,7 +17,7 @@ export default function Lifecycle({ client }) {
     catch (e) { setError(e.message); }
     finally { setBusy(false); }
   }, [client]);
-  useEffect(() => { refresh(); const timer = setInterval(refresh, 30000); return () => clearInterval(timer); }, [refresh]);
+  useEffect(() => { refresh(); }, [refresh]);
   return <Stack gap={2}>
     <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ xs: "flex-start", sm: "center" }} gap={1}>
       <Box><Typography variant="h6" component="h2">Installation and signer lifecycle</Typography><Typography color="text.secondary">Verified local records from the managed host bundle.</Typography></Box>
