@@ -28,7 +28,8 @@ function Route({ proposal, route, submissionEnabled, busy, act }) {
     <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mt: 2 }}>
       <Button size="small" variant="contained" disabled={!canSubmit || busy} onClick={() => act("submit", { proposalId: proposal.id, profileId: route.profile.id })}>Submit route</Button>
     </Stack>
-    {!submissionEnabled && route.state === "ready" && <Typography variant="caption" display="block" sx={{ mt: 1 }}>This operator has no reviewed local-chain submission adapter. Export remains available.</Typography>}
+    {!submissionEnabled && route.state === "ready" && !route.receipt && <Typography variant="caption" display="block" sx={{ mt: 1 }}>Transaction-payer keys intentionally stay outside this loopback service. Run the protected terminal <code>governance-submit</code> command, then refresh this page.</Typography>}
+    {!submissionEnabled && route.receipt && route.receipt.state !== "finalized" && <Typography variant="caption" display="block" sx={{ mt: 1 }}>Receipt finality is checked without a payer key. Run the terminal <code>governance-reconcile</code> command, then refresh this page.</Typography>}
     <Typography variant="caption" display="block" sx={{ mt: 1 }}>Signing stays in each validator’s protected local tool. Export the complete portable proposal below; this page accepts only the resulting public signature envelope.</Typography>
   </Paper>;
 }
