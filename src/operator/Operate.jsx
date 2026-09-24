@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { Alert, Box, Button, Chip, Divider, FormControlLabel, MenuItem, Paper, Stack, Switch, Tab, Tabs, TextField, Typography } from "@mui/material";
+import { Alert, Box, Button, Chip, MenuItem, Paper, Stack, Tab, Tabs, TextField, Typography } from "@mui/material";
 
 import { createOperatorClient, scopeOperatorClient, exportJSON, observedStatus } from "./client";
 import Incidents from "./Incidents.jsx";
 import Lifecycle from "./Lifecycle.jsx";
+import Proposals from "./Proposals.jsx";
 import Recovery from "./Recovery.jsx";
 import Transfers from "./Transfers.jsx";
 import Updates from "./Updates.jsx";
 import Worker from "./Worker.jsx";
 
 const labels = { overview: "Overview", lifecycle: "Lifecycle", worker: "Validator", setup: "Add deployment", contracts: "Contracts", transfers: "Transfers", incidents: "Incidents", recovery: "Recovery", proposals: "Proposals", updates: "Updates", history: "History" };
-const sentence = (value) => value.replaceAll("_", " ");
 const fieldStyle = { minWidth: 0, flex: "1 1 240px" };
 const blankProfile = { schemaVersion: 1, id: "", name: "", family: "evm", environment: "local", networkId: "31337", bridgeChainId: 2, contract: "", codec: "", sourceCommit: "", codeHash: "", reviewed: false, reviewEvidence: "" };
 
@@ -29,10 +29,6 @@ function OperatorWorkspace({ client, initialStatus, capabilities }) {
   const [profile, setProfile] = useState(blankProfile);
   const [rpc, setRPC] = useState("http://127.0.0.1:8545");
   const [validated, setValidated] = useState(null);
-  const [selected, setSelected] = useState("");
-  const [kind, setKind] = useState("set_pause");
-  const [action, setAction] = useState({ address: "", wallet: "", fee: "", pause: true, nonce: "", expiration: "" });
-  const [draft, setDraft] = useState(null);
 
   useEffect(() => { const timer = setInterval(() => setClock(Date.now()), 1000); return () => clearInterval(timer); }, []);
   useEffect(() => {
@@ -62,16 +58,6 @@ function OperatorWorkspace({ client, initialStatus, capabilities }) {
     await client("/v1/config/apply", { expectedRevision: status.revision, idempotencyKey: `config-${crypto.randomUUID()}`, binding: validated.binding });
     setStatus(await client("/v1/status")); setValidated(null); setRPC(""); setProfile(blankProfile); setTab("overview"); setMessage("Deployment saved in observation-only mode. Refresh its contract state to inspect the network.");
   });
-  const deployment = status.profiles.find((p) => p.id === selected);
-  const needsFee = ["set_fee_token", "set_fee_wrapped_token"].includes(kind) || (deployment?.family === "evm" && ["add_token", "add_wrapped_token"].includes(kind));
-  const claim = kind.startsWith("claim_fee");
-  const encode = () => perform(async () => {
-    const values = { kind, nonce: action.nonce, expiration: action.expiration };
-    if (kind === "set_pause") values.pause = action.pause; else values.address = action.address;
-    if (needsFee) values.fee = action.fee;
-    if (claim) values.wallet = action.wallet;
-    const result = await client("/v1/governance/encode", { profileId: selected, action: values }); setDraft({ ...result, profile: deployment });
-  });
 
   return <Box sx={{ maxWidth: 1120, mx: "auto", pb: 6 }}>
     {connectionError && <Alert severity="error" role="alert" sx={{ mb: 2 }}>{connectionError}</Alert>}
@@ -89,6 +75,7 @@ function OperatorWorkspace({ client, initialStatus, capabilities }) {
       {tab === "transfers" && <Transfers client={client} />}
       {tab === "incidents" && <Incidents client={client} />}
       {tab === "recovery" && <Recovery client={client} />}
+      {tab === "proposals" && <Proposals client={client} profiles={status.profiles} />}
       {tab === "updates" && <Updates client={client} revision={status.revision} instanceId={status.instanceId} onChange={async () => setStatus(await client("/v1/status"))} />}
       {tab === "overview" && <Stack gap={2}>
         <Typography variant="h6" component="h2">Your deployments</Typography>
@@ -138,23 +125,6 @@ function OperatorWorkspace({ client, initialStatus, capabilities }) {
           <Stack direction="row" gap={1} flexWrap="wrap" sx={{ mt: 3 }}><Button disabled={busy} onClick={() => refresh(p.id)}>Refresh state</Button><Button onClick={() => exportJSON(`${p.id}-profile.json`, p)}>Export public profile</Button></Stack>
         </Paper>; })}
       </Stack>}
-      {tab === "proposals" && <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}>
-        <Typography variant="h6" component="h2">Prepare a governance proposal</Typography>
-        <Alert severity="info" sx={{ my: 2 }}>This build prepares unsigned payloads for review. It does not collect approvals or submit transactions. Each chain requires a separate proposal.</Alert>
-        <Box component="form" onSubmit={(e) => { e.preventDefault(); encode(); }}>
-          <Stack gap={2}>
-            <TextField select required label="Contract deployment" value={selected} onChange={(e) => { setSelected(e.target.value); setDraft(null); }}>{status.profiles.map((p) => <MenuItem key={p.id} value={p.id}>{p.name} ({p.environment})</MenuItem>)}</TextField>
-            <TextField select label="Action" value={kind} onChange={(e) => { setKind(e.target.value); setDraft(null); }}>{Object.keys(capabilities.actions).sort().map((value) => <MenuItem key={value} value={value} disabled={deployment?.family === "koinos" && value === "claim_fee_wrapped_token"}>{sentence(value)}</MenuItem>)}</TextField>
-            {kind === "set_pause" ? <FormControlLabel control={<Switch checked={action.pause} onChange={(e) => { setAction({ ...action, pause: e.target.checked }); setDraft(null); }} />} label={action.pause ? "Pause selected contract" : "Resume selected contract"} /> : <TextField label={kind.includes("validator") ? "Validator address" : "Token address"} value={action.address} required onChange={(e) => { setAction({ ...action, address: e.target.value }); setDraft(null); }} />}
-            {needsFee && <TextField label="Fee in exact contract integer units" value={action.fee} required onChange={(e) => { setAction({ ...action, fee: e.target.value }); setDraft(null); }} />}
-            {claim && <TextField label="Fee recipient address" value={action.wallet} required onChange={(e) => { setAction({ ...action, wallet: e.target.value }); setDraft(null); }} />}
-            <TextField label="Governance nonce" helperText="Read current contract state; drafts do not reserve this nonce" value={action.nonce} required onChange={(e) => { setAction({ ...action, nonce: e.target.value }); setDraft(null); }} />
-            <TextField label="Expiration (Unix milliseconds)" value={action.expiration} required onChange={(e) => { setAction({ ...action, expiration: e.target.value }); setDraft(null); }} />
-            <Button type="submit" variant="outlined" disabled={busy || !selected} sx={{ alignSelf: "flex-start" }}>Prepare unsigned payload</Button>
-          </Stack>
-        </Box>
-        {draft && <Stack gap={2} sx={{ mt: 3 }}><Divider /><Chip label="Unsigned draft — not approved" sx={{ alignSelf: "flex-start" }} /><Detail label="Action">{sentence(draft.payload.action.kind)}</Detail><Detail label="Contract">{draft.profile.contract}</Detail><Detail label="Network ID">{draft.profile.networkId}</Detail><Detail label="Signing digest">{draft.payload.digest}</Detail><Detail label="Profile digest">{draft.payload.profileDigest}</Detail><Button variant="outlined" sx={{ alignSelf: "flex-start" }} onClick={() => exportJSON(`${draft.profile.id}-${draft.payload.action.kind}-draft.json`, draft)}>Export unsigned draft</Button></Stack>}
-      </Paper>}
       {tab === "history" && <Stack gap={2}><Typography variant="h6" component="h2">Local operational history</Typography><Typography color="text.secondary">Configuration revision {status.revision}. This local activity log is not a tamper-proof audit record.</Typography>{status.events.length === 0 ? <Alert severity="info">No configuration changes recorded.</Alert> : [...status.events].reverse().map((event) => <Paper variant="outlined" sx={{ p: 2 }} key={event.revision}><Typography>{event.action} · {event.profileId}</Typography><Typography variant="caption">{new Date(event.at).toLocaleString()} · Revision {event.revision}</Typography></Paper>)}</Stack>}
     </Box>
   </Box>;
