@@ -60,7 +60,7 @@ function applicationBoundary() {
         source: `${JSON.stringify({
           schemaVersion: 1,
           application: "vortex-operator-ui",
-          version: "0.2.0",
+          version: "0.3.0",
           revision: revision(),
           operatorApi: { minimum: "v1", maximum: "v1" },
           originModel: "dedicated-loopback",

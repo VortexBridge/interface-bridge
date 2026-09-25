@@ -4,13 +4,14 @@ import { Alert, Box, Button, Chip, MenuItem, Paper, Stack, Tab, Tabs, TextField,
 import { assertOperatorAPI, createOperatorClient, scopeOperatorClient, exportJSON, observedStatus } from "./client";
 import Incidents from "./Incidents.jsx";
 import Lifecycle from "./Lifecycle.jsx";
+import Pilot from "./Pilot.jsx";
 import Proposals from "./Proposals.jsx";
 import Recovery from "./Recovery.jsx";
 import Transfers from "./Transfers.jsx";
 import Updates from "./Updates.jsx";
 import Worker from "./Worker.jsx";
 
-const labels = { overview: "Overview", lifecycle: "Lifecycle", worker: "Validator", setup: "Add deployment", contracts: "Contracts", transfers: "Transfers", incidents: "Incidents", recovery: "Recovery", proposals: "Proposals", updates: "Updates", history: "History" };
+const labels = { overview: "Overview", pilot: "Pilot", lifecycle: "Lifecycle", worker: "Validator", setup: "Add deployment", contracts: "Contracts", transfers: "Transfers", incidents: "Incidents", recovery: "Recovery", proposals: "Proposals", updates: "Updates", history: "History" };
 const fieldStyle = { minWidth: 0, flex: "1 1 240px" };
 const blankProfile = { schemaVersion: 1, id: "", name: "", family: "evm", environment: "local", networkId: "31337", bridgeChainId: 2, contract: "", codec: "", sourceCommit: "", codeHash: "", reviewed: false, reviewEvidence: "" };
 
@@ -77,6 +78,7 @@ function OperatorWorkspace({ client, initialStatus, capabilities }) {
       {tab === "recovery" && <Recovery client={client} />}
       {tab === "proposals" && <Proposals client={client} profiles={status.profiles} />}
       {tab === "updates" && <Updates client={client} revision={status.revision} instanceId={status.instanceId} onChange={async () => setStatus(await client("/v1/status"))} />}
+      {tab === "pilot" && <Pilot client={client} enabled={capabilities.pilotAcceptanceEnabled === true} />}
       {tab === "overview" && <Stack gap={2}>
         <Typography variant="h6" component="h2">Your deployments</Typography>
         {status.profiles.length === 0 && <Paper variant="outlined" sx={{ p: 3 }}><Typography sx={{ mb: 2 }}>Add the contracts you want to observe. Each deployment keeps its own network identity and verification status.</Typography><Button variant="contained" onClick={() => setTab("setup")}>Add deployment</Button></Paper>}
