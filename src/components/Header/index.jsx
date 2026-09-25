@@ -21,7 +21,6 @@ const Header = () => {
       <Stack component="nav" aria-label="Main navigation" direction="row" justifyContent="center" spacing={1} sx={{ pb: 2 }}>
         <Button component={NavLink} to="/bridge">Bridge</Button>
         <Button component={NavLink} to="/redeem">Redeem</Button>
-        <Button component={NavLink} to="/operate">Operate</Button>
       </Stack>
     </AppBar>
   );

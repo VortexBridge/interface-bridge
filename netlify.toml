@@ -1,3 +1,7 @@
+[build]
+  command = "npm run build:public"
+  publish = "build/public"
+
 [[redirects]]
   from = "/*"
   to = "/"

@@ -15,7 +15,6 @@ import Bridge from "./pages/Bridge";
 import NotFound from "./pages/NotFound";
 import Redeem from "./pages/Redeem";
 import TermsOfService from "./pages/Tos";
-import Operate from "./operator/Operate";
 
 function AppRouter() {
   return (
@@ -26,7 +25,6 @@ function AppRouter() {
           <Route path="/bridge" element={<Bridge />} />
           <Route path="/redeem" element={<Redeem />} />
           <Route path="/tos" element={<TermsOfService />} />
-          <Route path="/operate" element={<Operate />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

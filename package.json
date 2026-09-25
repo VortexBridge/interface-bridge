@@ -49,13 +49,22 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
+    "dev": "npm run dev:public",
+    "dev:public": "VORTEX_APP_TARGET=public vite",
+    "dev:operator": "VORTEX_APP_TARGET=operator vite",
+    "build": "npm run build:public",
+    "build:public": "VORTEX_APP_TARGET=public vite build",
+    "build:operator": "VORTEX_APP_TARGET=operator vite build",
+    "build:all": "npm run build:public && npm run build:operator && npm run verify:boundaries",
+    "preview": "npm run preview:public",
+    "preview:public": "VORTEX_APP_TARGET=public vite preview",
+    "preview:operator": "VORTEX_APP_TARGET=operator vite preview",
+    "verify:boundaries": "node scripts/verify-app-boundaries.mjs",
+    "package:operator": "npm run build:operator && node scripts/package-operator.mjs",
     "lint": "eslint \"src/**/*.{js,jsx}\"",
     "lint:fix": "eslint \"src/**/*.{js,jsx}\" --fix",
     "test:operator": "node --test src/operator/*.test.mjs",
-    "lint:operator": "eslint src/operator/Operate.jsx src/operator/Proposals.jsx src/operator/Lifecycle.jsx src/operator/Transfers.jsx src/operator/Incidents.jsx src/operator/Recovery.jsx src/operator/Updates.jsx src/operator/Worker.jsx src/operator/WorkerSetup.jsx src/operator/Maintenance.jsx src/operator/ProgressWindow.jsx src/operator/Participation.jsx src/operator/Backups.jsx src/operator/client.js"
+    "lint:operator": "eslint src/operator/OperatorApp.jsx src/operator/index.jsx src/operator/Operate.jsx src/operator/Proposals.jsx src/operator/Lifecycle.jsx src/operator/Transfers.jsx src/operator/Incidents.jsx src/operator/Recovery.jsx src/operator/Updates.jsx src/operator/Worker.jsx src/operator/WorkerSetup.jsx src/operator/Maintenance.jsx src/operator/ProgressWindow.jsx src/operator/Participation.jsx src/operator/Backups.jsx src/operator/client.js"
   },
   "eslintConfig": {
     "extends": [
