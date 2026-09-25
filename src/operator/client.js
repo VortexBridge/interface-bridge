@@ -38,6 +38,13 @@ export function scopeOperatorClient(client, instance) {
   };
 }
 
+export function assertOperatorAPI(status, capabilities) {
+  if (status?.operatorApiVersion !== "v1" || capabilities?.operatorApiVersion !== "v1") {
+    throw new Error("This operator UI requires operator API v1. Install a compatible UI or operator service before continuing.");
+  }
+  return true;
+}
+
 export function observedStatus(observation, now = Date.now()) {
   if (!observation) return "unknown";
   const timestamp = Date.parse(observation.observedAt);

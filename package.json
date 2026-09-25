@@ -64,6 +64,7 @@
     "lint": "eslint \"src/**/*.{js,jsx}\"",
     "lint:fix": "eslint \"src/**/*.{js,jsx}\" --fix",
     "test:operator": "node --test src/operator/*.test.mjs",
+    "test:operator-rollout": "npm run package:operator && node scripts/test-operator-ui-rollout.mjs",
     "lint:operator": "eslint src/operator/OperatorApp.jsx src/operator/index.jsx src/operator/Operate.jsx src/operator/Proposals.jsx src/operator/Lifecycle.jsx src/operator/Transfers.jsx src/operator/Incidents.jsx src/operator/Recovery.jsx src/operator/Updates.jsx src/operator/Worker.jsx src/operator/WorkerSetup.jsx src/operator/Maintenance.jsx src/operator/ProgressWindow.jsx src/operator/Participation.jsx src/operator/Backups.jsx src/operator/client.js"
   },
   "eslintConfig": {

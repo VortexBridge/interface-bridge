@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Alert, Box, Button, Checkbox, Chip, FormControlLabel, Paper, Stack, TextField, Typography } from "@mui/material";
+import { Alert, Box, Button, Checkbox, Chip, FormControlLabel, MenuItem, Paper, Stack, TextField, Typography } from "@mui/material";
 
 import Maintenance from "./Maintenance.jsx";
 import { exportJSON } from "./client";
 
 export default function Updates({ client, revision, instanceId, onChange }) {
-  const [state, setState] = useState({ approvals: [], trustedPublishers: [], requiredSignatures: 0, installedVersion: null, installedProblem: "", staged: [], readiness: [], readinessProblem: "", readinessNotice: "" });
+  const [state, setState] = useState({ approvals: [], trustedPublishers: [], requiredSignatures: 0, installedVersion: null, installedProblem: "", staged: [], readiness: [], readinessProblem: "", readinessNotice: "", installerEnabled: false, operation: { history: [] } });
   const [raw, setRaw] = useState("");
   const [verified, setVerified] = useState(null);
   const [consent, setConsent] = useState(false);
@@ -20,8 +20,15 @@ export default function Updates({ client, revision, instanceId, onChange }) {
   const [priorWaveRaw, setPriorWaveRaw] = useState("");
   const [readiness, setReadiness] = useState(null);
   const [pendingReadiness, setPendingReadiness] = useState(null);
+  const [activationTarget, setActivationTarget] = useState(null);
+  const [updateMode, setUpdateMode] = useState("rolling");
+  const [forwardOnly, setForwardOnly] = useState(false);
+  const [progressId, setProgressId] = useState("");
+  const [recoveryDigest, setRecoveryDigest] = useState("");
+  const [recoveryPlatform, setRecoveryPlatform] = useState("linux-amd64");
   useEffect(() => { let cancelled = false; client("/v1/updates").then((result) => { if (!cancelled) setState(result); }).catch((e) => { if (!cancelled) setError(e.message); }); return () => { cancelled = true; }; }, [client, revision]);
   const run = async (work) => { setBusy(true); setError(""); setMessage(""); try { await work(); } catch (e) { setError(e.message); } finally { setBusy(false); } };
+  const reload = async () => setState(await client("/v1/updates"));
   const verify = () => run(async () => {
     const release = JSON.parse(raw);
     const result = await client("/v1/updates/verify", release);
@@ -40,13 +47,26 @@ export default function Updates({ client, revision, instanceId, onChange }) {
     const request = pendingReadiness || { id: `readiness-${crypto.randomUUID()}`, expectedRevision: revision, releaseDigest: readinessTarget.digest, platform: readinessTarget.platform, backupId, participationResponses: responses, priorWaveResult };
     setPendingReadiness(request); setReadiness(null);
     const receipt = await client("/v1/updates/readiness", request);
-    setReadiness(receipt); setPendingReadiness(null); setState(await client("/v1/updates"));
+    setReadiness(receipt); setPendingReadiness(null); await reload();
   });
+  const chooseActivation = (receipt) => {
+    const staged = state.staged.find((item) => item.digest === receipt.releaseDigest && item.platform === receipt.platform);
+    if (!staged) { setError("The exact staged artifact for this receipt is no longer available."); return; }
+    const mode = staged.channel === "emergency" ? "emergency" : staged.forwardMigration ? "migration" : "rolling";
+    setActivationTarget({ receipt, staged }); setUpdateMode(mode); setForwardOnly(false); setProgressId(""); setError("");
+  };
+  const startUpdate = () => run(async () => {
+    const { receipt } = activationTarget;
+    await client("/v1/updates/start", { id: `update-${crypto.randomUUID()}`, expectedRevision: receipt.revision, readinessId: receipt.id, releaseDigest: receipt.releaseDigest, platform: receipt.platform, mode: updateMode, confirmForwardOnly: updateMode === "migration" && forwardOnly });
+    setActivationTarget(null); setMessage("Update prepared locally. No phase runs until you advance it."); await reload(); await onChange();
+  });
+  const updateAction = (path, body, success) => run(async () => { await client(path, body); setMessage(success); await reload(); });
+  const activeOperation = state.operation?.operation;
   return <Stack gap={2}>
     <Typography variant="h6" component="h2">Security updates</Typography>
     <Typography>Review one exact release and control its approval on your operator. A publisher’s signature cannot install software on your behalf.</Typography>
     <Typography variant="body2" sx={{ overflowWrap: "anywhere" }}>Operator instance: {instanceId || "Unknown"}</Typography>
-    <Alert severity="info">Release verification, local approvals, point-in-time readiness receipts and signed preceding-wave results are available. The local CLI can stage artifacts and run isolated observation checks. Installation remains disabled until the staged-update state machine has verified drain, quorum, maintenance authority and recovery for this exact artifact.</Alert>
+    <Alert severity={state.installerEnabled ? "info" : "error"}>{state.installerEnabled ? "The durable local update executor is available. It still requires an exact unexpired readiness receipt and a separate local start, then records drain, stop, install, verification and recovery one phase at a time." : "The local update executor is unavailable. Readiness evidence cannot install software."}</Alert>
     {error && <Alert severity="error" role="alert">{error}</Alert>}
     {message && <Alert severity="success" role="status">{message}</Alert>}
     <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}>
@@ -138,7 +158,7 @@ export default function Updates({ client, revision, instanceId, onChange }) {
       <Button variant="contained" disabled={busy || !readinessTarget} onClick={checkReadiness}>{pendingReadiness ? "Retry exact readiness check" : "Record update readiness"}</Button>
       {pendingReadiness && <Button disabled={busy} onClick={() => setPendingReadiness(null)}>Discard pending readiness ID</Button>}
       {readiness && <Stack gap={1.5}>
-        <Alert severity="warning">{readiness.state}. Activation ready: {readiness.activationReady ? "Yes" : "No"}. {readiness.notice}</Alert>
+        <Alert severity={readiness.activationReady ? "success" : "warning"}>{readiness.state}. Activation ready: {readiness.activationReady ? "Yes" : "No"}. {readiness.notice}</Alert>
         <Typography>Checked {new Date(readiness.checkedAt).toLocaleString()} · Expires {new Date(readiness.expiresAt).toLocaleString()}</Typography>
         {readiness.checks.map((check) => <Paper variant="outlined" sx={{ p: 1.5 }} key={check.id}>
           <Stack direction={{ xs: "column", sm: "row" }} gap={1} alignItems={{ sm: "center" }}>
@@ -147,8 +167,49 @@ export default function Updates({ client, revision, instanceId, onChange }) {
           </Stack>
         </Paper>)}
         <Button onClick={() => exportJSON(`update-readiness-${readiness.id}.json`, readiness)}>Export readiness receipt</Button>
+        {readiness.activationReady && new Date(readiness.expiresAt).getTime() > Date.now() && <Button variant="contained" disabled={busy || !!activeOperation} onClick={() => chooseActivation(readiness)}>Prepare this exact update</Button>}
       </Stack>}
     </Stack></Paper>}
+    {activationTarget && <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}><Stack gap={2}>
+      <Typography variant="h6" component="h3">Explicit local update start</Typography>
+      <Alert severity="warning">This starts a durable local journal for one exact artifact. It does not grant a publisher, coordinator or another validator permission to advance later phases.</Alert>
+      <Typography sx={{ overflowWrap: "anywhere" }}>{activationTarget.staged.version} · {activationTarget.receipt.platform} · {activationTarget.receipt.releaseDigest}</Typography>
+      <TextField select label="Reviewed update mode" value={updateMode} disabled={busy} onChange={(event) => { setUpdateMode(event.target.value); setForwardOnly(false); }}>
+        <MenuItem value="rolling" disabled={!activationTarget.staged.compatibility?.rollingUpdate}>Rolling compatible update</MenuItem>
+        <MenuItem value="migration" disabled={!activationTarget.staged.forwardMigration}>Forward-only migration</MenuItem>
+        <MenuItem value="emergency" disabled={activationTarget.staged.channel !== "emergency" || !activationTarget.staged.compatibility?.rollingUpdate}>Emergency rollback-compatible update</MenuItem>
+      </TextField>
+      {updateMode === "migration" && <FormControlLabel control={<Checkbox checked={forwardOnly} disabled={busy} onChange={(event) => setForwardOnly(event.target.checked)} />} label="I understand that the schema or signing codec migration cannot safely roll back; recovery must move forward to a newer compatible release." />}
+      <Stack direction="row" gap={1} flexWrap="wrap"><Button variant="contained" disabled={busy || (updateMode === "migration" && !forwardOnly)} onClick={startUpdate}>Start local update journal</Button><Button disabled={busy} onClick={() => setActivationTarget(null)}>Cancel</Button></Stack>
+    </Stack></Paper>}
+    <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}><Stack gap={2}>
+      <Typography variant="h6" component="h3">Current update operation</Typography>
+      {state.operation?.problem && <Alert severity="error">{state.operation.problem}</Alert>}
+      {!activeOperation && <Typography color="text.secondary">No update operation is active. A completed record must be archived before another starts.</Typography>}
+      {activeOperation && <>
+        <Stack direction="row" gap={1} flexWrap="wrap"><Chip label={activeOperation.state} color={["failed", "halted"].includes(activeOperation.state) ? "error" : activeOperation.state === "complete" ? "success" : "info"} /><Chip label={activeOperation.mode} variant="outlined" /></Stack>
+        <Typography>{activeOperation.id} · {activeOperation.priorRelease.version} → {activeOperation.candidate.version}</Typography>
+        <Typography variant="body2" sx={{ overflowWrap: "anywhere" }}>Release digest: {activeOperation.releaseDigest}</Typography>
+        {activeOperation.failure && <Alert severity="error">{activeOperation.failure}</Alert>}
+        <Stack gap={1}>{activeOperation.steps.map((step, index) => <Paper variant="outlined" sx={{ p: 1.5 }} key={`${step.at}-${index}`}><Typography><strong>{step.state}</strong> · {new Date(step.at).toLocaleString()}</Typography><Typography variant="body2">{step.message}</Typography></Paper>)}</Stack>
+        {["prepared", "draining", "drained", "stopping", "stopped", "installing", "installed", "forward-recovered", "verifying"].includes(activeOperation.state) && <Button variant="contained" disabled={busy} onClick={() => updateAction("/v1/updates/advance", { id: activeOperation.id }, "One durable update phase completed.")}>Advance one phase</Button>}
+        {activeOperation.state === "failed" && activeOperation.recovery === "rollback" && <Button color="warning" variant="contained" disabled={busy} onClick={() => updateAction("/v1/updates/rollback", { id: activeOperation.id }, "The exact prior compatible release was restored and remains fenced.")}>Restore exact prior release</Button>}
+        {activeOperation.state === "failed" && activeOperation.recovery === "forward" && <Stack gap={1.5}>
+          <Alert severity="warning">Rollback is unsafe after this migration. Stage, test and locally approve a newer release that supports the migrated schema.</Alert>
+          <TextField label="Forward recovery release digest" value={recoveryDigest} disabled={busy} onChange={(event) => setRecoveryDigest(event.target.value.trim())} />
+          <TextField select label="Forward recovery platform" value={recoveryPlatform} disabled={busy} onChange={(event) => setRecoveryPlatform(event.target.value)}>{["linux-amd64", "linux-arm64", "darwin-arm64"].map((value) => <MenuItem value={value} key={value}>{value}</MenuItem>)}</TextField>
+          <Button color="warning" variant="contained" disabled={busy || !/^[a-f0-9]{64}$/.test(recoveryDigest)} onClick={() => updateAction("/v1/updates/forward-recover", { id: activeOperation.id, releaseDigest: recoveryDigest, platform: recoveryPlatform }, "Forward recovery bytes installed; post-install verification is still required.")}>Install reviewed forward recovery</Button>
+        </Stack>}
+        {activeOperation.state === "verified" && <Stack gap={1.5}>
+          <Alert severity="info">The installed bytes are verified, but this wave is incomplete until a fresh progress receipt proves both signing directions and changed local signatures.</Alert>
+          <TextField label="Fresh post-update progress receipt ID" value={progressId} disabled={busy} onChange={(event) => setProgressId(event.target.value.trim())} />
+          <Button variant="contained" disabled={busy || !/^[a-z][a-z0-9-]{0,62}$/.test(progressId)} onClick={() => updateAction("/v1/updates/complete", { id: activeOperation.id, progressId }, "Fresh two-direction signing progress completed this wave.")}>Complete verified wave</Button>
+        </Stack>}
+        {["complete", "rolled-back", "halted"].includes(activeOperation.state) && <Button variant="outlined" disabled={busy} onClick={() => updateAction("/v1/updates/archive", { id: activeOperation.id }, "Terminal update evidence archived locally.")}>Archive terminal record</Button>}
+        <Button onClick={() => exportJSON(`update-operation-${activeOperation.id}.json`, activeOperation)}>Export operation evidence</Button>
+      </>}
+      {!!state.operation?.history?.length && <Box><Typography variant="subtitle1">Archived operations</Typography>{state.operation.history.map((operation) => <Typography variant="body2" key={operation.id}>{operation.id} · {operation.state} · {new Date(operation.updatedAt).toLocaleString()}</Typography>)}</Box>}
+    </Stack></Paper>
     <Maintenance client={client} revision={revision} onChange={onChange} />
     {state.readinessProblem && <Alert severity="error">{state.readinessProblem}</Alert>}
     {!!state.readiness?.length && <>
@@ -159,6 +220,7 @@ export default function Updates({ client, revision, instanceId, onChange }) {
         <Typography variant="body2">Checked {new Date(receipt.checkedAt).toLocaleString()} · {new Date(receipt.expiresAt).getTime() <= Date.now() ? "Expired" : "Current"}</Typography>
         <Typography variant="body2" sx={{ overflowWrap: "anywhere" }}>{receipt.releaseDigest}</Typography>
         <Button onClick={() => exportJSON(`update-readiness-${receipt.id}.json`, receipt)}>Export receipt</Button>
+        {receipt.activationReady && new Date(receipt.expiresAt).getTime() > Date.now() && <Button disabled={busy || !!activeOperation} onClick={() => chooseActivation(receipt)}>Prepare exact update</Button>}
       </Paper>)}
     </>}
     <Typography variant="h6" component="h3">Local approval history</Typography>

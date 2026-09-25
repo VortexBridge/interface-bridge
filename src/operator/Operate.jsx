@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Alert, Box, Button, Chip, MenuItem, Paper, Stack, Tab, Tabs, TextField, Typography } from "@mui/material";
 
-import { createOperatorClient, scopeOperatorClient, exportJSON, observedStatus } from "./client";
+import { assertOperatorAPI, createOperatorClient, scopeOperatorClient, exportJSON, observedStatus } from "./client";
 import Incidents from "./Incidents.jsx";
 import Lifecycle from "./Lifecycle.jsx";
 import Proposals from "./Proposals.jsx";
@@ -143,6 +143,7 @@ export default function Operate() {
   const loadWorkspace = async (api, id) => {
     const scoped = scopeOperatorClient(api, id);
     const [status, capabilities] = await Promise.all([scoped("/v1/status"), scoped("/v1/capabilities")]);
+    assertOperatorAPI(status, capabilities);
     return { client: scoped, status, capabilities, id };
   };
   const connect = async () => {

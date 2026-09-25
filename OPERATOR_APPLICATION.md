@@ -33,17 +33,28 @@ combined directory. Public `/operate` visits show the public 404 page. Private
 ## Private operator artifact
 
 Run `npm run package:operator` on a reviewed build machine. It creates a
-versioned `artifacts/vortex-operator-ui-*.tar.gz` and adjacent SHA-256 file. The
+versioned `artifacts/vortex-operator-ui-*.tar.gz`, an adjacent SHA-256 file and
+an unsigned component-`operator` release-manifest template. The
 archive contains prebuilt static assets under `site/`, an API compatibility
 record in `site/operator-artifact.json`, installation notes, and a loopback-only
 nginx example. The validator host does not need Node or source code.
 
-Verify the archive digest before extracting it into a versioned directory under
+The unsigned template binds the archive digest, source commit, release sequence,
+operator API `v1` codec and rollback instruction. It must pass the normal
+publisher-signature threshold and a separate local operator approval before host
+installation; the template and SHA-256 file do not grant authority. Verify the
+archive digest before extracting it into a versioned directory under
 `/opt/vortex-operator-ui/releases/`. Point `/opt/vortex-operator-ui/current` to
 the reviewed directory, install the supplied nginx configuration, run
 `nginx -t`, then reload nginx. Keep old reviewed directories for rollback. The
 example sends a restrictive CSP, blocks framing, disables caching, and listens
 only on `127.0.0.1:5174`.
+
+`npm run test:operator-rollout` packages the UI, checks the manifest/archive
+binding, swaps two compatible static release directories and restores the prior
+one, and rejects an API-v2-only artifact. The static symlink change never invokes
+the validator service. The operator UI also compares the service and capability
+API versions at connection time and refuses a missing or incompatible version.
 
 Start `vortex-operator` with its default loopback API and exact UI origin. For a
 remote host, forward both loopback ports over SSH. The access token remains in

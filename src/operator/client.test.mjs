@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createOperatorClient, scopeOperatorClient, observedStatus } from "./client.js";
+import { assertOperatorAPI, createOperatorClient, scopeOperatorClient, observedStatus } from "./client.js";
 
 test("management token cannot be sent to a remote URL or a URL with credentials", () => {
   const token = "a".repeat(64);
@@ -47,4 +47,10 @@ test("missing, old and future-dated observations are never fresh", () => {
   assert.equal(observedStatus({ observedAt: new Date(now - 31000).toISOString(), status: "observed" }, now), "stale");
   assert.equal(observedStatus({ observedAt: new Date(now + 6000).toISOString(), status: "observed" }, now), "stale");
   assert.equal(observedStatus({ observedAt: new Date(now).toISOString(), status: "mismatch" }, now), "mismatch");
+});
+
+test("operator UI fails closed on an incompatible or unreported API", () => {
+  assert.equal(assertOperatorAPI({ operatorApiVersion: "v1" }, { operatorApiVersion: "v1" }), true);
+  assert.throws(() => assertOperatorAPI({ operatorApiVersion: "v2" }, { operatorApiVersion: "v2" }), /requires operator API v1/);
+  assert.throws(() => assertOperatorAPI({}, { operatorApiVersion: "v1" }), /requires operator API v1/);
 });
