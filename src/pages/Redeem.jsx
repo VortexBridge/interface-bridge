@@ -1,6 +1,6 @@
 /* eslint-disable */
 import moment from 'moment';
-import { Box, Button, ButtonGroup, Card, CardContent, CardHeader, Chip, CircularProgress, InputBase, Link, styled, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Button, ButtonGroup, Card, CardContent, CardHeader, Chip, CircularProgress, InputBase, LinearProgress, Link, styled, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useAccount } from 'wagmi';
 import { ethers } from 'ethers';
 import { get as _get } from "lodash";
@@ -13,12 +13,13 @@ import { shortedAddress } from "../utils/display";
 // constants
 import { BRIDGE_CHAINS, BRIDGE_CHAINS_NAMES, BRIDGE_CHAINS_TYPES } from "../constants/chains";
 import { BRIDGE_ROUTES_TYPES, getBridgeRoute, getBridgeContract } from "../constants/routes";
-import { BRIDGE_TOKENS } from "../constants/tokens";
+import { BRIDGE_TOKENS, payoutSymbol } from "../constants/tokens";
 
 // helpers
 import { WormholeTokenBridgeContract, getWormholeMessage, fetchSignedVaa, parseTransferVaa, fromWormholeAddress, wormholescanTx } from "../helpers/wormhole";
 import { vortex, koinosReader, VORTEX_EVM } from "../v2";
-import { listTransfers } from "../v2/history";
+import { listTransfers, forgetTransfer } from "../v2/history";
+import { journeyOf, forgetJourney } from "../v2/journey";
 
 // Actions
 import { setNetworkFrom, setNetworkTo } from "../redux/actions/bridge";
@@ -32,6 +33,7 @@ import { useEvmNetwork, isSignerOnNetwork } from '../hooks/useEvmNetwork';
 // components
 import CustomEthConnectButton from "../components/Bridge/CustomEthConnectButton";
 import CustomKoinConnectButton from "../components/Bridge/CustomKoinConnectButton";
+import CustomSolConnectButton from "../components/Bridge/CustomSolConnectButton";
 import SelectChain from "../components/SelectChain";
 
 const Redeem = (props) => {
@@ -63,7 +65,6 @@ const Redeem = (props) => {
   const provider = fromProvider || defaultProvider;
   // a wormhole transfer is marked as completed on the to chain
   const toProvider = useEthersProvider({ chainId: _get(toChain, "evmChainId", undefined) });
-  const fromNetwork = useEvmNetwork(fromChain);
   const toNetwork = useEvmNetwork(toChain);
   // the Vortex bridges are read on their own networks, no wallet needed
   const vortexEvmProvider = useEthersProvider({ chainId: _get(VORTEX_EVM, "evmChainId", undefined) });
@@ -162,6 +163,14 @@ const Redeem = (props) => {
     setRedeemSubmitted(false);
   }, [ fromChain, toChain ]);
 
+  // a lookup starts by itself only once the field can hold a complete id of the source network, so typing one
+  // character at a time does not flash "not found"; the CHECK TRANSACTION button still checks whatever is there
+  const lookupReady = (t) => {
+    const type = _get(fromChain, "chainType", "");
+    const full = type == BRIDGE_CHAINS_TYPES.KOIN ? 70 : type == BRIDGE_CHAINS_TYPES.SOLANA ? 86 : 66;
+    return String(t).trim().length >= full;
+  };
+
   useEffect(() => {
     // the source transaction changed: the check of the old one must not fill in its result
     pollId.current += 1;
@@ -174,13 +183,14 @@ const Redeem = (props) => {
     // also for an emptied field: nothing is checked anymore, the page must not look like it waits
     setRecover(null)
     setblockchainTX(null)
-    if(sourceTX) {
+    if(sourceTX && lookupReady(sourceTX)) {
       if(checker) {
         clearTimeout(checker);
       }
       startCheck(sourceTX)
     }
-  }, [ sourceTX ]);
+  // also after a change of the networks (the effect above has ended the old check): the same id is looked up again
+  }, [ sourceTX, fromChain, toChain ]);
 
 
   const openModal = (side) => {
@@ -193,6 +203,28 @@ const Redeem = (props) => {
     setLoading(true);
     if (loading || redeemSubmitted) return;
     try {
+      // to Solana: the Wormhole SDK posts the signed vaa (the Wormhole program checks the guardians' signatures) and
+      // completes the transfer; the wallet signs all its transactions in one prompt where it can
+      if (_get(toChain, "chainType", "") == BRIDGE_CHAINS_TYPES.SOLANA) {
+        let sol = await import("../helpers/solana.mjs");
+        let prompt = null;
+        let result = null;
+        try {
+          result = await sol.redeemOnSolana({ chain: toChain, vaaHex: _get(recover, "vaa", ""),
+            onPrompt: () => { if (prompt) Snackbar.closeSnackbar(prompt); prompt = Snackbar.enqueueSnackbar(<Typography variant="h6">Confirm the transactions in your wallet</Typography>, { variant: 'info', persist: true, action: actionClose }); } });
+        } finally {
+          if (prompt) Snackbar.closeSnackbar(prompt);
+        }
+        if (!result.already) Snackbar.enqueueSnackbar(<Link underline="none" component={toChain.explorer ? "a" : "span"} style={{ cursor: "pointer" }} target="_blank" rel="noopener noreferrer" href={toChain.explorer ? `${toChain.explorer}/${result.signature}` : undefined}><Typography sx={{ color: "white" }} variant="h6">Redeemed on Solana</Typography></Link>, {
+          variant: 'success',
+          persist: false,
+          action: actionClose,
+        })
+        setRedeemSubmitted(!result.already);
+        setRecover({ ...recover, status: "redeemed", completed: true });
+        setLoading(false)
+        return;
+      }
       if (!(await isSignerOnNetwork(signer, toNetwork.expected))) throw new Error("wrong network");
       let _tokenBridge = WormholeTokenBridgeContract(getBridgeContract(route, toChain), signer);
       // anyone can redeem a transfer, do not pay gas for one that is done
@@ -210,7 +242,7 @@ const Redeem = (props) => {
         action: actionClose,
       })
       await tx.wait()
-      Snackbar.enqueueSnackbar(<Link underline="none" style={{ cursor: "pointer" }} target="_blank" href={`${toChain.explorer}/${tx.hash}`}><Typography sx={{ color: "white" }} variant="h6">Transaction successful</Typography><Typography sx={{ color: "white" }} variant="subtitle1" component="p">View Block</Typography></Link>, {
+      Snackbar.enqueueSnackbar(<Link underline="none" component={toChain.explorer ? "a" : "span"} style={{ cursor: "pointer" }} target="_blank" href={toChain.explorer ? `${toChain.explorer}/${tx.hash}` : undefined}><Typography sx={{ color: "white" }} variant="h6">Transaction successful</Typography><Typography sx={{ color: "white" }} variant="subtitle1" component="p">View Block</Typography></Link>, {
         variant: 'success',
         persist: false,
         action: actionClose,
@@ -243,7 +275,7 @@ const Redeem = (props) => {
       if (expiryMs(got) - Date.now() < 5 * 60 * 1000) {
         got = await vortex.collect(vortexProvidersRef.current, _get(recover, "claim", null));
         if (!got.enough) throw new Error("the validators did not answer, please try again in a minute");
-        setRecover({ ...recover, got });
+        setRecover(r => ({ ...r, got }));
       }
       let hash = null;
       if (_get(toChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM) {
@@ -263,8 +295,18 @@ const Redeem = (props) => {
       if (_get(toChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN) {
         let providerKoin = _get(walletSelector, "provider", null);
         let signerKoin = _get(walletSelector, "signer", null);
+        // re-checked right before the wallet is asked (already claimed, paused, disabled, today's limit): no mana is spent
+        // on a claim that would revert; Kondor only signs and the page sends it (WalletConnect signs and sends)
+        let viaWalletConnect = _get(walletSelector, "wallet[0].name", "") == "walletconnect" && !!_get(walletSelector, "wallet[0].object", null);
         prompt = walletPrompt();
-        hash = await vortex.claimOnKoinos(providerKoin, signerKoin, got);
+        try {
+          // signed: the id is final — keep it and show its explorer link before the page sends it
+          const onSigned = (id) => { hash = id; setRecover(r => ({ ...r, got, claimTx: id })); };
+          hash = await vortex.claimOnKoinos(providerKoin, signerKoin, got, viaWalletConnect ? undefined : onSigned);
+        } catch (e) {
+          if (!_get(e, "submitted", null)) throw e;
+          hash = e.submitted;   // no clear answer from the node: it may have arrived — the wait below finds out
+        }
         Snackbar.closeSnackbar(prompt);
         Snackbar.enqueueSnackbar(<Typography variant="h6">Transaction submitted</Typography>, {
           variant: 'info',
@@ -276,13 +318,13 @@ const Redeem = (props) => {
         if (!(await vortex.isClaimed(vortexProvidersRef.current, got.claim))) throw new Error("the claim is not confirmed yet, check again in a minute");
       }
       // success, with the link to the claim (issues #35, #52)
-      Snackbar.enqueueSnackbar(<Link underline="none" style={{ cursor: "pointer" }} target="_blank" rel="noopener noreferrer" href={`${toChain.explorer}/${hash}`}><Typography sx={{ color: "white" }} variant="h6">Transaction successful</Typography><Typography sx={{ color: "white" }} variant="subtitle1" component="p">View on the explorer</Typography></Link>, {
+      Snackbar.enqueueSnackbar(<Link underline="none" component={toChain.explorer ? "a" : "span"} style={{ cursor: "pointer" }} target="_blank" rel="noopener noreferrer" href={toChain.explorer ? `${toChain.explorer}/${hash}` : undefined}><Typography sx={{ color: "white" }} variant="h6">Transaction successful</Typography><Typography sx={{ color: "white" }} variant="subtitle1" component="p">View on the explorer</Typography></Link>, {
         variant: 'success',
         persist: false,
         action: actionClose,
       })
       setRedeemSubmitted(true);
-      setRecover({ ...recover, got, completed: true, status: "redeemed", claimTx: hash });
+      setRecover(r => ({ ...r, got, completed: true, status: "redeemed", claimTx: hash }));
       setLoading(false)
       // another deposit in the same transaction: go on with it
       if (_get(recover, "more", false)) {
@@ -297,7 +339,7 @@ const Redeem = (props) => {
       try {
         if (await vortex.isClaimed(vortexProvidersRef.current, _get(recover, "claim", null))) {
           setRedeemSubmitted(true);
-          setRecover({ ...recover, completed: true, status: "redeemed" });
+          setRecover(r => ({ ...r, completed: true, status: "redeemed" }));   // keeps a claim id set on signing
           setLoading(false);
           return;
         }
@@ -323,6 +365,9 @@ const Redeem = (props) => {
     if(_get(_chain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN && !koin_conector) {
       return true
     }
+    if(_get(_chain, "chainType", "") == BRIDGE_CHAINS_TYPES.SOLANA && !_get(walletSelector, "solana", null)) {
+      return true
+    }
     return false
   }
 
@@ -336,13 +381,49 @@ const Redeem = (props) => {
       let _tokenBridgeTo = getBridgeContract(BRIDGE_ROUTES_TYPES.WORMHOLE, toChain);
       let _wormholeFrom = _get(fromChain, "wormhole.chainId", null);
       let _wormholeTo = _get(toChain, "wormhole.chainId", null);
-      if (!_tokenBridgeFrom || !_tokenBridgeTo || _wormholeFrom == null || _wormholeTo == null || !provider || !toProvider) throw fail("the networks are not wormhole networks");
+      let fromSolana = _get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.SOLANA;
+      let toSolana = _get(toChain, "chainType", "") == BRIDGE_CHAINS_TYPES.SOLANA;
+      if (!_tokenBridgeFrom || !_tokenBridgeTo || _wormholeFrom == null || _wormholeTo == null || (!fromSolana && !provider) || (!toSolana && !toProvider)) throw fail("the networks are not wormhole networks");
+      // the Solana libraries load only for a Solana transfer
+      let sol = (fromSolana || toSolana) ? await import("../helpers/solana.mjs") : null;
+      if (stale()) return;
+
+      // the message the token bridge published in the source transaction: { sequence, payload } + the emitter
+      let message = null;
+      let emitterFrom = _tokenBridgeFrom;
+      let receipt = null;
+      if (fromSolana) {
+        if (!sol.isSolanaTxId(txIdParam)) throw fail("This is not a transaction id of Solana.");
+        let messages = null;
+        // read from Solana itself, never from an api: the messages the transaction published (needs an rpc that
+        // still has the transaction)
+        try {
+          messages = await sol.solanaTransferMessages(fromChain, txIdParam);
+        } catch (e) {
+          if (stale()) return;
+          if (!/not found/i.test(String(_get(e, "message", "")))) throw e;
+        }
+        if (!messages) {
+          // an rpc can be some seconds behind for a transaction that was just sent
+          receiptTries.current += 1;
+          if (receiptTries.current <= 4) {
+            setLoading(false);
+            retry(5000);
+            return;
+          }
+          throw fail("The transaction has not been found on Solana. Wait a moment if you just sent it. The Solana node of this page keeps about a day of history: an older transfer can be redeemed on any Wormhole redeem page (anyone may redeem; the tokens go to the recipient of the transfer).");
+        }
+        if (stale()) return;
+        if (messages.length == 0) throw fail("There is no Wormhole token transfer in this transaction.");
+        message = messages[0];
+        emitterFrom = message.emitter;
+      }
 
       // the rpc throws for anything else, that would look like a hiccup and be tried again
-      if (!/^0x[0-9a-fA-F]{64}$/.test(String(txIdParam))) throw fail(`This is not a transaction hash of ${_get(fromChain, "name", "")}.`);
-      let receipt = await provider.getTransactionReceipt(txIdParam);
+      if (!fromSolana && !/^0x[0-9a-fA-F]{64}$/.test(String(txIdParam))) throw fail(`This is not a transaction hash of ${_get(fromChain, "name", "")}.`);
+      if (!fromSolana) receipt = await provider.getTransactionReceipt(txIdParam);
       if (stale()) return;
-      if (!receipt) {
+      if (!fromSolana && !receipt) {
         // a node can be some seconds behind for a transaction that was just sent, after that it is the wrong hash or network
         receiptTries.current += 1;
         if (receiptTries.current <= 4) {
@@ -352,14 +433,16 @@ const Redeem = (props) => {
         }
         throw fail(`The transaction has not been found on ${_get(fromChain, "name", "")}. Check the source network, or wait a moment if you just sent it.`);
       }
-      if (receipt.status != 1) throw fail("The source transaction failed, nothing was sent.");
-      let core = await WormholeTokenBridgeContract(_tokenBridgeFrom, provider).wormhole();
-      if (stale()) return;
-      let message = getWormholeMessage(receipt, core, _tokenBridgeFrom);
-      if (message == null) throw fail("There is no Wormhole token transfer in this transaction.");
+      if (!fromSolana) {
+        if (receipt.status != 1) throw fail("The source transaction failed, nothing was sent.");
+        let core = await WormholeTokenBridgeContract(_tokenBridgeFrom, provider).wormhole();
+        if (stale()) return;
+        message = getWormholeMessage(receipt, core, _tokenBridgeFrom);
+        if (message == null) throw fail("There is no Wormhole token transfer in this transaction.");
+      }
       setblockchainTX(true);
 
-      let vaa = await fetchSignedVaa(_wormholeFrom, _tokenBridgeFrom, message.sequence);
+      let vaa = await fetchSignedVaa(_wormholeFrom, emitterFrom, message.sequence);
       if (stale()) return;
       if (!vaa) {
         // not signed yet, this is no error and takes as long as the finality of the from chain
@@ -376,11 +459,14 @@ const Redeem = (props) => {
       } catch (e) {
         throw fail("This is not a plain token transfer, it can not be redeemed here.");
       }
-      let emitter = fromWormholeAddress(transfer.emitterAddress);
-      if (transfer.emitterChain != _wormholeFrom || !emitter || emitter.toLowerCase() != _tokenBridgeFrom.toLowerCase() || transfer.sequence != message.sequence || transfer.payload.toLowerCase() != message.payload.toLowerCase()) throw fail("The signed message does not belong to this transaction.");
+      // Solana: the emitter is the token bridge's 32-byte emitter account, read above from the chain
+      let emitter = fromSolana ? transfer.emitterAddress : fromWormholeAddress(transfer.emitterAddress);
+      if (transfer.emitterChain != _wormholeFrom || !emitter || emitter.toLowerCase() != String(emitterFrom).toLowerCase() || transfer.sequence != message.sequence || transfer.payload.toLowerCase() != message.payload.toLowerCase()) throw fail("The signed message does not belong to this transaction.");
       if (transfer.toChain != _wormholeTo) throw fail(`This transfer does not go to ${_get(toChain, "name", "")}, select the network it was sent to.`);
 
-      let completed = await WormholeTokenBridgeContract(_tokenBridgeTo, toProvider).isTransferCompleted(transfer.hash);
+      let completed = toSolana
+        ? await sol.isCompletedOnSolana(toChain, vaa)
+        : await WormholeTokenBridgeContract(_tokenBridgeTo, toProvider).isTransferCompleted(transfer.hash);
       if (stale()) return;
 
       // the token bridge is open to any token, the amount can only be shown for a token of BRIDGE_TOKENS:
@@ -404,11 +490,12 @@ const Redeem = (props) => {
         hash: transfer.hash,
         completed,
         status: completed ? "redeemed" : "signed",
-        recipient: fromWormholeAddress(transfer.to) || transfer.to,
+        // to Solana the vaa names the recipient's token account (the wallet's account for the token)
+        recipient: toSolana ? `${sol.solanaAddressOf32(transfer.to)} (token account)` : (fromWormholeAddress(transfer.to) || transfer.to),
         amount: transfer.amount,
         token: _listed,
         signatures: transfer.signatures,
-        blockNumber: receipt.blockNumber,
+        blockNumber: receipt ? receipt.blockNumber : null,
       });
       tries.current = 0;
       setLoading(false);
@@ -525,6 +612,8 @@ const Redeem = (props) => {
       }
       tries.current = 0;
       setblockchainTX(false);
+      // proven on the chain that it failed (reverted): nothing to find later, so it leaves "your transfers"
+      if (_get(error, "failed", false)) { forgetTransfer(txIdParam); forgetJourney(txIdParam); }
       Snackbar.enqueueSnackbar(
         <span>
           <Typography variant="h6">Transfer not found</Typography>
@@ -543,6 +632,7 @@ const Redeem = (props) => {
     <>
       {_get(props.base == "from" ? fromChain  : toChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM ? <CustomEthConnectButton {...props} /> : null}
       {_get(props.base == "from" ? fromChain  : toChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN ? <CustomKoinConnectButton {...props} /> : null}
+      {_get(props.base == "from" ? fromChain  : toChain, "chainType", "") == BRIDGE_CHAINS_TYPES.SOLANA ? <CustomSolConnectButton {...props} /> : null}
     </>
   )
 
@@ -554,6 +644,10 @@ const Redeem = (props) => {
     // conect from Koin
     if (_get(chain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN) return (
       <CustomKoinConnectButton />
+    )
+    // conect Solana (redeem on Solana)
+    if (_get(chain, "chainType", "") == BRIDGE_CHAINS_TYPES.SOLANA) return (
+      <CustomSolConnectButton />
     )
   }
   const disabledButtonBridge = () => {
@@ -594,9 +688,23 @@ const Redeem = (props) => {
     )
 
     // done, by this page or by anyone else
-    if (_get(recover, "completed", false)) return (
-      <Button disabled variant="contained" size="large" sx={{ width: "100%" }}>REDEEMED</Button>
-    )
+    if (_get(recover, "completed", false)) {
+      // step 1 of a two-step transfer (sent from this browser): offer step 2 — an ordinary transfer, prefilled, that
+      // the user checks and signs again
+      let journey = journeyOf(sourceTX);
+      let final = journey ? BRIDGE_CHAINS.find(c => c.id == journey.to) : null;
+      if (journey && final && journey.via == _get(toChain, "id", null) && getBridgeRoute(toChain, final)) return (
+        <Box sx={{ display: "flex", flexDirection: "column", gap: "8px", width: "100%" }}>
+          <Button disabled variant="contained" size="large" sx={{ width: "100%" }}>STEP 1 REDEEMED</Button>
+          <Button variant="contained" size="large" sx={{ width: "100%" }} onClick={() => navigate(`/bridge?from=${encodeURIComponent(journey.via)}&to=${encodeURIComponent(journey.to)}&token=${encodeURIComponent(journey.token)}&amount=${encodeURIComponent(journey.amount)}`)}>
+            {`CONTINUE: STEP 2 — ${_get(toChain, "name", "")} → ${_get(final, "name", "")}`}
+          </Button>
+        </Box>
+      )
+      return (
+        <Button disabled variant="contained" size="large" sx={{ width: "100%" }}>REDEEMED</Button>
+      )
+    }
 
     // only redeeming needs a wallet: the one of the network the tokens go to
     if (checkChain(toChain)) return (
@@ -738,7 +846,7 @@ const Redeem = (props) => {
                 <CircularProgress/>
               </Box>
               <Typography sx={{ marginTop: 2, marginX: "auto" }} variant="h5" component={"span"}>{route == BRIDGE_ROUTES_TYPES.WORMHOLE ? "the Wormhole guardians are signing your transfer" : "validators are verifying your transaction"}</Typography>
-              <Typography sx={{ marginTop: 1, marginX: "auto", textAlign: "center" }} variant="p" component={"span"}>{route == BRIDGE_ROUTES_TYPES.WORMHOLE ? `they wait until ${_get(fromChain, "name", "")} has finalized it, around 20 minutes after the transaction. This page checks by itself, you can also leave and come back with the transaction hash` : "this can take up to 3 minutes"}</Typography>
+              <Typography sx={{ marginTop: 1, marginX: "auto", textAlign: "center" }} variant="p" component={"span"}>{route == BRIDGE_ROUTES_TYPES.WORMHOLE ? `they wait until ${_get(fromChain, "name", "")} has finalized it, around 20 minutes after the transaction. This page checks by itself, you can also leave and come back with the transaction hash` : `they sign once ${_get(fromChain, "name", "")} has finalized the deposit: ${_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN ? "about a minute" : "about 15 minutes"}. This page checks by itself, you can also leave and come back with the transaction hash`}</Typography>
               {route == BRIDGE_ROUTES_TYPES.WORMHOLE ?
                 <Link sx={{ marginTop: 1, marginX: "auto" }} target="_blank" rel="noopener noreferrer" href={wormholescanTx(sourceTX)}>Follow the transfer on Wormholescan</Link>
                 : null}
@@ -749,7 +857,7 @@ const Redeem = (props) => {
                   <CircularProgress/>
                 </Box>
                 <Typography sx={{ marginTop: 2, marginX: "auto" }} variant="h5" component={"span"}>waiting for more signatures</Typography>
-                <Typography sx={{ marginTop: 1, marginX: "auto" }} variant="p" component={"span"}>this can take up to 3 minutes</Typography>
+                <Typography sx={{ marginTop: 1, marginX: "auto" }} variant="p" component={"span"}>{`a few validators have not seen it as final yet (${_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN ? "about a minute" : "about 15 minutes"} after the deposit)`}</Typography>
               </Box>
             : null
           }
@@ -794,28 +902,38 @@ const Redeem = (props) => {
                 </Box>
                 <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
                   <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Amount:</Typography>
-                  <Typography variant="h6" component={"span"}>{`${ethers.utils.formatUnits(String(_get(recover, "claim.amount8", "0")), 8)} ${_get(claimToken(_get(recover, "claim", null)), "symbol", "")}`}</Typography>
+                  <Typography variant="h6" component={"span"}>{`${ethers.utils.formatUnits(String(_get(recover, "claim.amount8", "0")), 8)} ${payoutSymbol(claimToken(_get(recover, "claim", null)))}`}</Typography>
                 </Box>
                 <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
                   <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Deposit number:</Typography>
                   <Typography variant="h6" component={"span"}>{String(_get(recover, "claim.depositNonce", ""))}</Typography>
                 </Box>
+                {_get(fromChain, "explorer", "") && sourceTX ?
+                  <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
+                    <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Deposit:</Typography>
+                    <Link target="_blank" rel="noopener noreferrer" href={`${_get(fromChain, "explorer", "")}/${encodeURIComponent(String(sourceTX).trim())}`}>View on the explorer</Link>
+                  </Box>
+                  : null}
                 {_get(recover, "got", null) && !_get(recover, "completed", false) ?
                   <>
                     <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
                       <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Validator signatures:</Typography>
                       <Typography variant="h6" component={"span"}>{`${_get(recover, "got.signers", []).length} verified, ${_get(recover, "got.quorum", "")} needed`}</Typography>
                     </Box>
+                    <LinearProgress variant="determinate" aria-label="validator signatures verified"
+                      color={_get(recover, "got.enough", false) ? "success" : "primary"}
+                      value={Math.min(100, 100 * _get(recover, "got.signers", []).length / Math.max(1, Number(_get(recover, "got.quorum", 1))))}
+                      sx={{ height: 6, borderRadius: 3, marginY: "6px" }} />
                     <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
                       <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Signatures valid until:</Typography>
                       <Typography variant="h6" component={"span"}>{moment(expiryMs(_get(recover, "got", null))).format("DD-MM-YYYY, HH:mm")}</Typography>
                     </Box>
                   </>
                   : null}
-                {_get(recover, "claimTx", null) ?
+                {_get(recover, "claimTx", null) && _get(toChain, "explorer", "") ?
                   <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
                     <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Claim:</Typography>
-                    <Link target="_blank" rel="noopener noreferrer" href={`${_get(toChain, "explorer", "")}/${_get(recover, "claimTx", "")}`}>View on the explorer</Link>
+                    <Link target="_blank" rel="noopener noreferrer" href={_get(toChain, "explorer", "") ? `${_get(toChain, "explorer", "")}/${_get(recover, "claimTx", "")}` : undefined}>View on the explorer</Link>
                   </Box>
                   : null}
               </Box>

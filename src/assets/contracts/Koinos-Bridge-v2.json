@@ -35,6 +35,13 @@
       "entry_point": 3403107788,
       "read_only": true
     },
+    "get_limit": {
+      "description": "Get the rate limit of a token",
+      "argument": "bridge.get_limit_arguments",
+      "return": "bridge.limit_v2",
+      "entry_point": 3635634830,
+      "read_only": true
+    },
     "is_consumed": {
       "description": "Is a deposit identity already paid",
       "argument": "bridge.is_consumed_arguments",
@@ -261,6 +268,42 @@
                 "rule": "repeated",
                 "type": "bytes",
                 "id": 8
+              }
+            }
+          },
+          "get_limit_arguments": {
+            "fields": {
+              "token": {
+                "type": "bytes",
+                "id": 1,
+                "options": {
+                  "(koinos.btype)": "CONTRACT_ID"
+                }
+              }
+            }
+          },
+          "limit_v2": {
+            "fields": {
+              "capacity8": {
+                "type": "uint64",
+                "id": 1,
+                "options": {
+                  "jstype": "JS_STRING"
+                }
+              },
+              "available8": {
+                "type": "uint64",
+                "id": 2,
+                "options": {
+                  "jstype": "JS_STRING"
+                }
+              },
+              "lastUpdate": {
+                "type": "uint64",
+                "id": 3,
+                "options": {
+                  "jstype": "JS_STRING"
+                }
               }
             }
           }

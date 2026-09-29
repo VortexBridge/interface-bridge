@@ -60,8 +60,11 @@ export const getWormholeMessage = (receipt, coreAddress, tokenBridgeAddress) => 
 }
 
 // signed vaa as hex, null while the guardians did not sign yet (they wait for the finality of the from chain)
+// emitterAddress: an evm address, or 32 bytes as hex (the token bridge's emitter on Solana)
 export const fetchSignedVaa = async (wormholeChainId, emitterAddress, sequence) => {
-  let emitter = ethers.utils.hexZeroPad(ethers.utils.getAddress(emitterAddress), 32).substring(2).toLowerCase();
+  let emitter = /^0x[0-9a-fA-F]{64}$/.test(String(emitterAddress))
+    ? emitterAddress.substring(2).toLowerCase()
+    : ethers.utils.hexZeroPad(ethers.utils.getAddress(emitterAddress), 32).substring(2).toLowerCase();
   let response = await fetch(`${WORMHOLE_API}/v1/signed_vaa/${wormholeChainId}/${emitter}/${sequence}`);
   if (response.status == 404) return null;
   if (!response.ok) throw new Error(`wormhole api ${response.status}`);

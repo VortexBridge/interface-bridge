@@ -4,7 +4,7 @@ import generateStore from "./redux/index";
 import { Provider as ReactProvider } from "react-redux";
 import { RainbowKitProvider, connectorsForWallets } from "@rainbow-me/rainbowkit";
 import { WagmiProvider, createConfig, http } from 'wagmi';
-import { mainnet, base, sepolia } from 'wagmi/chains';
+import { mainnet, base, sepolia, hardhat } from 'wagmi/chains';
 import { QueryClientProvider, QueryClient, } from "@tanstack/react-query";
 import {
   injectedWallet,
@@ -27,7 +27,10 @@ const store = generateStore();
 let testnet = import.meta.env.VITE_CHAIN || "TESTNET";
 if(testnet == "TESTNET") testnet = "true";
 const projectId = (testnet == "true") ? '55003640cab75f712d7a880ec2798cb9' : 'c64ca949713c7b3ef89702e71583fb97';
-const connectors = connectorsForWallets(
+const connectors = testnet == "LAB" ? connectorsForWallets(
+  [{ groupName: "Lab demo", wallets: [injectedWallet] }],
+  { appName: "Vortex Bridge (lab)", projectId: "lab-demo-no-walletconnect" },
+) : connectorsForWallets(
   [
     {
       groupName: "Recommended",
@@ -37,7 +40,13 @@ const connectors = connectorsForWallets(
   { appName: "Vortex Bridge", projectId },
 );
 // only the evm networks of BRIDGE_CHAINS, a wallet on any other network must stay unsupported
-const config = createConfig(testnet == "true" ? {
+const config = createConfig(testnet == "LAB" ? {
+  // the local demo (lab/demo/up.sh): the lab's Ethereum node (chain id 31337) behind the demo gateway
+  chains: [hardhat],
+  transports: { [hardhat.id]: http(import.meta.env.VITE_ETH_RPC) },
+  connectors,
+  ssr: false,
+} : testnet == "true" ? {
   chains: [sepolia],
   transports: {
     // not VITE_ETH_RPC, it is a mainnet node. Without a url viem uses the public rpc of the chain

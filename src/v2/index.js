@@ -4,7 +4,7 @@ import * as koilib from "koilib";
 import { createFlows } from "./flows.mjs";
 import KoinosBridgeAbi from "../assets/contracts/Koinos-Bridge-v2.json";
 import KoinosTokenAbi from "../assets/contracts/Koinos-Token.json";
-import { BRIDGE_CHAINS, BRIDGE_CHAINS_TYPES } from "../constants/chains";
+import { BRIDGE_CHAINS, BRIDGE_CHAINS_TYPES, KOINOS_RPC } from "../constants/chains";
 
 export { KIND } from "./flows.mjs";
 
@@ -29,4 +29,4 @@ export const vortex = configured ? createFlows({
 }) : null;
 
 // Koinos reads need no wallet
-export const koinosReader = new koilib.Provider(import.meta.env.VITE_KOINOS_RPC || "https://api.koinos.io");
+export const koinosReader = new koilib.Provider(KOINOS_RPC);

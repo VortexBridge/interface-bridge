@@ -4,23 +4,25 @@ import { Avatar, Box, Button, ButtonGroup, Card, CardContent, CardHeader, Link, 
 import { fetchBalance } from '@wagmi/core';
 import { BigNumber } from "bignumber.js";
 import { ethers } from 'ethers';
-import { utils as koilibUtils, Transaction } from "koilib";
+import { utils as koilibUtils } from "koilib";
 import { get as _get } from "lodash";
 import { useSnackbar } from "notistack";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAccount, useConnect } from "wagmi";
 import { shortedAddress } from "../utils/display";
 
 // constants
 import { BRIDGE_CHAINS, BRIDGE_CHAINS_TYPES } from "../constants/chains";
-import { BRIDGE_ROUTES_TYPES, getBridgeRoute, getBridgeContract } from "../constants/routes";
+import { BRIDGE_ROUTES_TYPES, getBridgeRoute, getBridgeContract, getHopRoute } from "../constants/routes";
+import { BRIDGE_TOKENS, payoutSymbol } from "../constants/tokens";
 
 // helpers
 import { EvmTokenContract, KoinosTokenContract } from "../helpers/contracts";
 import { WormholeTokenBridgeContract, WormholeCoreContract, toWormholeAddress, wormholeNonce } from "../helpers/wormhole";
 import { vortex, koinosReader, VORTEX_EVM, KIND } from "../v2";
-import { rememberTransfer } from "../v2/history";
+import { rememberTransfer, forgetTransfer } from "../v2/history";
+import { rememberJourney, forgetJourney } from "../v2/journey";
 
 // Actions
 import { setModal, setModalData } from "../redux/actions/modals";
@@ -42,6 +44,7 @@ import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 // components
 import CustomEthConnectButton from "../components/Bridge/CustomEthConnectButton";
 import CustomKoinConnectButton from "../components/Bridge/CustomKoinConnectButton";
+import CustomSolConnectButton from "../components/Bridge/CustomSolConnectButton";
 import CustomConnectInfo from "../components/Bridge/CustomConnectInfo";
 import SelectChain from "../components/SelectChain";
 import { Rotate90DegreesCcw, TextRotateUp } from "@mui/icons-material";
@@ -66,6 +69,9 @@ const Bridge = () => {
   const toChain = _get(bridgeSelector, "to", null);
   const tokenToBridge = _get(bridgeSelector, "token", null);
   const route = getBridgeRoute(fromChain, toChain);
+  // no direct route: two steps through Ethereum (Base / Solana <-> Ethereum <-> Koinos)
+  const hop = getHopRoute(fromChain, toChain, BRIDGE_CHAINS);
+  const [searchParams] = useSearchParams();
 
   // reads go to the network of the from chain, the wallet can be on another evm network
   const fromProvider = useEthersProvider({ chainId: _get(fromChain, "evmChainId", undefined) });
@@ -86,11 +92,41 @@ const Bridge = () => {
   const [loadingApproval, setLoadingApproval] = useState(false);
   const [txHash, setTxHash] = useState("");
   const [loadingBridge, setLoadingBridge] = useState(false);
+  // step 1 of a two-step transfer: { from, via, to } (to = the final chain object) while it is being sent
+  const [hopFinal, setHopFinal] = useState(null);
 
   // efects
   useEffect(() => {
     dispatch(setModal("Disclaimer"))
   }, []);
+
+  // step 2 of a two-step transfer comes from the Redeem page as a link: networks, token and amount prefilled.
+  // Only a direct route is accepted; the user checks everything and signs as usual.
+  useEffect(() => {
+    let _from = BRIDGE_CHAINS.find(c => c.id == searchParams.get("from"));
+    let _to = BRIDGE_CHAINS.find(c => c.id == searchParams.get("to"));
+    let _token = BRIDGE_TOKENS.find(t => t.id == searchParams.get("token"));
+    if (!_from || !_to || !_token || !getBridgeRoute(_from, _to)) return;
+    dispatch(setNetworkFrom(_from));
+    dispatch(setNetworkTo(_to));
+    dispatch(setTokenToBridge(_token));
+    let _amount = String(searchParams.get("amount") || "");
+    if (/^\d{1,18}(\.\d{1,18})?$/.test(_amount)) setInputValue(_amount);
+  }, []);
+
+  // step 1 of a two-step transfer: only a token that also exists on the final network
+  useEffect(() => {
+    if (!hopFinal || !tokenToBridge) return;
+    if (!_get(tokenToBridge, "networks", []).find(net => _get(net, "chain", "") == _get(hopFinal, "to.id", null))) {
+      dispatch(setTokenToBridge(null));
+      Snackbar.enqueueSnackbar(<Typography variant="h6">{`This token does not exist on ${_get(hopFinal, "to.name", "")}`}</Typography>, { variant: 'info', persist: false });
+    }
+  }, [ hopFinal, tokenToBridge ]);
+
+  // a started two-step transfer ends when other networks are picked
+  useEffect(() => {
+    if (hopFinal && (_get(fromChain, "id", null) != hopFinal.from || _get(toChain, "id", null) != hopFinal.via)) setHopFinal(null);
+  }, [fromChain, toChain]);
 
   const loadBlance = async () => {
     let _balance = 0;
@@ -135,6 +171,14 @@ const Bridge = () => {
       }
     }
 
+    if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.SOLANA && _get(walletSelector, "solana", null)) {
+      let sol = await import("../helpers/solana.mjs");
+      let bal = await sol.solanaTokenBalance(_network.address, _get(walletSelector, "solana.address", ""));
+      _balance = koilibUtils.formatUnits(bal, _get(_network, "decimals", 8))
+      // the transfer transaction carries its own approval of the exact amount
+      _free = true
+    }
+
     if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN && _get(walletSelector, "wallet", null)) {
       let providerKoin = _get(walletSelector, "provider", null);
       let signerKoin = _get(walletSelector, "signer", null);
@@ -155,7 +199,7 @@ const Bridge = () => {
 
   useEffect(() => {
     loadBlance();
-  }, [tokenToBridge, fromChain, toChain, _get(walletSelector, "wallet", null), _get(account, 'isConnected', false), _get(account, 'address', null)]);
+  }, [tokenToBridge, fromChain, toChain, _get(walletSelector, "wallet", null), _get(walletSelector, "solana.address", null), _get(account, 'isConnected', false), _get(account, 'address', null)]);
 
   // drop the selected token if it can not be bridged between the selected networks
   useEffect(() => {
@@ -177,21 +221,26 @@ const Bridge = () => {
   if(_get(toChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN && _get(walletSelector, "connected", false)) {
     toWalletAddress = _get(walletSelector, "wallet[0].address", "");
   }
+  if(_get(toChain, "chainType", "") == BRIDGE_CHAINS_TYPES.SOLANA && _get(walletSelector, "solana", null)) {
+    toWalletAddress = _get(walletSelector, "solana.address", "");
+  }
 
   useEffect(() => {
     setRecipient(toWalletAddress)
   }, [ toChain, toWalletAddress ])
 
   // the Vortex route is closed while a bridge is paused (read from the chains, issue #53)
+  // the Vortex route is used directly, or as one leg of a two-step transfer
+  const usesVortex = route == BRIDGE_ROUTES_TYPES.VORTEX || _get(hop, "first", null) == BRIDGE_ROUTES_TYPES.VORTEX || _get(hop, "second", null) == BRIDGE_ROUTES_TYPES.VORTEX || _get(hopFinal, "second", null) == BRIDGE_ROUTES_TYPES.VORTEX;
   useEffect(() => {
     setVortexPaused(null);
-    if (route != BRIDGE_ROUTES_TYPES.VORTEX || !vortex || !vortexEvmProvider) return;
+    if (!usesVortex || !vortex || !vortexEvmProvider) return;
     let live = true;
     vortex.paused({ ethProvider: vortexEvmProvider, koinosProvider: koinosReader })
       .then((p) => { if (live) setVortexPaused(p.eth === false && p.koinos === false ? false : true); })
       .catch((e) => { console.log(e); if (live) setVortexPaused("error"); });
     return () => { live = false; };
-  }, [ route, vortexEvmProvider ])
+  }, [ route, usesVortex, vortexEvmProvider ])
 
 
   // SNACKBAR
@@ -215,9 +264,12 @@ const Bridge = () => {
     dispatch(setModal("SelectBridgeNetwork"))
   }
   const onInput = (value) => {
-    // no more decimals than the token has on the from network
+    // no more decimals than the bridge can carry: it counts in 8 decimals, and the destination token may have fewer
+    // (USDT/USDC on Ethereum: 6) — an amount with more decimals would be refused later anyway
     let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
-    setInputValue(_network ? limitDecimals(value, _get(_network, "decimals", 8)) : value)
+    let _to = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(toChain, "id", null));
+    let _decimals = Math.min(_get(_network, "decimals", 8), _get(_to, "decimals", 8), 8);
+    setInputValue(_network ? limitDecimals(value, _decimals) : value)
   }
   const openModalSelectToken = () => {
     dispatch(setModal("SelectTokenToBridge"))
@@ -247,6 +299,22 @@ const Bridge = () => {
     if (p.eth || p.koinos) { setVortexPaused(true); throw new Error("the bridge is paused, please try again later"); }
   }
 
+  // step 1 of a two-step transfer whose step 2 is the Vortex route (Base/Solana -> Ethereum -> Koinos): right before
+  // step 1 is signed, step 2 must be possible — both bridges live, the token enabled on both sides, the amount within
+  // the maximum deposit and within the Koinos payout cap (what is free now: the cap refills, but may not in time)
+  const checkSecondLeg = async (amount8) => {
+    if (_get(hopFinal, "second", null) != BRIDGE_ROUTES_TYPES.VORTEX) return;
+    if (!vortex || !vortexEvmProvider) throw new Error("the Vortex bridge is not live yet: step 2 would not be possible");
+    await checkNotPaused();
+    let _viaToken = _get(tokenToBridge, "networks", []).find(net => _get(net, "chain", "") == _get(hopFinal, "via", null));
+    let info = _viaToken ? await vortex.ethTokenInfo(vortexEvmProvider, _viaToken.address) : null;
+    if (!info || !info.enabled || !info.partner) throw new Error("this token is not enabled on the Vortex bridge: step 2 would not be possible");
+    if (BigInt(amount8) > info.maxDeposit8) throw new Error("the amount is above the Vortex bridge's maximum deposit: step 2 would not be possible");
+    let [koinosSide, limit] = await Promise.all([vortex.koinosTokenInfo(koinosReader, info.partner), vortex.koinosLimit(koinosReader, info.partner)]);
+    if (!koinosSide.enabled) throw new Error("this token is not enabled on Koinos: step 2 would not be possible");
+    if (BigInt(amount8) > limit.available8) throw new Error("the amount is above what the Koinos bridge can pay out today: step 2 would not be possible");
+  }
+
   const walletPrompt = () => Snackbar.enqueueSnackbar(<Typography variant="h6">Confirm the transaction in your wallet</Typography>, {
     variant: 'info',
     persist: true,
@@ -267,6 +335,18 @@ const Bridge = () => {
       if (fullAmount == null || fullAmount == "0") throw new Error("invalid amount");
       if (route != BRIDGE_ROUTES_TYPES.VORTEX && route != BRIDGE_ROUTES_TYPES.WORMHOLE) throw new Error("no route");
       if (route == BRIDGE_ROUTES_TYPES.VORTEX && !vortex) throw new Error("the Vortex bridge is under maintenance");
+      // step 1 of a two-step transfer always goes to the user's own wallet on the middle network
+      if (hopFinal && (!toWalletAddress || String(recipient).toLowerCase() != String(toWalletAddress).toLowerCase())) throw new Error("step 1 must go to your own wallet");
+      if (hopFinal && !_get(tokenToBridge, "networks", []).find(net => _get(net, "chain", "") == _get(hopFinal, "to.id", null))) throw new Error(`the token does not exist on ${_get(hopFinal, "to.name", "")}`);
+      // (8 decimals: the tokens of the two-step routes are vKOIN, 8 decimals on every network)
+      if (hopFinal) await checkSecondLeg(parseTokenAmount(inputValue, 8));
+      // a sent transfer is kept at once (even if the confirmation fails or the page is closed, it is under Redeem ->
+      // your transfers); one that is known to have failed is removed again
+      const keep = (hash) => {
+        rememberTransfer({ tx: hash, from: _get(fromChain, "id", ""), to: _get(toChain, "id", "") });
+        if (hopFinal) rememberJourney({ tx: hash, via: hopFinal.via, to: _get(hopFinal, "to.id", ""), token: _get(tokenToBridge, "id", ""), amount: inputValue });
+      };
+      const forget = (hash) => { forgetTransfer(hash); forgetJourney(hash); };
 
       // bridge
       if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM) {
@@ -281,12 +361,23 @@ const Bridge = () => {
           let _tokenBridge = WormholeTokenBridgeContract(getBridgeContract(route, _bridgeFrom), signer);
           let _core = WormholeCoreContract(await _tokenBridge.wormhole(), provider);
           let messageFee = await _core.messageFee();
+          // to Solana: the recipient's token account for the vKOIN mint there (checked before the wallet is asked)
+          let _recipient32 = null;
+          if (_get(_bridgeTo, "chainType", "") == BRIDGE_CHAINS_TYPES.SOLANA) {
+            let _mintTo = _get(tokenToBridge, "networks", []).find(net => _get(net, "chain", "") == _get(_bridgeTo, "id", null));
+            if (!_mintTo) throw new Error("the token does not exist on Solana");
+            let sol = await import("../helpers/solana.mjs");
+            await sol.checkSolanaWallet(recipient);
+            _recipient32 = sol.solanaRecipient32(_mintTo.address, recipient);
+          } else {
+            _recipient32 = toWormholeAddress(recipient);
+          }
           prompt = walletPrompt();
           tx = await _tokenBridge.transferTokens(
             _token.address,
             fullAmount,
             _wormholeTo,
-            toWormholeAddress(recipient),
+            _recipient32,
             0, // no fee for a relayer, the user redeems
             wormholeNonce(),
             { value: messageFee }
@@ -298,8 +389,9 @@ const Bridge = () => {
             // last step before the wallet is asked: both bridges must be live
             beforeSend: async () => { await checkNotPaused(); prompt = walletPrompt(); } };
           tx = await vortex.depositFromEth(args);
-          rememberTransfer({ tx: tx.hash, from: _get(fromChain, "id", ""), to: _get(toChain, "id", "") });
         }
+        _txhash = tx.hash;
+        keep(_txhash);
         Snackbar.closeSnackbar(prompt);
         prompt = null;
         Snackbar.enqueueSnackbar(<Typography variant="h6">Transaction submitted</Typography>, {
@@ -307,8 +399,52 @@ const Bridge = () => {
           persist: false,
           action: actionClose,
         })
-        await tx.wait()
-        _txhash = tx.hash;
+        try {
+          await tx.wait()
+        } catch (e) {
+          let replacement = _get(e, "replacement.hash", null);
+          if (replacement && !_get(e, "cancelled", false) && _get(e, "receipt.status", 0) == 1) {
+            // the same transfer, re-sent by the wallet with another fee and confirmed: the new transaction is the transfer
+            forget(_txhash);
+            _txhash = replacement;
+            keep(_txhash);
+          } else if (replacement || _get(e, "code", "") == "CALL_EXCEPTION") {
+            // reverted, cancelled, or replaced by a transaction that does something else: it really failed
+            forget(_txhash);
+            throw e;
+          } else {
+            // sent but not confirmed: shown like a sent transfer (never "try again" — that would send it twice)
+            confirmed = false;
+            Snackbar.enqueueSnackbar(<Typography variant="h6">Sent, not confirmed yet. Do not send it again: you find it under Redeem, "your transfers".</Typography>, {
+              variant: 'info',
+              persist: true,
+              action: actionClose,
+            })
+          }
+        }
+      }
+      if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.SOLANA) {
+        if (route != BRIDGE_ROUTES_TYPES.WORMHOLE || _get(_bridgeTo, "wormhole.chainId", null) != 2) throw new Error("no route");
+        let sol = await import("../helpers/solana.mjs");
+        try {
+          let sent = await sol.sendFromSolana({ chain: _bridgeFrom, mint: _token.address, amount: fullAmount, recipientEvm: recipient,
+            onPrompt: () => { prompt = walletPrompt(); },
+            // kept at once: even if the confirmation fails, the transfer is under Redeem -> your transfers
+            onSubmitted: keep });
+          _txhash = sent.signature;
+        } catch (e) {
+          if (!_get(e, "submitted", null)) throw e;
+          // sent but not confirmed: shown like a sent transfer (never "try again" — that would send it twice)
+          _txhash = e.submitted;
+          confirmed = false;
+          Snackbar.enqueueSnackbar(<Typography variant="h6">Sent, not confirmed yet. Do not send it again: you find it under Redeem, "your transfers".</Typography>, {
+            variant: 'info',
+            persist: true,
+            action: actionClose,
+          })
+        }
+        Snackbar.closeSnackbar(prompt);
+        prompt = null;
       }
       if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN) {
         let providerKoin = _get(walletSelector, "provider", null);
@@ -319,13 +455,26 @@ const Bridge = () => {
         if (_get(_token, "decimals", 8) != 8) throw new Error("unsupported token");
         // ONE transaction: approve the exact amount + deposit. Checked before the wallet is asked
         confirmed = false;
+        // Kondor only signs, the page sends: the id is kept BEFORE the transaction is sent (WalletConnect signs and sends)
+        let viaWalletConnect = _get(walletSelector, "wallet[0].name", "") == "walletconnect" && !!_get(walletSelector, "wallet[0].object", null);
+        let walletAsked = false;
         let args = { provider: providerKoin, signer: signerKoin, from: walletAddress, token: _token.address, amount8: BigInt(fullAmount), recipient,
-          beforeSend: async () => { await checkNotPaused(); prompt = walletPrompt(); } };
-        _txhash = await vortex.depositFromKoinos(args);
+          beforeSend: async () => { await checkNotPaused(); prompt = walletPrompt(); walletAsked = true; },
+          onSigned: viaWalletConnect ? undefined : (id) => { _txhash = id; keep(id); } };
+        try {
+          _txhash = await vortex.depositFromKoinos(args);
+        } catch (e) {
+          // WalletConnect signs AND sends inside the wallet: without an answer (other than a refusal) the deposit may have
+          // been sent while the page does not know its id — never offer a blind second try
+          if (viaWalletConnect && walletAsked && !/reject|denied|cancel/i.test(String(_get(e, "message", "")))) e.unknownSend = true;
+          // (Kondor) the node refused it or the wallet did not sign: nothing was sent
+          if (!_get(e, "submitted", null)) { if (_txhash) forget(_txhash); throw e; }
+          // no answer from the node: it may have arrived — the wait below finds out (never "try again")
+          _txhash = e.submitted;
+        }
         Snackbar.closeSnackbar(prompt);
         prompt = null;
-        // kept at once: even if this page is closed now, the transfer is under Redeem -> your transfers
-        rememberTransfer({ tx: _txhash, from: _get(fromChain, "id", ""), to: _get(toChain, "id", "") });
+        keep(_txhash);
         Snackbar.enqueueSnackbar(<Typography variant="h6">Transaction submitted</Typography>, {
           variant: 'info',
           persist: false,
@@ -336,18 +485,17 @@ const Bridge = () => {
           await vortex.waitKoinosTx(koinosReader, _txhash)
           confirmed = true;
         } catch (e) {
-          if (_get(e, "permanent", false)) throw e;
-          // sent, but not seen in a block yet: nothing is lost, the Redeem page picks it up
-          Snackbar.enqueueSnackbar(<Typography variant="h6">Sent, not confirmed yet. You find it under Redeem, "your transfers".</Typography>, {
+          if (_get(e, "permanent", false)) { forget(_txhash); throw e; }
+          // sent, but not seen in a block yet: nothing is lost, the Redeem page picks it up (never "try again")
+          Snackbar.enqueueSnackbar(<Typography variant="h6">Sent, not confirmed yet. Do not send it again: you find it under Redeem, "your transfers".</Typography>, {
             variant: 'info',
-            persist: false,
+            persist: true,
             action: actionClose,
           })
         }
       }
-      if (route == BRIDGE_ROUTES_TYPES.WORMHOLE) rememberTransfer({ tx: _txhash, from: _get(fromChain, "id", ""), to: _get(toChain, "id", "") });
       setTxHash(_txhash);
-      if (confirmed) Snackbar.enqueueSnackbar(<Link underline="none" style={{ cursor: "pointer" }} target="_blank" rel="noopener noreferrer" href={`${fromChain.explorer}/${_txhash}`}><Typography sx={{ color: "white" }} variant="h6">Transaction success</Typography><Typography sx={{ color: "white" }} variant="subtitle1" component="p">View on the explorer</Typography></Link>, {
+      if (confirmed) Snackbar.enqueueSnackbar(<Link underline="none" component={fromChain.explorer ? "a" : "span"} style={{ cursor: "pointer" }} target="_blank" rel="noopener noreferrer" href={fromChain.explorer ? `${fromChain.explorer}/${_txhash}` : undefined}><Typography sx={{ color: "white" }} variant="h6">Transaction success</Typography><Typography sx={{ color: "white" }} variant="subtitle1" component="p">View on the explorer</Typography></Link>, {
         variant: 'success',
         persist: false,
         action: actionClose,
@@ -360,6 +508,14 @@ const Bridge = () => {
       if (prompt) Snackbar.closeSnackbar(prompt);
       setTxHash(null);
       setLoadingBridge(false)
+      if (_get(error, "unknownSend", false)) {
+        Snackbar.enqueueSnackbar(<Typography variant="h6">No answer from your wallet: the transfer may have been sent. Check your wallet's activity (or your account on the explorer) before you try again.</Typography>, {
+          variant: 'warning',
+          persist: true,
+          action: actionClose,
+        })
+        return;
+      }
       Snackbar.enqueueSnackbar(<span><Typography variant="h6">Transaction error</Typography><Typography variant="body1" color="white">{String(_get(error, "reason", "") || _get(error, "message", "")).slice(0, 160)}</Typography></span>, {
         variant: 'error',
         persist: false,
@@ -384,6 +540,7 @@ const Bridge = () => {
       if (!_spender) throw new Error("no route");
       let _allowance = parseTokenAmount(inputValue, _get(_network, "decimals", 8));
       if (_allowance == null || _allowance == "0") throw new Error("invalid amount");
+      if (hopFinal) await checkSecondLeg(parseTokenAmount(inputValue, 8));
       const beforeSend = async () => { await checkNotPaused(); if (prompt) Snackbar.closeSnackbar(prompt); prompt = walletPrompt(); };
       let tx;
       if (route == BRIDGE_ROUTES_TYPES.VORTEX) {
@@ -399,7 +556,7 @@ const Bridge = () => {
         action: actionClose,
       })
       await tx.wait();
-      Snackbar.enqueueSnackbar(<Link underline="none" style={{ cursor: "pointer" }} target="_blank" rel="noopener noreferrer" href={`${fromChain.explorer}/${tx.hash}`}><Typography sx={{ color: "white" }} variant="h6">Transaction success</Typography><Typography sx={{ color: "white" }} variant="subtitle1" component="p">View on the explorer</Typography></Link>, {
+      Snackbar.enqueueSnackbar(<Link underline="none" component={fromChain.explorer ? "a" : "span"} style={{ cursor: "pointer" }} target="_blank" rel="noopener noreferrer" href={fromChain.explorer ? `${fromChain.explorer}/${tx.hash}` : undefined}><Typography sx={{ color: "white" }} variant="h6">Transaction success</Typography><Typography sx={{ color: "white" }} variant="subtitle1" component="p">View on the explorer</Typography></Link>, {
         variant: 'success',
         persist: false,
         action: actionClose,
@@ -427,6 +584,9 @@ const Bridge = () => {
     if(_get(_chain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN && !koin_conector) {
       return true
     }
+    if(_get(_chain, "chainType", "") == BRIDGE_CHAINS_TYPES.SOLANA && !_get(walletSelector, "solana", null)) {
+      return true
+    }
     return false
   }
 
@@ -437,7 +597,10 @@ const Bridge = () => {
     if (new BigNumber(inputValue).isNaN() || new BigNumber(inputValue).gt(balance || 0)) return true;
     if (recipient == "" || recipient == null) return true;
     // a wormhole transfer to something that is not an evm address can not be redeemed
-    if (route == BRIDGE_ROUTES_TYPES.WORMHOLE && !ethers.utils.isAddress(recipient)) return true;
+    // wormhole: an evm address, or a Solana wallet address (base58; checked strictly before the wallet is asked)
+    if (route == BRIDGE_ROUTES_TYPES.WORMHOLE && _get(toChain, "chainType", "") == BRIDGE_CHAINS_TYPES.SOLANA) {
+      if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(recipient)) return true;
+    } else if (route == BRIDGE_ROUTES_TYPES.WORMHOLE && !ethers.utils.isAddress(recipient)) return true;
     return false;
   }
 
@@ -445,6 +608,7 @@ const Bridge = () => {
     <>
       {_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM ? <CustomConnectInfo walletAddress={account.address} {...props} /> : null}
       {_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN ? <CustomKoinConnectButton {...props} /> : null}
+      {_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.SOLANA ? <CustomSolConnectButton {...props} /> : null}
     </>
   )
   const Connectors = ({ chain }) => {
@@ -456,6 +620,10 @@ const Bridge = () => {
     if (_get(chain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN) return (
       <CustomKoinConnectButton />
     )
+    // conect Solana (Phantom, Solflare, Backpack)
+    if (_get(chain, "chainType", "") == BRIDGE_CHAINS_TYPES.SOLANA) return (
+      <CustomSolConnectButton />
+    )
   }
   const ActionLoad = () => {
     // select network from
@@ -465,6 +633,23 @@ const Bridge = () => {
     // select network to
     if (toChain === null) return (
       <Button variant="contained" size="large" sx={{ width: "100%" }} onClick={() => openModal("to")}>SELECT TO NETWORK</Button>
+    )
+    // no direct route, but two steps through the middle network
+    if (route == null && hop) return (
+      <Box sx={{ border: `1px solid ${theme.palette.background.light}`, borderRadius: "10px", padding: "10px 20px", textAlign: "center" }}>
+        <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "10px" }}>
+          {`No direct route between ${_get(fromChain, "name", "")} and ${_get(toChain, "name", "")}: the transfer goes through ${_get(hop, "via.name", "")} in two steps. Step 1 sends to your own ${_get(hop, "via.name", "")} wallet; once it is redeemed there, the Redeem page offers step 2 to ${_get(toChain, "name", "")}. You pay the network fees of both steps.`}
+        </Typography>
+        {usesVortex && (!vortex || vortexPaused !== false) ?
+          <Typography variant="body1" sx={{ color: "text.grey1" }}>
+            {vortex && vortexPaused === null ? "Checking the bridge status..." : "The Vortex bridge is paused or not live yet — the two-step transfer cannot start now. Your funds are safe."}
+          </Typography>
+          :
+          <Button variant="contained" size="large" sx={{ width: "100%" }} onClick={() => {
+            setHopFinal({ from: _get(fromChain, "id", null), via: _get(hop, "via.id", null), to: toChain, second: hop.second });
+            dispatch(setNetworkTo(hop.via));
+          }}>{`START STEP 1: ${_get(fromChain, "name", "")} → ${_get(hop, "via.name", "")}`}</Button>}
+      </Box>
     )
     // no direct route between the networks
     if (route == null) return (
@@ -518,6 +703,7 @@ const Bridge = () => {
           <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "4px", fontSize: '1.0vh' }}>Transaction Hash</Typography>
           <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "4px", fontSize: '1.0vh' }}>{txHash}</Typography>
           <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "4px", fontSize: '1.0vh' }}>Click CLAIM TOKENS to Redeem on Receiving Network</Typography>
+          {hopFinal ? <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "4px" }}>{`Step 1 of 2. After you redeemed it on ${_get(toChain, "name", "")}, the Redeem page offers step 2 to ${_get(hopFinal, "to.name", "")}.`}</Typography> : null}
         </Box>
         {route == BRIDGE_ROUTES_TYPES.WORMHOLE ?
           <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "1em", textAlign: "center" }}>The Wormhole guardians sign the transfer once {_get(fromChain, "name", "")} has finalized it, this takes around 20 minutes. Keep the transaction hash, you can redeem at any time later.</Typography>
@@ -530,7 +716,8 @@ const Bridge = () => {
     let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
     // an amount that can not be parsed counts as zero here, the buttons stay disabled
     let fullAmount = parseTokenAmount(inputValue, _get(_network, "decimals", 8)) || "0";
-    if (!approvalFree && _get(_network, "allowance", false) && new BigNumber(approval).lt(fullAmount) || new BigNumber(fullAmount).isZero()) return (
+    // exactly the amount, like the library: a bigger leftover allowance is replaced too (never left standing)
+    if (!approvalFree && _get(_network, "allowance", false) && !new BigNumber(approval).eq(fullAmount) || new BigNumber(fullAmount).isZero()) return (
       <BaseConnections
         actions={
           <Button disabled={loadingApproval || new BigNumber(fullAmount).isZero()} variant="contained" size="large" sx={{ width: "100%" }} onClick={() => approveTransfers()}>{loadingApproval ? "loading..." : "APPROVE TOKEN"}</Button>
@@ -552,6 +739,11 @@ const Bridge = () => {
     if (!token || !chain) return '..';
     const network = token.networks.find(net => net.chain === chain);
     return network ? _get(network, 'symbol', 'Unrecognized') : 'Unrecognized';
+  };
+  // what the user gets on the receiving network (WETH for native ETH)
+  const findReceiveSymbolForChain = (token, chain) => {
+    const network = token && chain ? token.networks.find(net => net.chain === chain) : null;
+    return network ? payoutSymbol(network) : findTokenSymbolForChain(token, chain);
   };
 
 
@@ -717,7 +909,7 @@ const Bridge = () => {
                   placeholder={""}
                   type={"text"}
                   value={recipient}
-                  disabled={loadingApproval || loadingBridge}
+                  disabled={loadingApproval || loadingBridge || hopFinal != null}
                   sx={{ width: "100%", fontSize: "16px", color: "text.main" }}
                   onChange={(e) => setRecipient(e.currentTarget.value)}
                 />
@@ -728,7 +920,7 @@ const Bridge = () => {
           <Box sx={{ border: `1px solid ${theme.palette.background.light}`, borderRadius: "10px", padding: "10px 20px", display: "flex", alignContent: "center", flexDirection: "column" }} marginY={"1.4em"} display={"flex"} justifyContent={"space-between"}>
             <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
               <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>You will receive:</Typography>
-              <Typography variant="h6" component={"span"}>{calculateReceiveAmount(inputValue, findTokenSymbolForChain(tokenToBridge, toChain?.id))} {findTokenSymbolForChain(tokenToBridge, toChain?.id)}</Typography>
+              <Typography variant="h6" component={"span"}>{calculateReceiveAmount(inputValue, findTokenSymbolForChain(tokenToBridge, toChain?.id))} {findReceiveSymbolForChain(tokenToBridge, toChain?.id)}</Typography>
             </Box>
             <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
               <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Receiving address:</Typography>
@@ -736,18 +928,23 @@ const Bridge = () => {
             </Box>
             {route == BRIDGE_ROUTES_TYPES.WORMHOLE ?
               <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
-                <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Route:</Typography>
+                <Typography variant="body1" component={"span"} sx={{ color: "text.grey2", whiteSpace: "nowrap", mr: 2 }}>Route:</Typography>
                 <Typography variant="body1" component={"span"} sx={{ textAlign: "right" }}>Wormhole Token Bridge, around 20 minutes. You redeem on {_get(toChain, "name", "")} and pay the gas there in {_get(toChain, "symbol", "")}.</Typography>
               </Box>
               : null}
             {route == BRIDGE_ROUTES_TYPES.VORTEX && _get(toChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN ?
               <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
-                <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Before you send:</Typography>
+                <Typography variant="body1" component={"span"} sx={{ color: "text.grey2", whiteSpace: "nowrap", mr: 2 }}>Before you send:</Typography>
                 <Typography variant="body1" component={"span"} sx={{ textAlign: "right" }}>you claim on Koinos yourself: the receiving Koinos account needs a little KOIN for mana to submit that claim.</Typography>
               </Box>
               : null}
           </Box>
 
+          {hopFinal && !txHash ?
+            <Typography variant="body1" sx={{ color: "text.grey1", textAlign: "center", paddingBottom: "1em" }}>
+              {`Step 1 of 2: ${_get(fromChain, "name", "")} → ${_get(toChain, "name", "")}, to your own wallet. Step 2 (${_get(toChain, "name", "")} → ${_get(hopFinal, "to.name", "")}) follows on the Redeem page.`}
+            </Typography>
+            : null}
           {ActionLoad()}
 
         </CardContent>

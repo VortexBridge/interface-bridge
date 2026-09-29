@@ -2,3 +2,13 @@
   from = "/*"
   to = "/"
   status = 200
+
+# security headers (see nginx.config): no framing, no referrer, no MIME sniffing; full CSP after wallet testing
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "frame-ancestors 'none'"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "no-referrer"
+    X-Content-Type-Options = "nosniff"
+    Strict-Transport-Security = "max-age=31536000"

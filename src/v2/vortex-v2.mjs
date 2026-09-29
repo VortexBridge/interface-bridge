@@ -170,8 +170,13 @@ export function createVortex({ ethers, fetch: fetchFn = globalThis.fetch, cfg })
       if (n > max) { try { await rd.cancel(); } catch (e) { /* ignore */ } throw new Error("answer too large"); } parts.push(value); }
     return JSON.parse(new TextDecoder().decode(U.concat(parts.length ? parts : [new Uint8Array(0)])));
   }
-  // what a validator said when it did not sign (plain, short text; shown when the quorum is missing)
+  // plain, short text (host names)
   const plain = (x) => String(x).replace(/[^\x20-\x7e]/g, "").slice(0, 120);
+  // why a validator did not sign, in FIXED wording (shown when the quorum is missing): only the validator program's own
+  // known answers are recognised, anything else shows as the HTTP status — a hostile host cannot put its text on the page
+  const KNOWN = [["not seen at finality", "deposit not final yet"], ["not ready", "not ready yet"], ["halted", "signing halted"],
+    ["conflicting records", "conflicting records"], ["busy", "busy"], ["expiry must be", "expiry out of range"], ["record unavailable", "record unavailable"]];
+  const reason = (status, text) => { const s = String(text || "").toLowerCase(); const k = KNOWN.find(([m]) => s.includes(m)); return k ? k[1] : `HTTP ${status}`; };
   async function collect(claim, { expiry, isValidator, quorum, timeoutMs = 10000 }) {
     if (!Number.isInteger(quorum) || quorum < 2) throw new Error("bad quorum");
     const c = { ...claim, expiry: BigInt(expiry) };
@@ -183,8 +188,8 @@ export function createVortex({ ethers, fetch: fetchFn = globalThis.fetch, cfg })
       const who = plain(base.replace(/^https?:\/\//, "").replace(/\/$/, ""));
       try {
         const r = await fetchFn(`${base.replace(/\/$/, "")}/v2/claim/${claim.direction}/${claim.depositNonce}?expiry=${expiry}`, ctrl ? { signal: ctrl.signal } : {});
-        if (r.status !== 200) { let why = `HTTP ${r.status}`; try { const j = await readSmall(r); if (j && j.error) why = j.error; } catch (e) { /* keep the status */ }
-          problems.push(`${who}: ${plain(why)}`); return null; }
+        if (r.status !== 200) { let text = ""; try { const j = await readSmall(r); if (j && j.error) text = j.error; } catch (e) { /* keep the status */ }
+          problems.push(`${who}: ${reason(r.status, text)}`); return null; }
         return await readSmall(r);
       } catch (e) { problems.push(`${who}: no answer`); return null; } finally { if (t) clearTimeout(t); }
     }));

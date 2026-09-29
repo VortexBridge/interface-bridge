@@ -21,3 +21,12 @@ export function rememberTransfer({ tx, from, to }) {
     // private window or blocked storage: the transaction id is still shown on the page
   }
 }
+
+// a transfer that is known to have failed (reverted, or replaced by another transaction): nothing to find later
+export function forgetTransfer(tx) {
+  try {
+    window.localStorage.setItem(KEY, JSON.stringify(listTransfers().filter((t) => t.tx != tx)));
+  } catch (e) {
+    // nothing to do
+  }
+}

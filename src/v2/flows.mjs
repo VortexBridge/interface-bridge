@@ -38,6 +38,7 @@ export function createFlows({ ethers, koilib, fetch, cfg, koinosBridgeAbi, koino
   const kRead = async (provider, method, args = {}) => (await kBridge(provider).functions[method](args)).result || {};
   const retryable = (m) => new Error(m);                                  // the page asks again later
   const permanent = (m) => Object.assign(new Error(m), { permanent: true });   // another try does not help
+  const failed = (m) => Object.assign(permanent(m), { failed: true });          // proven on the chain: it failed
   const bounded = (fn) => (...args) => { let t;
     return Promise.race([fn(...args), new Promise((_, rej) => { t = setTimeout(() => rej(retryable("the node did not answer in time")), rpcTimeoutMs); })])
       .finally(() => clearTimeout(t)); };
@@ -53,6 +54,11 @@ export function createFlows({ ethers, koilib, fetch, cfg, koinosBridgeAbi, koino
     const [t, p] = await Promise.all([kRead(provider, "get_token", { token }), kRead(provider, "is_paused")]);
     return { kind: t.kind || KIND.NONE, remoteDecimals: t.remoteDecimals || 0, enabled: !!t.enabled, paused: !!p.value,
       maxDeposit8: BigInt(t.maxDeposit8 || 0), partner: t.remoteToken ? U.getAddress(t.remoteToken) : null };
+  }
+  // the daily payout cap of a token on Koinos (claims): capacity and what is available now (refills over the day)
+  async function koinosLimit(provider, token) {
+    const l = await kRead(provider, "get_limit", { token });
+    return { capacity8: BigInt(l.capacity8 || 0), available8: BigInt(l.available8 || 0) };
   }
   // (Koinos: a successful call with an empty result IS "false" — proto3 leaves out default values; errors throw)
   async function paused({ ethProvider, koinosProvider }) {
@@ -78,6 +84,10 @@ export function createFlows({ ethers, koilib, fetch, cfg, koinosBridgeAbi, koino
   // `beforeSend` (optional, all three sends): awaited as the LAST step before the wallet is asked — the site re-reads
   // both bridges' pause flags there, so nothing slow sits between that check and the wallet prompt.
   // Koinos -> Ethereum: ONE transaction = approve(bridge, exact amount) + deposit. Returns the transaction id.
+  // `onSigned(id)` (optional): the wallet only SIGNS (Kondor can); the id is final then and handed over BEFORE the
+  // transaction is sent through `provider`'s node, so a lost answer can not hide a sent deposit (as for Solana); see
+  // submitKoinos for which answers keep the id (`submitted`) and which one is a refusal.
+  // Without `onSigned` the wallet signs and sends in one step (WalletConnect: its session allows only that).
   async function depositFromKoinos(args) {
     const { provider, signer, from, token, amount8 } = args;
     const to = await bounded(checkKoinosDeposit)(args);
@@ -88,8 +98,50 @@ export function createFlows({ ethers, koilib, fetch, cfg, koinosBridgeAbi, koino
     await tx.pushOperation(approve);
     await tx.pushOperation(deposit);
     if (args.beforeSend) await args.beforeSend();
-    await tx.send();
-    return tx.transaction.id;
+    if (!args.onSigned) {
+      await tx.send();
+      return tx.transaction.id;
+    }
+    tx.transaction = await tx.sign();
+    if (!tx.transaction.id || !(tx.transaction.signatures || []).length) throw new Error("the wallet did not sign");
+    const id = tx.transaction.id;
+    args.onSigned(id);
+    await submitKoinos(provider, tx.transaction);                     // signed: sent through the page's node
+    return id;
+  }
+  // Sends a SIGNED Koinos transaction to the provider's node and reads the raw JSON-RPC answer. Only a well-formed
+  // answer to THIS request counts: a result = sent; an error object with a numeric code and a message (and no result)
+  // = refused, nothing sent. Anything else — no answer, a broken or empty answer, another id, result AND error, the
+  // node's own timeout ("deadline exceeded"), no complete answer within rpcTimeoutMs — may still have arrived: the error
+  // then carries `submitted` = the id and the caller waits for the chain.
+  async function submitKoinos(provider, transaction) {
+    const url = (provider.rpcNodes || [])[provider.currentNodeId || 0];
+    if (!url) throw new Error("no Koinos node configured");
+    const unknown = (m) => Object.assign(new Error(m), { submitted: transaction.id });
+    const reqId = Math.floor(Math.random() * 1e9) + 1;
+    const ctl = typeof AbortController === "function" ? new AbortController() : null;
+    let json, t;
+    try {
+      const send = async () => {
+        const res = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, signal: ctl ? ctl.signal : undefined,
+          body: JSON.stringify({ jsonrpc: "2.0", id: reqId, method: "chain.submit_transaction", params: { transaction, broadcast: true } }) });
+        return res.json();
+      };
+      // the request AND reading its answer are bounded: a node that never finishes must not freeze the page
+      json = await Promise.race([send(), new Promise((_, rej) => { t = setTimeout(() => { if (ctl) ctl.abort(); rej(new Error("timeout")); }, rpcTimeoutMs); })]);
+    } catch (e) {
+      throw unknown("no answer from the Koinos node");
+    } finally {
+      clearTimeout(t);
+    }
+    const mine = !!json && typeof json === "object" && json.jsonrpc === "2.0" && json.id === reqId;
+    const err = mine ? json.error : undefined;
+    const errText = err === undefined ? "" : JSON.stringify(err);
+    if (mine && json.result !== undefined && err === undefined) return json.result;
+    if (/deadline exceeded/i.test(errText)) throw unknown("the Koinos node did not finish in time");
+    if (mine && json.result === undefined && err && typeof err === "object" && typeof err.code === "number" && typeof err.message === "string")
+      throw new Error(`the Koinos node refused the transaction: ${errText}`.slice(0, 300));
+    throw unknown("no clear answer from the Koinos node");
   }
   // Ethereum -> Koinos. `simulate`: also run the deposit as a call (only once the approval is in place)
   async function checkEthDeposit({ signer, token, amount, recipient, native = false, pageDecimals }, simulate = false) {
@@ -160,7 +212,7 @@ export function createFlows({ ethers, koilib, fetch, cfg, koinosBridgeAbi, koino
   async function koinosDepositEvents(provider, txId) {
     const r = await koinosReceipt(provider, txId);
     if (r === null) return null;
-    if (r.reverted) throw permanent("the transaction failed, nothing was sent");
+    if (r.reverted) throw failed("the transaction failed, nothing was sent");
     return (r.events || []).filter((e) => e.source === cfg.koinos.bridge && e.name === "bridge.deposit_event").map((e) => e.data);
   }
   // after send(): wait until the transaction is in a main-chain block and did not revert (bounded)
@@ -169,7 +221,7 @@ export function createFlows({ ethers, koilib, fetch, cfg, koinosBridgeAbi, koino
     for (;;) {
       let r = null;
       try { r = await bounded(koinosReceipt)(provider, txId); } catch (e) { if (e.permanent) throw e; }
-      if (r) { if (r.reverted) throw permanent("the transaction failed"); return r; }
+      if (r) { if (r.reverted) throw failed("the transaction failed"); return r; }
       if (Date.now() - t0 > timeoutMs) throw retryable("the transaction is not confirmed yet, check it again in a few minutes");
       await new Promise((res) => setTimeout(res, 3000));
     }
@@ -194,7 +246,7 @@ export function createFlows({ ethers, koilib, fetch, cfg, koinosBridgeAbi, koino
     if (!r || r.transactionHash.toLowerCase() !== txHash.toLowerCase()) return null;
     const block = await provider.getBlock(r.blockNumber);
     if (!block || block.hash !== r.blockHash) return null;
-    if (r.status !== 1) throw permanent("the transaction failed, nothing was sent");
+    if (r.status !== 1) throw failed("the transaction failed, nothing was sent");
     const logs = r.logs.filter((l) => U.getAddress(l.address) === U.getAddress(cfg.eth.bridge) && l.topics[0] === DEPOSIT_TOPIC);
     if (logs.length === 0) throw permanent("there is no bridge deposit in this transaction");
     const claims = [];
@@ -227,12 +279,34 @@ export function createFlows({ ethers, koilib, fetch, cfg, koinosBridgeAbi, koino
     await bounded(() => b.callStatic.claim(...args))();                 // a claim that would revert is never sent
     return b.claim(...args);
   }
-  async function claimOnKoinos(provider, signer, got) {
+  // Koinos claim: every reason for a revert is re-read right before the wallet is asked (a reverted Koinos transaction
+  // still costs the recipient's scarce mana): already claimed, paused, token disabled, today's limit used up
+  async function checkKoinosClaim(provider, got) {
+    const c = got.claim;
+    const [done, p, info, lim] = await Promise.all([kRead(provider, "is_consumed", { depositId: vx.koinosDepositId(c.depositNonce) }),
+      kRead(provider, "is_paused"), koinosTokenInfo(provider, c.token), koinosLimit(provider, c.token)]);
+    if (done.value === true) throw permanent("this transfer is already claimed");
+    if (p.value === true) throw retryable("the Koinos bridge is paused, please try again later");
+    if (!info.enabled) throw retryable("this token cannot be claimed on Koinos right now");
+    if (BigInt(c.amount8) > lim.available8) throw retryable("the Koinos bridge's daily limit for this token is used up right now, please try again later");
+  }
+  // `onSigned(id)` (optional): as for deposits — the wallet only signs, the id is handed over before the page sends it
+  // through `provider` (see submitKoinos); without it the wallet signs and sends in one step
+  async function claimOnKoinos(provider, signer, got, onSigned) {
+    await bounded(checkKoinosClaim)(provider, got);
     const { operation } = await kBridge(provider, signer).functions.claim(vx.koinosClaimArgs(got.claim, got.signatures), { onlyOperation: true });
     const tx = new koilib.Transaction({ provider, signer });
     await tx.pushOperation(operation);
-    await tx.send();
-    return tx.transaction.id;
+    if (!onSigned) {
+      await tx.send();
+      return tx.transaction.id;
+    }
+    tx.transaction = await tx.sign();
+    if (!tx.transaction.id || !(tx.transaction.signatures || []).length) throw new Error("the wallet did not sign");
+    const id = tx.transaction.id;
+    onSigned(id);
+    await submitKoinos(provider, tx.transaction);
+    return id;
   }
 
   // ------------------------------------------------------------------ status: paid already?
@@ -242,9 +316,9 @@ export function createFlows({ ethers, koilib, fetch, cfg, koinosBridgeAbi, koino
   }
 
   // reads are bounded; transactions are not (a wallet prompt may take as long as the user needs)
-  return { vx, ethTokenInfo: bounded(ethTokenInfo), koinosTokenInfo: bounded(koinosTokenInfo), paused: bounded(paused),
+  return { vx, ethTokenInfo: bounded(ethTokenInfo), koinosTokenInfo: bounded(koinosTokenInfo), koinosLimit: bounded(koinosLimit), paused: bounded(paused),
     checkKoinosDeposit: bounded(checkKoinosDeposit), depositFromKoinos, checkEthDeposit: bounded(checkEthDeposit),
     ethApprovalNeeded: bounded(ethApprovalNeeded), ethApprove, depositFromEth, waitKoinosTx,
     claimsFromKoinosTx: bounded(claimsFromKoinosTx), claimsFromEthTx: bounded(claimsFromEthTx), collect,
-    claimOnEth, claimOnKoinos, isClaimed: bounded(isClaimed) };
+    claimOnEth, claimOnKoinos, checkKoinosClaim: bounded(checkKoinosClaim), isClaimed: bounded(isClaimed) };
 }

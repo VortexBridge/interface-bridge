@@ -1,5 +1,6 @@
 import React from "react";
 import { Box, Typography, useTheme, Link } from "@mui/material";
+import { TERMS_VERSION } from "../constants/terms";
 
 const TermsOfService = () => {
   const theme = useTheme();
@@ -49,6 +50,9 @@ const TermsOfService = () => {
           }}
         >
           Terms of Service
+        </Typography>
+        <Typography variant="body2" sx={{ textAlign: "center", marginBottom: "1rem", color: theme.palette.text.secondary }}>
+          Last updated: {TERMS_VERSION}
         </Typography>
         <Box
           className="content"
@@ -295,6 +299,71 @@ const TermsOfService = () => {
               marginBottom: "1rem",
             }}
           >
+            Bridged and Wrapped Assets
+          </Typography>
+          <Typography paragraph>
+            When Users bridge a token, tokens are locked or burned on the source blockchain and corresponding tokens are minted or released on the destination blockchain. A token that represents an asset of another blockchain (a "Wrapped Token", for example vKOIN, vUSDT, vUSDC or vETH) is only as good as the bridge behind it: its value depends on the collateral held by the bridge smart contracts, on the correct operation of those smart contracts, and on the security and honesty of the independent validators that confirm transfers. A software error, a failure, compromise or collusion of validators, a failure of key management or governance, or an attack on or a problem with any connected blockchain may cause Wrapped Tokens to lose part or all of their value, to trade below the original asset, or to become impossible to redeem.
+          </Typography>
+          <Typography paragraph>
+            Transfers are neither instant nor guaranteed. A transfer may be delayed or temporarily or permanently impossible, for example because a bridge is paused, a daily limit is reached, a token is disabled, validators are unavailable, signatures expire, a blockchain is congested, forked or halted, or because certain changes to the bridge are subject to a time delay. Users may have to complete a transfer themselves, for example by claiming or redeeming it on the destination blockchain and paying the network fees there. Vortex does not guarantee that any transfer will be completed, or completed within any particular time.
+          </Typography>
+          <Typography paragraph>
+            Some routes rely on third-party bridges or protocols (such as Wormhole) or pass through an intermediate blockchain in two separate steps. Each step and each third-party service carries its own risks, fees and terms. Vortex does not control, and is not responsible for, any third-party bridge, protocol or blockchain.
+          </Typography>
+          <Typography paragraph>
+            Users are solely responsible for selecting the correct blockchain, token, amount and receiving address. Digital assets sent to a wrong, unsupported or incompatible address (for example an address that cannot receive or claim them) may be lost permanently.
+          </Typography>
+
+          <Typography
+            variant="h5"
+            sx={{
+              color: theme.palette.secondary.main,
+              marginTop: "2rem",
+              marginBottom: "1rem",
+            }}
+          >
+            Non-Custodial Service; Validators
+          </Typography>
+          <Typography paragraph>
+            The Services consist of non-custodial software. Vortex never takes custody or control of Users' digital assets, private keys or seed phrases, cannot initiate, cancel or reverse transactions on Users' behalf, and cannot recover lost digital assets. Bridge validators are independent operators; they are not agents, trustees or fiduciaries of Users or of Vortex. Nothing in the Services creates a fiduciary or advisory relationship between Users and Vortex or any validator.
+          </Typography>
+
+          <Typography
+            variant="h5"
+            sx={{
+              color: theme.palette.secondary.main,
+              marginTop: "2rem",
+              marginBottom: "1rem",
+            }}
+          >
+            No Advice
+          </Typography>
+          <Typography paragraph>
+            Nothing in the Services constitutes investment, financial, trading, legal or tax advice. Users should seek independent professional advice before making any decision in connection with digital assets.
+          </Typography>
+
+          <Typography
+            variant="h5"
+            sx={{
+              color: theme.palette.secondary.main,
+              marginTop: "2rem",
+              marginBottom: "1rem",
+            }}
+          >
+            Eligibility and Prohibited Use
+          </Typography>
+          <Typography paragraph>
+            Users must be of legal age and have the legal capacity to accept these Terms of Service in their jurisdiction. Users represent that they are not subject to economic or trade sanctions, are not designated on any list of prohibited or restricted parties (including the lists maintained by the United States Department of the Treasury's Office of Foreign Assets Control, the United Nations Security Council and the European Union or its Member States), are not located in, organized in or resident of a sanctioned jurisdiction, and do not act on behalf of any such person. Users shall not use the Services for any unlawful purpose, including money laundering, terrorist financing or the evasion of sanctions, and are solely responsible for complying with the laws that apply to them.
+          </Typography>
+
+          <Typography
+            variant="h5"
+            sx={{
+              color: theme.palette.secondary.main,
+              marginTop: "2rem",
+              marginBottom: "1rem",
+            }}
+          >
             Service Availability
           </Typography>
           <Typography paragraph>
@@ -392,16 +461,58 @@ const TermsOfService = () => {
               marginBottom: "1rem",
             }}
           >
+            No Warranties
+          </Typography>
+          <Typography paragraph>
+            THE SERVICES, THE SMART CONTRACTS AND ALL BRIDGED OR WRAPPED TOKENS ARE PROVIDED "AS IS" AND "AS AVAILABLE", WITHOUT WARRANTIES OF ANY KIND, WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING ANY WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. Vortex does not warrant that the Services or the smart contracts are secure, free of errors or vulnerabilities, audited, or fit for any purpose, or that any Wrapped Token will keep its value or remain redeemable.
+          </Typography>
+
+          <Typography
+            variant="h5"
+            sx={{
+              color: theme.palette.secondary.main,
+              marginTop: "2rem",
+              marginBottom: "1rem",
+            }}
+          >
             Limitation of Liability
           </Typography>
           <Typography paragraph>
-            In no event shall Vortex or its affiliates, directors, officers,
-            employees, agents, or representatives be liable for any indirect,
-            special, incidental, consequential, or punitive damages, including
-            but not limited to lost profits, data loss, or other intangible
-            losses, arising out of or in connection with the use or inability to
-            use the Services, even if advised of the possibility of such
+            To the maximum extent permitted by applicable law, in no event shall
+            Vortex, the validators, or any developer, contributor, affiliate,
+            director, officer, employee, agent or representative of any of them
+            (together, the "Vortex Parties") be liable for any indirect, special,
+            incidental, consequential, exemplary or punitive damages, or for any
+            loss of profits, digital assets, tokens, data or goodwill, arising out
+            of or in connection with the Services, any bridged or Wrapped Token,
+            any smart contract, any validator, any third-party bridge, protocol or
+            blockchain, or the use of or inability to use any of them, whether
+            based on contract, tort (including negligence), strict liability or
+            any other legal theory, even if advised of the possibility of such
             damages.
+          </Typography>
+          <Typography paragraph>
+            To the maximum extent permitted by applicable law, the aggregate
+            liability of the Vortex Parties for all claims relating to the
+            Services shall not exceed the greater of (i) the fees paid by the
+            User to Vortex for the Services in the twelve months before the event
+            giving rise to the claim and (ii) one hundred US dollars (USD 100).
+            Some jurisdictions do not allow the exclusion or limitation of certain
+            damages; in those jurisdictions the above applies to the fullest
+            extent permitted by law.
+          </Typography>
+          <Typography
+            variant="h5"
+            sx={{
+              color: theme.palette.secondary.main,
+              marginTop: "2rem",
+              marginBottom: "1rem",
+            }}
+          >
+            Indemnification
+          </Typography>
+          <Typography paragraph>
+            Users agree to indemnify and hold harmless the Vortex Parties from and against any claims, losses, liabilities, damages and costs (including reasonable legal fees) arising out of or in connection with their use of the Services, their breach of these Terms of Service, or their violation of any law or of any right of a third party.
           </Typography>
 
           <Typography
