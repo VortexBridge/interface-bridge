@@ -51,7 +51,8 @@ let chains = {
     {
       id: BRIDGE_CHAINS_NAMES.ETH,
       chainType: BRIDGE_CHAINS_TYPES.EVM,
-      bridgeAddress: "0x2F2f36A88DD5ff8d53Ba2505b2DbC0C153d910Ab",
+      // the Vortex v2 bridge, set at the cutover (runbook). Until then the Vortex route shows maintenance
+      bridgeAddress: "0x0000000000000000000000000000000000000000",
       chainId: 2,
       evmChainId: 1,
       // wormhole token bridge (portal), chainId is the wormhole chain id
@@ -93,7 +94,8 @@ let chains = {
     {
       id: BRIDGE_CHAINS_NAMES.SEP,
       chainType: BRIDGE_CHAINS_TYPES.EVM,
-      bridgeAddress: "0xeB6b19A289dF8e5e4A356ff28Dbc2415B0A15214",
+      // the Vortex v2 test bridge, set when it is deployed
+      bridgeAddress: "0x0000000000000000000000000000000000000000",
       chainId: 3,
       evmChainId: 11155111,
       symbol: "ETH",

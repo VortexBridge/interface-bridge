@@ -1,0 +1,32 @@
+// Vortex bridge v2 for this site: the flows (flows.mjs) with the bridges of the selected network and the validators.
+import { ethers } from "ethers";
+import * as koilib from "koilib";
+import { createFlows } from "./flows.mjs";
+import KoinosBridgeAbi from "../assets/contracts/Koinos-Bridge-v2.json";
+import KoinosTokenAbi from "../assets/contracts/Koinos-Token.json";
+import { BRIDGE_CHAINS, BRIDGE_CHAINS_TYPES } from "../constants/chains";
+
+export { KIND } from "./flows.mjs";
+
+export const VORTEX_KOINOS = BRIDGE_CHAINS.find((c) => c.chainType == BRIDGE_CHAINS_TYPES.KOIN) || null;
+export const VORTEX_EVM = BRIDGE_CHAINS.find((c) => c.chainType == BRIDGE_CHAINS_TYPES.EVM && c.bridgeAddress) || null;
+
+// Public list of the validators' signing servers. A server can only hand out signatures, and every signature is
+// checked here against the validator set on the destination bridge, so a wrong URL can not make a claim pay anyone.
+const validators = String(import.meta.env.VITE_VORTEX_VALIDATORS || "").split(",").map((u) => u.trim()).filter(Boolean);
+
+const configured = !!(VORTEX_KOINOS && VORTEX_EVM && validators.length > 0 && ethers.utils.isAddress(VORTEX_EVM.bridgeAddress)
+  && VORTEX_EVM.bridgeAddress != ethers.constants.AddressZero);
+
+// null while the bridge is not set up for this network: the pages then show the Vortex route as under maintenance
+export const vortex = configured ? createFlows({
+  ethers, koilib, fetch: (...args) => fetch(...args), koinosBridgeAbi: KoinosBridgeAbi, koinosTokenAbi: KoinosTokenAbi,
+  cfg: {
+    koinos: { bridge: VORTEX_KOINOS.bridgeAddress, bridgeChainId: VORTEX_KOINOS.chainId },
+    eth: { bridge: VORTEX_EVM.bridgeAddress, networkChainId: VORTEX_EVM.evmChainId, bridgeChainId: VORTEX_EVM.chainId },
+    validators,
+  },
+}) : null;
+
+// Koinos reads need no wallet
+export const koinosReader = new koilib.Provider(import.meta.env.VITE_KOINOS_RPC || "https://api.koinos.io");

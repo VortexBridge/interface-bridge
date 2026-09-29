@@ -9,7 +9,6 @@ import React, { Fragment, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { shortedAddress } from "../utils/display";
-import { waitTransation } from "../utils/transactions";
 
 // constants
 import { BRIDGE_CHAINS, BRIDGE_CHAINS_NAMES, BRIDGE_CHAINS_TYPES } from "../constants/chains";
@@ -17,8 +16,9 @@ import { BRIDGE_ROUTES_TYPES, getBridgeRoute, getBridgeContract } from "../const
 import { BRIDGE_TOKENS } from "../constants/tokens";
 
 // helpers
-import { EvmBridgeContract, EvmTokenContract, KoinosBridgeContract, KoinosTokenContract } from "../helpers/contracts";
 import { WormholeTokenBridgeContract, getWormholeMessage, fetchSignedVaa, parseTransferVaa, fromWormholeAddress, wormholescanTx } from "../helpers/wormhole";
+import { vortex, koinosReader, VORTEX_EVM } from "../v2";
+import { listTransfers } from "../v2/history";
 
 // Actions
 import { setNetworkFrom, setNetworkTo } from "../redux/actions/bridge";
@@ -28,9 +28,6 @@ import { setModal, setModalData } from "../redux/actions/modals";
 import { useEthersSigner } from '../hooks/useSigner';
 import { useEthersProvider } from '../hooks/useProvider';
 import { useEvmNetwork, isSignerOnNetwork } from '../hooks/useEvmNetwork';
-
-// api
-import BrigeService from "../services/bridge";
 
 // components
 import CustomEthConnectButton from "../components/Bridge/CustomEthConnectButton";
@@ -68,6 +65,11 @@ const Redeem = (props) => {
   const toProvider = useEthersProvider({ chainId: _get(toChain, "evmChainId", undefined) });
   const fromNetwork = useEvmNetwork(fromChain);
   const toNetwork = useEvmNetwork(toChain);
+  // the Vortex bridges are read on their own networks, no wallet needed
+  const vortexEvmProvider = useEthersProvider({ chainId: _get(VORTEX_EVM, "evmChainId", undefined) });
+  // the polls run in old closures, they read the current providers from here
+  const vortexProvidersRef = useRef(null);
+  vortexProvidersRef.current = { ethProvider: vortexEvmProvider, koinosProvider: koinosReader };
 
   // the polls of checkApi run in old closures, they read the current values from here
   const routeRef = useRef(route);
@@ -85,7 +87,6 @@ const Redeem = (props) => {
   const [sourceTX, setSourceTX] = useState("");
   const [blockchainTX, setblockchainTX] = useState(false);
   const [redeemSubmitted, setRedeemSubmitted] = useState(false);
-  const [renewSubmitted, setRenewSubmitted] = useState(false);
 
 
   const actionClose = (snackbarId) => (
@@ -99,8 +100,27 @@ const Redeem = (props) => {
   const hasEnoughSignatures = (recoverData) => {
     // a vaa only exists with the quorum of the guardians, the token bridge verifies it
     if (_get(recoverData, "wormhole", false)) return true;
-    const requiredQuorum = import.meta.env.VITE_NUMBER_OF_VALIDATORS || 2;
-    return _get(recoverData, "signatures", []).length >= requiredQuorum;
+    if (_get(recoverData, "completed", false)) return true;
+    // vortex: signatures verified in this browser, each from a current validator of the destination bridge
+    return _get(recoverData, "got.enough", false);
+  }
+
+  // the wallet is asked to sign: say so until it answers (issue #59)
+  const walletPrompt = () => Snackbar.enqueueSnackbar(<Typography variant="h6">Confirm the transaction in your wallet</Typography>, {
+    variant: 'info',
+    persist: true,
+  })
+
+  // the expiry in milliseconds: Ethereum counts seconds, Koinos milliseconds
+  const expiryMs = (got) => _get(got, "claim.direction", "") == "k2e" ? Number(got.claim.expiry) * 1000 : Number(_get(got, "claim.expiry", 0))
+
+  // the token of a claim on the destination network, for the amount shown
+  const claimToken = (claim) => {
+    for (let token of BRIDGE_TOKENS) {
+      let _net = _get(token, "networks", []).find(n => n.chain == _get(toChain, "id", null) && String(n.address).toLowerCase() == String(_get(claim, "token", "")).toLowerCase());
+      if (_net) return _net;
+    }
+    return null;
   }
 
   // efects
@@ -140,7 +160,6 @@ const Redeem = (props) => {
     setLoading(false);
     // another transfer can be redeemed without a reload of the page
     setRedeemSubmitted(false);
-    setRenewSubmitted(false);
   }, [ fromChain, toChain ]);
 
   useEffect(() => {
@@ -151,7 +170,6 @@ const Redeem = (props) => {
       checkerRef.current = null;
     }
     setRedeemSubmitted(false);
-    setRenewSubmitted(false);
     setLoading(false);
     // also for an emptied field: nothing is checked anymore, the page must not look like it waits
     setRecover(null)
@@ -214,114 +232,80 @@ const Redeem = (props) => {
   const redeem = async () => {
     // a vaa does not expire, the checks of the signatures of vortex below are not for it
     if (route == BRIDGE_ROUTES_TYPES.WORMHOLE) return redeemWormhole();
-    // the validators of vortex only sign vortex routes
-    if (route != BRIDGE_ROUTES_TYPES.VORTEX) return;
+    if (route != BRIDGE_ROUTES_TYPES.VORTEX || !vortex) return;
     setLoading(true);
-    if (loading || redeemSubmitted) return; // Check redeemSubmitted state
+    if (loading || redeemSubmitted) return;
+    let prompt = null;
     try {
-      // checks
-      const now = new Date()
-      const expiration = new Date(parseInt(_get(recover, "expiration", 0)))
-      if (now >= expiration) {
-        const delta = now.getTime() - expiration.getTime()
-        if (delta < 3700000) {
-          // toast({
-          //   title: 'Expired signatures',
-          //   description: `The validators signatures have expired, please request new ones in approximately ${approximateRequestTime} minutes.`,
-          //   status: 'error',
-          //   isClosable: true,
-          // })
-          // console.log("expire 1")
-          setLoading(false)
-          return;
-        } else {
-          // toast({
-          //   title: 'Expired signatures',
-          //   description: 'The validators signatures have expired, please request new ones. If you already submitted a request, please try to complete the transfer again in a few minutes.',
-          //   status: 'error',
-          //   isClosable: true,
-          // })
-          // console.log("expire 2")
-          setLoading(false)
-          return;
-        }
+      let got = _get(recover, "got", null);
+      if (!got || !got.enough) throw new Error("not enough signatures yet");
+      // signatures that expire soon are simply asked for again, with a new expiry (issue #61, no "renew" transaction)
+      if (expiryMs(got) - Date.now() < 5 * 60 * 1000) {
+        got = await vortex.collect(vortexProvidersRef.current, _get(recover, "claim", null));
+        if (!got.enough) throw new Error("the validators did not answer, please try again in a minute");
+        setRecover({ ...recover, got });
       }
-
-      let _bridge = null;
-      let _bridgeInfo = BRIDGE_CHAINS.find(bridge => bridge.id == _get(toChain, "id", null));
-
-      // redeem
-      if (_get(toChain, "id", "") == BRIDGE_CHAINS_NAMES.ETH) {
-        // the address of the bridge is only the bridge on the network of the to chain
+      let hash = null;
+      if (_get(toChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM) {
         if (!(await isSignerOnNetwork(signer, toNetwork.expected))) throw new Error("wrong network");
-        _bridge = await EvmBridgeContract(_bridgeInfo.bridgeAddress, signer);
-        if (_bridge) {
-          const tx = await _bridge.completeTransfer(
-            _get(recover, "id", ""),
-            _get(recover, "opId", ""),
-            _get(recover, "ethToken", ""),
-            _get(recover, "relayer", ""),
-            _get(recover, "recipient", ""),
-            _get(recover, "amount", ""),
-            _get(recover, "payment", ""),
-            _get(recover, "signatures", ""),
-            _get(recover, "metadata", ""),
-            _get(recover, "expiration", ""),
-          )
-          Snackbar.enqueueSnackbar(<Typography variant="h6">Transaction submitted</Typography>, {
-            variant: 'info',
-            persist: false,
-            action: actionClose,
-          })
-          await tx.wait()
-          Snackbar.enqueueSnackbar(<Link underline="none" style={{ cursor: "pointer" }} target="_blank" href={`${toChain.explorer}/${tx.id}`}><Typography sx={{ color: "white" }} variant="h6">Transaction successful</Typography><Typography sx={{ color: "white" }} variant="subtitle1" component="p">View Block</Typography></Link>, {
-            variant: 'success',
-            persist: false,
-            action: actionClose,
-          })
-          setRedeemSubmitted(true);
-        }
+        prompt = walletPrompt();
+        // anyone can submit a claim, the tokens always go to the recipient of the deposit
+        const tx = await vortex.claimOnEth(signer, got);
+        Snackbar.closeSnackbar(prompt);
+        Snackbar.enqueueSnackbar(<Typography variant="h6">Transaction submitted</Typography>, {
+          variant: 'info',
+          persist: false,
+          action: actionClose,
+        })
+        await tx.wait()
+        hash = tx.hash;
       }
-      if (_get(toChain, "id", "") == BRIDGE_CHAINS_NAMES.KOIN) {
+      if (_get(toChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN) {
         let providerKoin = _get(walletSelector, "provider", null);
         let signerKoin = _get(walletSelector, "signer", null);
-        _bridge = await KoinosBridgeContract(_bridgeInfo.bridgeAddress, providerKoin, signerKoin);
-        if (_bridge) {
-          let { transaction } = await _bridge.functions.complete_transfer({
-            transactionId: _get(recover, "id", ""),
-            token: _get(recover, "koinosToken", ""),
-            relayer:  _get(recover, "relayer", ""),
-            recipient: _get(recover, "recipient", ""),
-            value: _get(recover, "amount", ""),
-            payment: _get(recover, "payment", ""),
-            metadata: _get(recover, "metadata", ""),
-            signatures: _get(recover, "signatures", ""),
-            expiration: _get(recover, "expiration", ""),
-          })
-          
-          Snackbar.enqueueSnackbar(<Typography variant="h6">Transaction submitted</Typography>, {
-            variant: 'info',
-            persist: false,
-            action: actionClose,
-          })
-          
-          // For Koinos, we need to wait for the transaction to be confirmed
-          // Using the same waitTransation function that works well in Bridge.jsx
-          await waitTransation(providerKoin, transaction)
-          
-          Snackbar.enqueueSnackbar(<Typography sx={{ color: "white" }} variant="h6">Transaction successful</Typography>, {
-            variant: 'success',
-            persist: false,
-            action: actionClose,
-          })
-          setRedeemSubmitted(true);
-        }
+        prompt = walletPrompt();
+        hash = await vortex.claimOnKoinos(providerKoin, signerKoin, got);
+        Snackbar.closeSnackbar(prompt);
+        Snackbar.enqueueSnackbar(<Typography variant="h6">Transaction submitted</Typography>, {
+          variant: 'info',
+          persist: false,
+          action: actionClose,
+        })
+        // success only once the claim is in a main-chain block, did not revert, and the deposit shows as paid
+        await vortex.waitKoinosTx(koinosReader, hash);
+        if (!(await vortex.isClaimed(vortexProvidersRef.current, got.claim))) throw new Error("the claim is not confirmed yet, check again in a minute");
       }
+      // success, with the link to the claim (issues #35, #52)
+      Snackbar.enqueueSnackbar(<Link underline="none" style={{ cursor: "pointer" }} target="_blank" rel="noopener noreferrer" href={`${toChain.explorer}/${hash}`}><Typography sx={{ color: "white" }} variant="h6">Transaction successful</Typography><Typography sx={{ color: "white" }} variant="subtitle1" component="p">View on the explorer</Typography></Link>, {
+        variant: 'success',
+        persist: false,
+        action: actionClose,
+      })
+      setRedeemSubmitted(true);
+      setRecover({ ...recover, got, completed: true, status: "redeemed", claimTx: hash });
       setLoading(false)
+      // another deposit in the same transaction: go on with it
+      if (_get(recover, "more", false)) {
+        setRedeemSubmitted(false);
+        startCheck(sourceTX);
+      }
     } catch (error) {
       console.log(error)
+      if (prompt) Snackbar.closeSnackbar(prompt);
+      // an error can come after the claim went through (a node that answered late, or someone else claimed it):
+      // the chain decides what is shown
+      try {
+        if (await vortex.isClaimed(vortexProvidersRef.current, _get(recover, "claim", null))) {
+          setRedeemSubmitted(true);
+          setRecover({ ...recover, completed: true, status: "redeemed" });
+          setLoading(false);
+          return;
+        }
+      } catch (e) {
+        console.log(e);
+      }
       setLoading(false)
-      Snackbar.enqueueSnackbar(<span><Typography variant="h6">Transaction error</Typography></span>, {
+      Snackbar.enqueueSnackbar(<span><Typography variant="h6">Transaction error</Typography><Typography variant="body1" color="white">{String(_get(error, "reason", "") || _get(error, "message", "")).slice(0, 160)}</Typography></span>, {
         variant: 'error',
         persist: false,
         action: actionClose,
@@ -330,75 +314,6 @@ const Redeem = (props) => {
     }
   }
 
-  const renewSignatures = async () => {
-    if (route != BRIDGE_ROUTES_TYPES.VORTEX) return;
-    setRenewSubmitted(true);
-    if (loading || renewSubmitted) return; // Check redeemSubmitted state
-    try {
-      let _bridge = null;
-      let _bridgeInfo = BRIDGE_CHAINS.find(bridge => bridge.id == _get(fromChain, "id", null));
-
-      // redeem
-      if (_get(fromChain, "id", "") == BRIDGE_CHAINS_NAMES.ETH) {
-        if (!(await isSignerOnNetwork(signer, fromNetwork.expected))) throw new Error("wrong network");
-        _bridge = await EvmBridgeContract(_bridgeInfo.bridgeAddress, signer);
-        if (_bridge) {
-          console.log("requestNewSignatures", _bridge)
-          const tx = await _bridge.RequestNewSignatures(
-            sourceTX,
-          )
-          Snackbar.enqueueSnackbar(<Typography variant="h6">Transaction submitted</Typography>, {
-            variant: 'info',
-            persist: false,
-            action: actionClose,
-          })
-          await tx.wait()
-          Snackbar.enqueueSnackbar(<Link underline="none" style={{ cursor: "pointer" }} target="_blank" href={`${fromChain.explorer}/${tx.id}`}><Typography sx={{ color: "white" }} variant="h6">Transaction successful</Typography><Typography sx={{ color: "white" }} variant="subtitle1" component="p">View Block</Typography></Link>, {
-            variant: 'success',
-            persist: false,
-            action: actionClose,
-          })
-        }
-      }
-      if (_get(fromChain, "id", "") == BRIDGE_CHAINS_NAMES.KOIN) {
-        let providerKoin = _get(walletSelector, "provider", null);
-        let signerKoin = _get(walletSelector, "signer", null);
-        _bridge = await KoinosBridgeContract(_bridgeInfo.bridgeAddress, providerKoin, signerKoin);
-        if (_bridge) {
-          let { transaction } = await _bridge.functions.request_new_signatures({
-            transactionId: sourceTX,
-            operationId: _get(recover, "opId", ""),
-          })
-          
-          Snackbar.enqueueSnackbar(<Typography variant="h6">Transaction submitted</Typography>, {
-            variant: 'info',
-            persist: false,
-            action: actionClose,
-          })
-          
-          // For Koinos, we need to wait for the transaction to be confirmed
-          // Using the same waitTransation function that works well in Bridge.jsx
-          await waitTransation(providerKoin, transaction)
-          
-          Snackbar.enqueueSnackbar(<Typography sx={{ color: "white" }} variant="h6">Transaction successful</Typography>, {
-            variant: 'success',
-            persist: false,
-            action: actionClose,
-          })
-        }
-      }
-      startCheck(sourceTX, true)
-    } catch (error) {
-      console.log(error)
-      setRenewSubmitted(false);
-      Snackbar.enqueueSnackbar(<span><Typography variant="h6">Transaction error</Typography></span>, {
-        variant: 'error',
-        persist: false,
-        action: actionClose,
-      })
-      return;
-    }
-  }
   const checkChain = (_chain) => {
     let evm_conector = _get(account, 'isConnected', false);
     let koin_conector = _get(walletSelector, "connected", false);    
@@ -524,7 +439,7 @@ const Redeem = (props) => {
   }
 
   // a check started by the user or by a new source transaction replaces the running one and its scheduled retry
-  const startCheck = (txIdParam, isRenew = false) => {
+  const startCheck = (txIdParam) => {
     pollId.current += 1;
     tries.current = 0;
     receiptTries.current = 0;
@@ -532,70 +447,88 @@ const Redeem = (props) => {
       clearTimeout(checkerRef.current);
       checkerRef.current = null;
     }
-    return checkApi(txIdParam, isRenew, true);
+    return checkApi(txIdParam, true);
   }
 
   // force: a new check and the retries of a check. The value of loading in this closure is the one of an old render,
   // a retry must not stop on it. Two checks of one generation never run together, a retry is scheduled at the end of a check
-  const checkApi = async (txIdParam = null, isRenew = false, force = false) => {
+  const checkApi = async (txIdParam = null, force = false) => {
     if (routeRef.current == null) return;
     if (loading && !force) return;
     // this call belongs to the networks selected now, after a change of them it must stop
     const poll = pollId.current;
     const stale = () => poll != pollId.current;
     const retry = (ms = 3000) => {
-      let _timer = setTimeout(() => { if (!stale()) checkApi(txIdParam, isRenew, true) }, ms);
+      let _timer = setTimeout(() => { if (!stale()) checkApi(txIdParam, true) }, ms);
       setChecker(_timer);
       checkerRef.current = _timer;
     }
     setLoading(true);
-    // the api of the validators of vortex only knows vortex routes
     if (routeRef.current == BRIDGE_ROUTES_TYPES.WORMHOLE) return checkWormhole(txIdParam, stale, retry);
-    let result = null;
-    let existInBlockchain = false;
-    let opIdKoinos = ""; // op id of transaction in koinos
-    try {
-      if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM) {
-        let r = await provider.getTransactionReceipt(txIdParam);
-        if (!r) throw new Error("no transaction");
-        existInBlockchain = true;
-      }
-      if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN) {
-        let providerKoin = _get(walletSelector, "provider", null);
-        let r = await providerKoin.getTransactionsById([ txIdParam ]);
-        if(_get(r, "transactions", []).length == 0) throw new Error("no transaction");
-        
-        // get op id
-        const blockResult = await providerKoin.call('block_store.get_blocks_by_id', {
-          block_ids: [_get(r, "transactions[0].containing_blocks[0]") ],
-          return_block: false,
-          return_receipt: true,
-        })
-        for (const receipt of _get(blockResult, 'block_items[0].receipt.transaction_receipts', [])) {
-          if (receipt.id === txIdParam) {
-            for (const event of receipt.events) {
-              if (event.name === 'bridge.tokens_locked_event') {
-                opIdKoinos = `${event.sequence}`
-              }
-            }
-          }
-        }
+    return checkVortex(txIdParam ? txIdParam : sourceTX, stale, retry);
+  };
 
-        //console.log(opIdKoinos)
-        existInBlockchain = true;
+  // vortex route: the claim comes from the user's own deposit (read from the source chain, never from a server).
+  // The validators sign it once the source chain has finalized it (Koinos ~1 minute, Ethereum ~15 minutes), and every
+  // signature is checked here. The page keeps checking by itself (issues #38, #51)
+  const checkVortex = async (txIdParam, stale, retry) => {
+    const fail = (message) => { let e = new Error(message); e.permanent = true; return e; }
+    try {
+      if (!vortex) throw fail("The Vortex bridge is paused for maintenance.");
+      const fromKoinos = _get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN;
+      const claims = fromKoinos ? await vortex.claimsFromKoinosTx(koinosReader, txIdParam) : await vortex.claimsFromEthTx(provider, txIdParam);
+      if (stale()) return;
+      if (!claims) {
+        // not in a block yet, or the wrong hash or network
+        receiptTries.current += 1;
+        if (receiptTries.current <= 12) {
+          setLoading(false);
+          retry(5000);
+          return;
+        }
+        throw fail(`The transaction has not been found on ${_get(fromChain, "name", "")}. Check the source network, or wait a moment if you just sent it.`);
+      }
+      setblockchainTX(true);
+      const toEvm = _get(toChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM;
+      if ((claims[0].direction == "k2e") != toEvm) throw fail("This transfer goes to another network, select the network it was sent to.");
+      // usually one deposit per transaction; with more, they are shown and claimed one after the other
+      let claim = null;
+      let index = 0;
+      for (let k = 0; k < claims.length && !claim; k++) {
+        if (!(await vortex.isClaimed(vortexProvidersRef.current, claims[k]))) { claim = claims[k]; index = k; }
       }
       if (stale()) return;
-      setblockchainTX(existInBlockchain);
-    } catch (e) {
-      console.log(e);
+      const part = claims.length > 1 ? ` (deposit ${index + 1} of ${claims.length} in this transaction)` : "";
+      if (!claim) {
+        setRecover({ vortex: true, claim: claims[claims.length - 1], completed: true, status: claims.length > 1 ? "all deposits redeemed" : "redeemed" });
+        tries.current = 0;
+        setLoading(false);
+        return;
+      }
+      const got = await vortex.collect(vortexProvidersRef.current, claim);
+      if (stale()) return;
+      // when the quorum is missing, say what the validators answered (plain text, shortened by the library)
+      const why = !got.enough && got.problems && got.problems.length ? ` — ${got.problems[0]}` : "";
+      setRecover({ vortex: true, claim, got, more: index + 1 < claims.length, status: (got.enough ? "ready to redeem" : "waiting for the validators" + why) + part });
+      tries.current = 0;
+      setLoading(false);
+      if (!got.enough) retry(15000);
+    } catch (error) {
+      console.log(error);
       if (stale()) return;
       setLoading(false);
-      setblockchainTX(existInBlockchain);
+      // a hiccup of an rpc: try again, but not forever
+      tries.current += 1;
+      if (!_get(error, "permanent", false) && tries.current < 20) {
+        retry(15000);
+        return;
+      }
+      tries.current = 0;
+      setblockchainTX(false);
       Snackbar.enqueueSnackbar(
         <span>
-          <Typography variant="h6">Transaction not found</Typography>
-          <Typography variant="body1" color="white">The transaction has not been found on the blockchain.</Typography>
-          <Typography variant="body1" color="white">Please wait up to 3 minutes and try again.</Typography>
+          <Typography variant="h6">Transfer not found</Typography>
+          <Typography variant="body1" color="white">{error.message}</Typography>
         </span>,
         {
           variant: 'error',
@@ -603,65 +536,8 @@ const Redeem = (props) => {
           action: actionClose,
         }
       );
-      return;
     }
-  
-    if (checker) {
-      clearTimeout(checker);
-    }
-    try {
-      let bridge = new BrigeService();
-      if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM) {
-        result = await bridge.getEthTx(txIdParam ? txIdParam : sourceTX);
-      }
-      if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN) {
-        // Hacer dos consultas paralelas: una con opIdKoinos y otra con opIdKoinos + 1
-        // Usar la primera que responda exitosamente
-        const opIdCurrent = parseInt(opIdKoinos);
-        const opIdNext = opIdCurrent + 1;
-        
-        try {
-          // Intentar ambas consultas en paralelo y usar la primera que responda
-          result = await Promise.any([
-            bridge.getKoinTx(txIdParam ? txIdParam : sourceTX, opIdKoinos),
-            bridge.getKoinTx(txIdParam ? txIdParam : sourceTX, opIdNext.toString())
-          ]);
-        } catch (raceError) {
-          // Si ambas consultas paralelas fallan, no hacer un tercer intento
-          // Dejar que el catch externo maneje el error y programe el reintento
-          throw raceError;
-        }
-      }
-    } catch (error) {
-      result = null;
-      console.log(error);
-      if (stale()) return;
-      retry();
-      return;
-    }
-    if (stale()) return;
-
-    if(isRenew) {
-      const expirationRecover = parseInt(_get(result, "expiration", "0"));
-      const expirationResult = parseInt(_get(recover, "expiration", "0"));
-      if(expirationRecover == expirationResult) {
-        setLoading(false);
-        retry();
-        return;
-      }
-    }
-
-    if (!hasEnoughSignatures(result)) {
-      setLoading(false);
-      retry();
-      return;
-    }
-    if(isRenew) {
-      setRenewSubmitted(false);
-    }
-    setRecover(result);
-    setLoading(false);
-  };
+  }
 
   const BaseConnections = (props) => (
     <>
@@ -707,59 +583,25 @@ const Redeem = (props) => {
       </Box>
     )
 
-    // conect wallet to chain
-    if (checkChain(fromChain)) return (
-      <Connectors chain={fromChain} />
+    // checking a transfer needs no wallet: it is read from the chains (also from another browser or device).
+    // The page checks by itself until the transfer is signed, a button to recover has no use while it waits (issue #38).
+    // Without a running check (nothing found, or an error was shown) the button starts one
+    if (!recover || !hasEnoughSignatures(recover)) return (
+      blockchainTX ?
+        <Button disabled variant="contained" size="large" sx={{ width: "100%" }}>{route == BRIDGE_ROUTES_TYPES.WORMHOLE ? "WAITING FOR THE GUARDIANS" : "WAITING FOR THE VALIDATORS"}</Button>
+        :
+        <Button disabled={loading || !sourceTX} variant="contained" size="large" onClick={() => startCheck(sourceTX)} sx={{ width: "100%" }}>{loading ? "CHECKING..." : "CHECK TRANSACTION"}</Button>
     )
 
-    // conect wallet to chain
+    // done, by this page or by anyone else
+    if (_get(recover, "completed", false)) return (
+      <Button disabled variant="contained" size="large" sx={{ width: "100%" }}>REDEEMED</Button>
+    )
+
+    // only redeeming needs a wallet: the one of the network the tokens go to
     if (checkChain(toChain)) return (
       <Connectors chain={toChain} />
     )
-
-    // wormhole route: the page polls by itself until the guardians signed, a button to recover has no use while it waits.
-    // Without a running check (nothing found, or an error was shown) the button starts one
-    if (route == BRIDGE_ROUTES_TYPES.WORMHOLE && !recover) return (
-      <BaseConnections
-        actions={
-          blockchainTX ?
-            <Button disabled variant="contained" size="large" sx={{ width: "100%" }}>WAITING FOR THE GUARDIANS</Button>
-            :
-            <Button disabled={loading || !sourceTX} variant="contained" size="large" onClick={() => startCheck(sourceTX)} sx={{ width: "100%" }}>{loading ? "CHECKING..." : "CHECK TRANSACTION"}</Button>
-        }
-      />
-    )
-
-    if (!recover || (recover && !hasEnoughSignatures(recover))) return (
-      <BaseConnections
-        actions={
-          <Button disabled={loading} variant="contained" size="large" onClick={() => startCheck(sourceTX)} sx={{ width: "100%" }}>RECOVER</Button>
-        }
-      />
-    )
-
-    // check if the transaction has expired
-    if (recover && _get(recover, "expiration")) {
-      const expirationTime = parseInt(_get(recover, "expiration", "0"));
-      const currentTime = Date.now();
-      if (currentTime > expirationTime) {
-        // new signatures are requested on the from chain
-        if (fromNetwork.wrongNetwork) return (
-          <BaseConnections
-            actions={
-              <Button variant="contained" size="large" sx={{ width: "100%" }} onClick={() => fromNetwork.switchNetwork().catch((e) => console.log(e))}>SWITCH TO {_get(fromChain, "name", "")}</Button>
-            }
-          />
-        );
-        return (
-          <BaseConnections
-            actions={
-              <Button disabled={loading || renewSubmitted} onClick={() => renewSignatures()} variant="contained" size="large" sx={{ width: "100%" }}>RENEW SIGNATURES</Button>
-            }
-          />
-        );
-      }
-    }
 
     // the tokens are redeemed on the to chain
     if (toNetwork.wrongNetwork) return (
@@ -777,6 +619,17 @@ const Redeem = (props) => {
         }
       />
     )
+  }
+
+  // transfers sent from this browser; their status is read from the chains when one is opened (issue #55)
+  const myTransfers = listTransfers();
+  const openTransfer = (t) => {
+    let _from = BRIDGE_CHAINS.find(chain => chain.id == t.from);
+    let _to = BRIDGE_CHAINS.find(chain => chain.id == t.to);
+    if (!_from || !_to) return;
+    dispatch(setNetworkFrom(_from));
+    dispatch(setNetworkTo(_to));
+    setSourceTX(t.tx);
   }
 
   const isBridgePage = location.pathname === '/bridge';
@@ -866,14 +719,10 @@ const Redeem = (props) => {
                     "Select source network" : 
                     !toChain ? 
                     "Select redeem network" : 
-                    checkChain(fromChain) ? 
-                    "Please connect your wallet to continue" : 
-                    checkChain(toChain) ? 
-                    "Please connect your wallet to continue" : 
                     "Source TX ID Can Be Pasted here"
                   }
                   type={"text"}
-                  disabled={(!fromChain || !toChain || checkChain(fromChain) || checkChain(toChain))}
+                  disabled={!fromChain || !toChain}
                   value={sourceTX}
                   sx={{ width: "100%", fontSize: "16px", height: "40px", color: "text.main" }}
                   onChange={(e) => setSourceTX(e.currentTarget.value)}
@@ -933,40 +782,42 @@ const Redeem = (props) => {
                   <Link target="_blank" rel="noopener noreferrer" href={wormholescanTx(sourceTX)}>Wormholescan</Link>
                 </Box>
               </Box>
-            : recover && blockchainTX ?
+            : recover && blockchainTX && _get(recover, "vortex", false) ?
               <Box sx={{ border: `1px solid ${theme.palette.background.light}`, borderRadius: "10px", padding: "10px 20px", display: "flex", alignContent: "center", flexDirection: "column" }} marginY={"1.4em"} display={"flex"} justifyContent={"space-between"}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
-                  <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Tx Status:</Typography>
+                  <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Status:</Typography>
                   <Typography variant="h6" component={"span"}>{_get(recover, "status", "")}</Typography>
                 </Box>
                 <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
                   <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Receiving address:</Typography>
-                  <Typography variant="h6" component={"span"}>{shortedAddress(_get(recover, "recipient", ""))}</Typography>
+                  <Typography variant="h6" component={"span"}>{shortedAddress(_get(recover, "claim.recipient", ""))}</Typography>
                 </Box>
-                {/* <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
+                <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
                   <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Amount:</Typography>
-                  <Typography variant="h6" component={"span"}>{ koilibUtils.formatUnits(_get(recover, "amount", ""), 8) }</Typography>
+                  <Typography variant="h6" component={"span"}>{`${ethers.utils.formatUnits(String(_get(recover, "claim.amount8", "0")), 8)} ${_get(claimToken(_get(recover, "claim", null)), "symbol", "")}`}</Typography>
                 </Box>
                 <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
-                  <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Payment to relayer:</Typography>
-                  <Typography variant="h6" component={"span"}>{ koilibUtils.formatUnits(_get(recover, "payment", ""), 8) }</Typography>
-                </Box> */}
-                <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
-                  <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Block Number:</Typography>
-                  <Typography variant="h6" component={"span"}>{_get(recover, "blockNumber", "")}</Typography>
+                  <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Deposit number:</Typography>
+                  <Typography variant="h6" component={"span"}>{String(_get(recover, "claim.depositNonce", ""))}</Typography>
                 </Box>
-                <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
-                  <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Block Time:</Typography>
-                  <Typography variant="h6" component={"span"}>{ moment.unix(Number(_get(recover, "blockTime", ""))/1000).format("DD-MM-YYYY, hh:mm:ss") }</Typography>
-                </Box>
-                <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
-                  <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Expire:</Typography>
-                  <Typography variant="h6" component={"span"}>{ moment.unix(Number(_get(recover, "expiration", ""))/1000).format("DD-MM-YYYY, hh:mm:ss") }</Typography>
-                </Box>
-                <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
-                  <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Signatures:</Typography>
-                  <Typography variant="h6" component={"span"}>{_get(recover, "signatures", []).length}</Typography>
-                </Box>
+                {_get(recover, "got", null) && !_get(recover, "completed", false) ?
+                  <>
+                    <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
+                      <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Validator signatures:</Typography>
+                      <Typography variant="h6" component={"span"}>{`${_get(recover, "got.signers", []).length} verified, ${_get(recover, "got.quorum", "")} needed`}</Typography>
+                    </Box>
+                    <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
+                      <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Signatures valid until:</Typography>
+                      <Typography variant="h6" component={"span"}>{moment(expiryMs(_get(recover, "got", null))).format("DD-MM-YYYY, HH:mm")}</Typography>
+                    </Box>
+                  </>
+                  : null}
+                {_get(recover, "claimTx", null) ?
+                  <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
+                    <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Claim:</Typography>
+                    <Link target="_blank" rel="noopener noreferrer" href={`${_get(toChain, "explorer", "")}/${_get(recover, "claimTx", "")}`}>View on the explorer</Link>
+                  </Box>
+                  : null}
               </Box>
               : null
           }
@@ -975,6 +826,19 @@ const Redeem = (props) => {
           </Box>
         </CardContent>
       </Card>
+      {myTransfers.length ?
+        <Card variant="outlined" sx={{ maxWidth: "600px", marginX: "auto", marginBottom: "20px", borderRadius: "10px", padding: "15px 20px" }}>
+          <CardHeader title="YOUR TRANSFERS" subheader="sent from this browser, open one to see its status" sx={{ paddingBottom: "4px" }} />
+          <CardContent>
+            {myTransfers.map(t => (
+              <Box key={t.tx} sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center", paddingY: "4px" }}>
+                <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>{`${moment(t.time).format("DD-MM-YYYY, HH:mm")}  ${t.from} → ${t.to}`}</Typography>
+                <Link component="button" onClick={() => openTransfer(t)}>{shortedAddress(t.tx)}</Link>
+              </Box>
+            ))}
+          </CardContent>
+        </Card>
+        : null}
     </Box >
   )
 }

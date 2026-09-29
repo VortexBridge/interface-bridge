@@ -183,7 +183,8 @@ let tokens = {
         {
           native: true,
           chain: BRIDGE_CHAINS_NAMES.SEP,
-          decimals: 8,
+          // native ETH has 18 decimals (the bridge wraps it to WETH, 18 decimals)
+          decimals: 18,
           allowance: false,
           symbol: "ETH",
           address: "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14",
