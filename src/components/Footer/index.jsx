@@ -100,7 +100,8 @@ const Footer = () => {
           Terms Of Service
         </Typography>
       </Button>
-      <Link href="https://docs.google.com/forms/d/e/1FAIpQLScqirotHdZiYTWahIKRtqgHMuHS8Mm-rotZQfIWmAQQp5kH-Q/viewform" sx={{ textDecoration: "none" }}>
+      {/* official koinos telegram, the redirect is kept up to date by koinos (the old google form answers 404) */}
+      <Link href="https://telegram.koinos.io" target="_blank" rel="noopener noreferrer" title="Koinos Telegram" sx={{ textDecoration: "none" }}>
         <Typography
           variant="subtitle2"
           component="h6"

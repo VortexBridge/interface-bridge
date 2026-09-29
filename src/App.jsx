@@ -4,7 +4,7 @@ import generateStore from "./redux/index";
 import { Provider as ReactProvider } from "react-redux";
 import { RainbowKitProvider, connectorsForWallets } from "@rainbow-me/rainbowkit";
 import { WagmiProvider, createConfig, http } from 'wagmi';
-import { mainnet } from 'wagmi/chains';
+import { mainnet, base, sepolia } from 'wagmi/chains';
 import { QueryClientProvider, QueryClient, } from "@tanstack/react-query";
 import {
   injectedWallet,
@@ -36,10 +36,20 @@ const connectors = connectorsForWallets(
   ],
   { appName: "Vortex Bridge", projectId },
 );
-const config = createConfig({
-  chains: [mainnet],
+// only the evm networks of BRIDGE_CHAINS, a wallet on any other network must stay unsupported
+const config = createConfig(testnet == "true" ? {
+  chains: [sepolia],
+  transports: {
+    // not VITE_ETH_RPC, it is a mainnet node. Without a url viem uses the public rpc of the chain
+    [sepolia.id]: http(import.meta.env.VITE_SEP_RPC || undefined),
+  },
+  connectors,
+  ssr: false,
+} : {
+  chains: [mainnet, base],
   transports: {
     [mainnet.id]: http(import.meta.env.VITE_ETH_RPC || "https://eth.drpc.org"),
+    [base.id]: http(import.meta.env.VITE_BASE_RPC || "https://mainnet.base.org"),
   },
   connectors,
   ssr: false,

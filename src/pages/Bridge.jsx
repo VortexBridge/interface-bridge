@@ -14,21 +14,25 @@ import { shortedAddress } from "../utils/display";
 
 // constants
 import { BRIDGE_CHAINS, BRIDGE_CHAINS_TYPES } from "../constants/chains";
+import { BRIDGE_ROUTES_TYPES, getBridgeRoute, getBridgeContract } from "../constants/routes";
 
 // helpers
 import { EvmBridgeContract, EvmTokenContract, KoinosBridgeContract, KoinosTokenContract } from "../helpers/contracts";
+import { WormholeTokenBridgeContract, WormholeCoreContract, toWormholeAddress, wormholeNonce } from "../helpers/wormhole";
 
 // Actions
 import { setModal, setModalData } from "../redux/actions/modals";
-import { setNetworkFrom, setNetworkTo } from "../redux/actions/bridge";
+import { setNetworkFrom, setNetworkTo, setTokenToBridge } from "../redux/actions/bridge";
 
 // utils
 import { numberPattern } from "../utils/regex";
+import { parseTokenAmount, limitDecimals } from "../utils/amount";
 import { waitTransation } from "./../utils/transactions"
 
 // hooks
 import { useEthersSigner } from "../hooks/useSigner"
 import { useEthersProvider } from "../hooks/useProvider"
+import { useEvmNetwork, isSignerOnNetwork } from "../hooks/useEvmNetwork"
 
 // icons
 import SwapVert from "@mui/icons-material/SwapVert";
@@ -50,7 +54,7 @@ const Bridge = () => {
   const account = useAccount()
   const navigate = useNavigate();
   const signer = useEthersSigner();
-  const provider = useEthersProvider();
+  const defaultProvider = useEthersProvider();
 
   // selectors
   const bridgeSelector = useSelector(state => state.bridge);
@@ -60,6 +64,12 @@ const Bridge = () => {
   const fromChain = _get(bridgeSelector, "from", null);
   const toChain = _get(bridgeSelector, "to", null);
   const tokenToBridge = _get(bridgeSelector, "token", null);
+  const route = getBridgeRoute(fromChain, toChain);
+
+  // reads go to the network of the from chain, the wallet can be on another evm network
+  const fromProvider = useEthersProvider({ chainId: _get(fromChain, "evmChainId", undefined) });
+  const provider = fromProvider || defaultProvider;
+  const fromNetwork = useEvmNetwork(fromChain);
 
   // states
   const [balance, setBalance] = useState(0);
@@ -88,6 +98,15 @@ const Bridge = () => {
     };
     let _bridge = BRIDGE_CHAINS.find(bridge => bridge.id == _get(fromChain, "id", null));
     let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
+    // the contract that takes the tokens depends on the route, vortex bridge or wormhole token bridge
+    let _spender = getBridgeContract(route, _bridge);
+    // without a route there is nothing to load, the token may also not exist on the from network
+    if (route == null || !_network || !_spender) {
+      setBalance(0);
+      setApproval("0");
+      setLoadingBalance(false);
+      return;
+    }
     if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM && _get(account, 'isConnected', false)) {
       if(_network.native == true) {
         console.log("loading balance from native token in evm")
@@ -95,12 +114,12 @@ const Bridge = () => {
         _balance = ethers.utils.formatEther(bal)
         _approve = bal.toString()
       } else {
-        _token = await EvmTokenContract(_network.address, signer);        
+        _token = await EvmTokenContract(_network.address, provider);
         if (_token) {
           let bal = await _token.balanceOf(account.address);
           _balance = koilibUtils.formatUnits(bal.toString(), _get(_network, "decimals", 8))
           // approval
-          let approve = await _token.allowance(account.address, _bridge.bridgeAddress)
+          let approve = await _token.allowance(account.address, _spender)
           _approve = approve.toString();
         }
       }
@@ -130,19 +149,32 @@ const Bridge = () => {
 
   useEffect(() => {
     loadBlance();
-  }, [tokenToBridge, fromChain, _get(walletSelector, "wallet", null), _get(account, 'isConnected', false)]);
+  }, [tokenToBridge, fromChain, toChain, _get(walletSelector, "wallet", null), _get(account, 'isConnected', false), _get(account, 'address', null)]);
 
+  // drop the selected token if it can not be bridged between the selected networks
+  useEffect(() => {
+    if (tokenToBridge == null || fromChain == null || toChain == null) return;
+    let _networks = _get(tokenToBridge, "networks", []);
+    let inFrom = _networks.find(net => _get(net, "chain", "") == _get(fromChain, "id", null));
+    let inTo = _networks.find(net => _get(net, "chain", "") == _get(toChain, "id", null));
+    if (route == null || !inFrom || !inTo) {
+      dispatch(setTokenToBridge(null))
+    }
+  }, [ tokenToBridge, fromChain, toChain ])
+
+
+  // address of the wallet of the to chain, the wallet of the from chain must not reset a typed recipient
+  let toWalletAddress = ""
+  if(_get(toChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM && _get(account, 'isConnected', false)) {
+    toWalletAddress = _get(account, 'address', '')
+  }
+  if(_get(toChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN && _get(walletSelector, "connected", false)) {
+    toWalletAddress = _get(walletSelector, "wallet[0].address", "");
+  }
 
   useEffect(() => {
-    let final = ""
-    if(_get(toChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM && _get(account, 'isConnected', false)) {
-      final = _get(account, 'address', '')
-    }
-    if(_get(toChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN && _get(walletSelector, "connected", false)) {
-      final = _get(walletSelector, "wallet[0].address", "");
-    }
-    setRecipient(final)
-  }, [ toChain, _get(account, 'isConnected', false), _get(walletSelector, "connected", false) ])
+    setRecipient(toWalletAddress)
+  }, [ toChain, toWalletAddress ])
 
   // reset if switch chains
   useEffect(() => {
@@ -171,7 +203,9 @@ const Bridge = () => {
     dispatch(setModal("SelectBridgeNetwork"))
   }
   const onInput = (value) => {
-    setInputValue(value)
+    // no more decimals than the token has on the from network
+    let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
+    setInputValue(_network ? limitDecimals(value, _get(_network, "decimals", 8)) : value)
   }
   const openModalSelectToken = () => {
     dispatch(setModal("SelectTokenToBridge"))
@@ -203,13 +237,35 @@ const Bridge = () => {
       let _token = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
       let _bridgeTo = BRIDGE_CHAINS.find(bridge => bridge.id == _get(toChain, "id", null));
       let _bridgeFrom = BRIDGE_CHAINS.find(bridge => bridge.id == _get(fromChain, "id", null));
-      let fullAmount = koilibUtils.parseUnits(inputValue, _get(_token, "decimals", 8));
+      let fullAmount = parseTokenAmount(inputValue, _get(_token, "decimals", 8));
+      if (fullAmount == null || fullAmount == "0") throw new Error("invalid amount");
       let fullPayment = koilibUtils.parseUnits(relayer ? _get(relayer, "payment") : "0", _get(_token, "decimals", 8));
 
       // bridge
       if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM) {
         let tx
-        _bridge = await EvmBridgeContract(_bridgeFrom.bridgeAddress, signer);
+        // the address of the bridge is only the bridge on the network of the from chain
+        if (!(await isSignerOnNetwork(signer, fromNetwork.expected))) throw new Error("wrong network");
+        if (route != BRIDGE_ROUTES_TYPES.VORTEX && route != BRIDGE_ROUTES_TYPES.WORMHOLE) throw new Error("no route");
+        if (route == BRIDGE_ROUTES_TYPES.WORMHOLE) {
+          // wormhole token bridge (portal): the guardians sign the transfer, the user redeems it on the to chain
+          let _wormholeTo = _get(_bridgeTo, "wormhole.chainId", null);
+          if (_wormholeTo == null) throw new Error("the to chain is not a wormhole chain");
+          if (_token.native == true) throw new Error("native tokens are not wired for wormhole routes");
+          let _tokenBridge = WormholeTokenBridgeContract(getBridgeContract(route, _bridgeFrom), signer);
+          let _core = WormholeCoreContract(await _tokenBridge.wormhole(), provider);
+          let messageFee = await _core.messageFee();
+          tx = await _tokenBridge.transferTokens(
+            _token.address,
+            fullAmount,
+            _wormholeTo,
+            toWormholeAddress(recipient),
+            0, // no fee for a relayer, the user redeems
+            wormholeNonce(),
+            { value: messageFee }
+          )
+        }
+        if (route == BRIDGE_ROUTES_TYPES.VORTEX) _bridge = await EvmBridgeContract(_bridgeFrom.bridgeAddress, signer);
         if (_token.native == true) {
           if (_bridge) {
             tx = await _bridge.wrapAndTransferETH(
@@ -318,10 +374,18 @@ const Bridge = () => {
       let _bridge = BRIDGE_CHAINS.find(bridge => bridge.id == _get(fromChain, "id", null));
       let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
       if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM) {
+        if (!(await isSignerOnNetwork(signer, fromNetwork.expected))) throw new Error("wrong network");
+        let _spender = getBridgeContract(route, _bridge);
+        if (!_spender) throw new Error("no route");
+        // the wormhole token bridge is a contract of a third party that its guardians can upgrade, approve only what is sent
+        let _allowance = route == BRIDGE_ROUTES_TYPES.WORMHOLE
+          ? parseTokenAmount(inputValue, _get(_network, "decimals", 8))
+          : ethers.constants.MaxUint256;
+        if (_allowance == null || _allowance == "0") throw new Error("invalid amount");
         _token = await EvmTokenContract(_network.address, signer);
         const tx = await _token.approve(
-          _bridge.bridgeAddress,
-          ethers.constants.MaxUint256
+          _spender,
+          _allowance
         )
         Snackbar.enqueueSnackbar(<Typography variant="h6">Transaction submitted</Typography>, {
           variant: 'info',
@@ -334,7 +398,7 @@ const Bridge = () => {
           persist: false,
           action: actionClose,
         })
-        result = ethers.constants.MaxUint256
+        result = _allowance
       }
 
       if(_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN) {
@@ -347,7 +411,8 @@ const Bridge = () => {
           let tx = new Transaction({ provider: providerKoin, signer: signerKoin })
 
           // add approve
-          let fullAmount = koilibUtils.parseUnits(inputValue, _get(_network, "decimals", 8));
+          let fullAmount = parseTokenAmount(inputValue, _get(_network, "decimals", 8));
+          if (fullAmount == null || fullAmount == "0") throw new Error("invalid amount");
           let { operation } = await _token.functions.approve({
             owner: addressOwner,
             spender: _bridge.bridgeAddress,
@@ -410,6 +475,8 @@ const Bridge = () => {
     if (loadingBridge) return true;
     if (inputValue == "" || inputValue == 0) return true;
     if (recipient == "" || recipient == null) return true;
+    // a wormhole transfer to something that is not an evm address can not be redeemed
+    if (route == BRIDGE_ROUTES_TYPES.WORMHOLE && !ethers.utils.isAddress(recipient)) return true;
     return false;
   }
 
@@ -438,6 +505,14 @@ const Bridge = () => {
     if (toChain === null) return (
       <Button variant="contained" size="large" sx={{ width: "100%" }} onClick={() => openModal("to")}>SELECT TO NETWORK</Button>
     )
+    // no direct route between the networks
+    if (route == null) return (
+      <Box sx={{ border: `1px solid ${theme.palette.background.light}`, borderRadius: "10px", padding: "10px 20px", textAlign: "center" }}>
+        <Typography variant="body1" sx={{ color: "text.grey1" }}>
+          {`There is no direct route between ${_get(fromChain, "name", "")} and ${_get(toChain, "name", "")}, bridge through Ethereum.`}
+        </Typography>
+      </Box>
+    )
     // conect wallet from chain
     if (checkChain(fromChain)) return (
       <Connectors chain={fromChain} />
@@ -445,6 +520,14 @@ const Bridge = () => {
     // conect wallet to chain
     if (checkChain(toChain)) return (
       <Connectors chain={toChain} />
+    )
+    // the wallet is on another evm network than the from chain
+    if (fromNetwork.wrongNetwork) return (
+      <BaseConnections
+        actions={
+          <Button variant="contained" size="large" sx={{ width: "100%" }} onClick={() => fromNetwork.switchNetwork().catch((e) => console.log(e))}>SWITCH TO {_get(fromChain, "name", "")}</Button>
+        }
+      />
     )
     // select network token
     if (tokenToBridge == null) return (
@@ -464,13 +547,17 @@ const Bridge = () => {
           <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "4px", fontSize: '1.0vh' }}>{txHash}</Typography>
           <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "4px", fontSize: '1.0vh' }}>Click CLAIM TOKENS to Redeem on Receiving Network</Typography>
         </Box>
-        <Button variant="contained" size="large" sx={{ width: "100%" }} onClick={() => navigate(`/redeem?tx=${txHash}&network=${_get(toChain, "id", "")}`)}>CLAIM TOKENS</Button>
+        {route == BRIDGE_ROUTES_TYPES.WORMHOLE ?
+          <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "1em", textAlign: "center" }}>The Wormhole guardians sign the transfer once {_get(fromChain, "name", "")} has finalized it, this takes around 20 minutes. Keep the transaction hash, you can redeem at any time later.</Typography>
+          : null}
+        <Button variant="contained" size="large" sx={{ width: "100%" }} onClick={() => navigate(`/redeem?tx=${txHash}&network=${_get(toChain, "id", "")}&from=${_get(fromChain, "id", "")}&to=${_get(toChain, "id", "")}`)}>CLAIM TOKENS</Button>
       </>
     )
 
     // check approval of tokens
     let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
-    let fullAmount = koilibUtils.parseUnits(inputValue, _get(_network, "decimals", 8));
+    // an amount that can not be parsed counts as zero here, the buttons stay disabled
+    let fullAmount = parseTokenAmount(inputValue, _get(_network, "decimals", 8)) || "0";
     if (_get(_network, "allowance", false) && new BigNumber(approval).lt(fullAmount) || new BigNumber(fullAmount).isZero()) return (
       <BaseConnections
         actions={
@@ -675,7 +762,7 @@ const Bridge = () => {
                     // numberPattern(balance, halfButtonClick);
                     numberPattern(balance, (b) => {
                       let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
-                      let fullAmount = koilibUtils.parseUnits(b, _get(_network, "decimals", 8));
+                      let fullAmount = parseTokenAmount(b, _get(_network, "decimals", 8)) || "0";
                       let _amount = new BigNumber(fullAmount).dividedBy(2).toFixed(0, 1);
                       let value = koilibUtils.formatUnits(_amount, _get(_network, "decimals", 8));
                       onInput(value);
@@ -715,6 +802,12 @@ const Bridge = () => {
               <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Receiving address:</Typography>
               <Typography variant="h6" component={"span"}>{recipient ? shortedAddress(recipient) : ".."}</Typography>
             </Box>
+            {route == BRIDGE_ROUTES_TYPES.WORMHOLE ?
+              <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
+                <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Route:</Typography>
+                <Typography variant="body1" component={"span"} sx={{ textAlign: "right" }}>Wormhole Token Bridge, around 20 minutes. You redeem on {_get(toChain, "name", "")} and pay the gas there in {_get(toChain, "symbol", "")}.</Typography>
+              </Box>
+              : null}
           </Box>
 
           {ActionLoad()}

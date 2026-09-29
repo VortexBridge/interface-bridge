@@ -34,6 +34,15 @@ let tokens = {
           allowance: true,
           native: false,
           address: "0xa50ad3a559A10f384a5bB2e27516f63E0B937b1A"
+        },
+        {
+          // wormhole wrapped vKOIN, wrappedAsset(2, vKOIN) on the base token bridge
+          chain: BRIDGE_CHAINS_NAMES.BASE,
+          decimals: 8,
+          symbol: "vKOIN",
+          allowance: true,
+          native: false,
+          address: "0x9b61660Cb1a6920E9c912570cD210020B956F34E"
         }
       ]
     },
