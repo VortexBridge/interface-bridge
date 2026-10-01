@@ -1,4 +1,4 @@
-import { SET_WALLET, SET_PROVIDER, SET_SIGNER, SET_CONNECTED } from "../constants"
+import { SET_WALLET, SET_PROVIDER, SET_SIGNER, SET_CONNECTED, SET_SOLANA_WALLET } from "../constants"
 
 // Actions
 export const setWallet = (data) => ({
@@ -13,6 +13,12 @@ export const setProvider = (data) => ({
 
 export const setSigner = (data) => ({
   type: SET_SIGNER,
+  payload: data
+})
+
+// the connected Solana wallet: { id, name, address } or null (its provider stays in helpers/solana.mjs)
+export const setSolanaWallet = (data) => ({
+  type: SET_SOLANA_WALLET,
   payload: data
 })
 
