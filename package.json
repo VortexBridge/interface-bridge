@@ -57,9 +57,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test:recipient": "node --test src/utils/recipient.test.mjs",
     "lint": "eslint \"src/**/*.{js,jsx}\"",
-    "lint:fix": "eslint \"src/**/*.{js,jsx}\" --fix"
+    "lint:fix": "eslint \"src/**/*.{js,jsx}\" --fix",
+    "test:recipient": "node --test src/utils/recipient.test.mjs"
   },
   "eslintConfig": {
     "extends": [

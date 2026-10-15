@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAccount, useConnect } from "wagmi";
 import { shortedAddress } from "../utils/display";
+import { recipientError as validateRecipient } from "../utils/recipient.mjs";
 
 // constants
 import { BRIDGE_CHAINS, BRIDGE_CHAINS_TYPES } from "../constants/chains";
@@ -31,7 +32,6 @@ import { setNetworkFrom, setNetworkTo, setTokenToBridge } from "../redux/actions
 // utils
 import { numberPattern } from "../utils/regex";
 import { parseTokenAmount, limitDecimals } from "../utils/amount";
-import { recipientError as validateRecipient } from "../utils/recipient.mjs";
 
 // hooks
 import { useEthersSigner } from "../hooks/useSigner"
@@ -330,8 +330,8 @@ const Bridge = () => {
     // false while a sent Koinos deposit is not seen in a block yet: then no "success" is shown
     let confirmed = true;
     try {
-      if (recipientError) throw new Error(recipientError);
       let _txhash = null;
+      if (recipientError) throw new Error(recipientError);
       let _token = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
       let _bridgeTo = BRIDGE_CHAINS.find(bridge => bridge.id == _get(toChain, "id", null));
       let _bridgeFrom = BRIDGE_CHAINS.find(bridge => bridge.id == _get(fromChain, "id", null));
@@ -536,8 +536,8 @@ const Bridge = () => {
     if (loadingApproval) return;
     let prompt = null;
     try {
-      if (recipientError) throw new Error(recipientError);
       let _bridge = BRIDGE_CHAINS.find(bridge => bridge.id == _get(fromChain, "id", null));
+      if (recipientError) throw new Error(recipientError);
       let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
       if (_get(fromChain, "chainType", "") != BRIDGE_CHAINS_TYPES.EVM) throw new Error("no approval on this network");
       if (!(await isSignerOnNetwork(signer, fromNetwork.expected))) throw new Error("wrong network");
@@ -596,8 +596,8 @@ const Bridge = () => {
   }
 
   const disabledButtonBridge = () => {
-    if (loadingBridge) return true;
     if (recipientError) return true;
+    if (loadingBridge) return true;
     if (inputValue == "" || inputValue == 0) return true;
     // more than the balance can not be sent (issue #57)
     if (new BigNumber(inputValue).isNaN() || new BigNumber(inputValue).gt(balance || 0)) return true;
@@ -718,6 +718,10 @@ const Bridge = () => {
       </>
     )
 
+    if (recipientError) return (
+      <BaseConnections actions={<Button disabled variant="contained" size="large" sx={{ width: "100%" }}>CHECK RECEIVING ADDRESS</Button>} />
+    );
+
     // check approval of tokens
     let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
     // an amount that can not be parsed counts as zero here, the buttons stay disabled
@@ -726,7 +730,7 @@ const Bridge = () => {
     if (!approvalFree && _get(_network, "allowance", false) && !new BigNumber(approval).eq(fullAmount) || new BigNumber(fullAmount).isZero()) return (
       <BaseConnections
         actions={
-          <Button disabled={loadingApproval || !!recipientError || new BigNumber(fullAmount).isZero()} variant="contained" size="large" sx={{ width: "100%" }} onClick={() => approveTransfers()}>{loadingApproval ? "loading..." : "APPROVE TOKEN"}</Button>
+          <Button disabled={loadingApproval || new BigNumber(fullAmount).isZero()} variant="contained" size="large" sx={{ width: "100%" }} onClick={() => approveTransfers()}>{loadingApproval ? "loading..." : "APPROVE TOKEN"}</Button>
         }
       />
     )
