@@ -54,6 +54,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
+    "test:rpc-reader": "node --test src/v2/json-reader.test.mjs",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
