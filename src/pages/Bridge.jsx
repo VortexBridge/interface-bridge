@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAccount, useConnect } from "wagmi";
 import { shortedAddress } from "../utils/display";
+import { recipientError as validateRecipient } from "../utils/recipient.mjs";
 
 // constants
 import { BRIDGE_CHAINS, BRIDGE_CHAINS_TYPES } from "../constants/chains";
@@ -94,6 +95,8 @@ const Bridge = () => {
   const [loadingBridge, setLoadingBridge] = useState(false);
   // step 1 of a two-step transfer: { from, via, to } (to = the final chain object) while it is being sent
   const [hopFinal, setHopFinal] = useState(null);
+  const recipientError = route === BRIDGE_ROUTES_TYPES.VORTEX
+    ? validateRecipient(recipient, _get(toChain, "chainType", ""), _get(toChain, "bridgeAddress", "")) : "";
 
   // efects
   useEffect(() => {
@@ -328,6 +331,7 @@ const Bridge = () => {
     let confirmed = true;
     try {
       let _txhash = null;
+      if (recipientError) throw new Error(recipientError);
       let _token = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
       let _bridgeTo = BRIDGE_CHAINS.find(bridge => bridge.id == _get(toChain, "id", null));
       let _bridgeFrom = BRIDGE_CHAINS.find(bridge => bridge.id == _get(fromChain, "id", null));
@@ -533,6 +537,7 @@ const Bridge = () => {
     let prompt = null;
     try {
       let _bridge = BRIDGE_CHAINS.find(bridge => bridge.id == _get(fromChain, "id", null));
+      if (recipientError) throw new Error(recipientError);
       let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
       if (_get(fromChain, "chainType", "") != BRIDGE_CHAINS_TYPES.EVM) throw new Error("no approval on this network");
       if (!(await isSignerOnNetwork(signer, fromNetwork.expected))) throw new Error("wrong network");
@@ -591,6 +596,7 @@ const Bridge = () => {
   }
 
   const disabledButtonBridge = () => {
+    if (recipientError) return true;
     if (loadingBridge) return true;
     if (inputValue == "" || inputValue == 0) return true;
     // more than the balance can not be sent (issue #57)
@@ -711,6 +717,10 @@ const Bridge = () => {
         <Button variant="contained" size="large" sx={{ width: "100%" }} onClick={() => navigate(`/redeem?tx=${txHash}&network=${_get(toChain, "id", "")}&from=${_get(fromChain, "id", "")}&to=${_get(toChain, "id", "")}`)}>CLAIM TOKENS</Button>
       </>
     )
+
+    if (recipientError) return (
+      <BaseConnections actions={<Button disabled variant="contained" size="large" sx={{ width: "100%" }}>CHECK RECEIVING ADDRESS</Button>} />
+    );
 
     // check approval of tokens
     let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
@@ -902,19 +912,23 @@ const Bridge = () => {
           }
 
           <Box marginTop={"1em"}>
-            <Typography variant="body1" sx={{ color: "text.grey1", paddingBottom: "4px" }}>Receiving address</Typography>
+            <Typography component="label" htmlFor="bridge-recipient" variant="body1" sx={{ color: "text.grey1", paddingBottom: "4px" }}>Receiving address</Typography>
             <Box paddingY={"6px"} paddingX={"10px"} borderRadius={"10px"} sx={{ backgroundColor: "background.light" }}>
               <Box sx={{ display: "flex", width: "100%" }}>
                 <InputBase
+                  id="bridge-recipient"
                   placeholder={""}
                   type={"text"}
                   value={recipient}
+                  error={!!recipientError}
+                  inputProps={{ "aria-describedby": recipientError ? "bridge-recipient-error" : undefined }}
                   disabled={loadingApproval || loadingBridge || hopFinal != null}
                   sx={{ width: "100%", fontSize: "16px", color: "text.main" }}
                   onChange={(e) => setRecipient(e.currentTarget.value)}
                 />
               </Box>
             </Box>
+            {recipientError ? <Typography id="bridge-recipient-error" role="alert" variant="body2" color="error">{recipientError}</Typography> : null}
           </Box>
 
           <Box sx={{ border: `1px solid ${theme.palette.background.light}`, borderRadius: "10px", padding: "10px 20px", display: "flex", alignContent: "center", flexDirection: "column" }} marginY={"1.4em"} display={"flex"} justifyContent={"space-between"}>
@@ -924,7 +938,7 @@ const Bridge = () => {
             </Box>
             <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
               <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Receiving address:</Typography>
-              <Typography variant="h6" component={"span"}>{recipient ? shortedAddress(recipient) : ".."}</Typography>
+              <Typography variant="h6" component={"span"}>{recipient && !recipientError ? shortedAddress(recipient) : ".."}</Typography>
             </Box>
             {route == BRIDGE_ROUTES_TYPES.WORMHOLE ?
               <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
