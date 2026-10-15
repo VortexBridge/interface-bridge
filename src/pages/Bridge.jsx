@@ -29,8 +29,7 @@ import { setModal, setModalData } from "../redux/actions/modals";
 import { setNetworkFrom, setNetworkTo, setTokenToBridge } from "../redux/actions/bridge";
 
 // utils
-import { numberPattern } from "../utils/regex";
-import { parseTokenAmount, limitDecimals } from "../utils/amount";
+import { parseTokenAmount, limitDecimals, tokenAmountError } from "../utils/amount";
 
 // hooks
 import { useEthersSigner } from "../hooks/useSigner"
@@ -263,14 +262,13 @@ const Bridge = () => {
     dispatch(setModalData({ side: side }))
     dispatch(setModal("SelectBridgeNetwork"))
   }
-  const onInput = (value) => {
-    // no more decimals than the bridge can carry: it counts in 8 decimals, and the destination token may have fewer
-    // (USDT/USDC on Ethereum: 6) — an amount with more decimals would be refused later anyway
-    let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
-    let _to = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(toChain, "id", null));
-    let _decimals = Math.min(_get(_network, "decimals", 8), _get(_to, "decimals", 8), 8);
-    setInputValue(_network ? limitDecimals(value, _decimals) : value)
-  }
+  // Validate manual edits without stripping characters or silently truncating the amount.
+  // Recompute on token/network changes too: both tokens and the bridge must carry the precision.
+  const amountFromToken = _get(tokenToBridge, "networks", []).find(net => net.chain == _get(fromChain, "id", null));
+  const amountToToken = _get(tokenToBridge, "networks", []).find(net => net.chain == _get(toChain, "id", null));
+  const amountDecimals = Math.min(_get(amountFromToken, "decimals", 8), _get(amountToToken, "decimals", 8), 8);
+  const amountError = tokenAmountError(inputValue, amountDecimals);
+  const onInput = (value) => setInputValue(String(value));
   const openModalSelectToken = () => {
     dispatch(setModal("SelectTokenToBridge"))
   }
@@ -280,6 +278,7 @@ const Bridge = () => {
     if(receiveChainSymbol === "..") {
       return "";
     }
+    if (amountError) return "..";
     // make sure value is a number
     if (isNaN(value)) {
       return 0;
@@ -327,6 +326,7 @@ const Bridge = () => {
     // false while a sent Koinos deposit is not seen in a block yet: then no "success" is shown
     let confirmed = true;
     try {
+      if (amountError) throw new Error(amountError);
       let _txhash = null;
       let _token = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
       let _bridgeTo = BRIDGE_CHAINS.find(bridge => bridge.id == _get(toChain, "id", null));
@@ -532,6 +532,7 @@ const Bridge = () => {
     if (loadingApproval) return;
     let prompt = null;
     try {
+      if (amountError) throw new Error(amountError);
       let _bridge = BRIDGE_CHAINS.find(bridge => bridge.id == _get(fromChain, "id", null));
       let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
       if (_get(fromChain, "chainType", "") != BRIDGE_CHAINS_TYPES.EVM) throw new Error("no approval on this network");
@@ -592,6 +593,7 @@ const Bridge = () => {
 
   const disabledButtonBridge = () => {
     if (loadingBridge) return true;
+    if (amountError) return true;
     if (inputValue == "" || inputValue == 0) return true;
     // more than the balance can not be sent (issue #57)
     if (new BigNumber(inputValue).isNaN() || new BigNumber(inputValue).gt(balance || 0)) return true;
@@ -720,7 +722,7 @@ const Bridge = () => {
     if (!approvalFree && _get(_network, "allowance", false) && !new BigNumber(approval).eq(fullAmount) || new BigNumber(fullAmount).isZero()) return (
       <BaseConnections
         actions={
-          <Button disabled={loadingApproval || new BigNumber(fullAmount).isZero()} variant="contained" size="large" sx={{ width: "100%" }} onClick={() => approveTransfers()}>{loadingApproval ? "loading..." : "APPROVE TOKEN"}</Button>
+          <Button disabled={loadingApproval || loadingBridge || !!amountError || new BigNumber(fullAmount).isZero()} variant="contained" size="large" sx={{ width: "100%" }} onClick={() => approveTransfers()}>{loadingApproval ? "loading..." : "APPROVE TOKEN"}</Button>
         }
       />
     )
@@ -830,7 +832,7 @@ const Bridge = () => {
 
           <Box paddingY={"10px"} paddingX={"15px"} marginTop={"1em"} borderRadius={"10px"} sx={{ backgroundColor: "background.light" }}>
             <Box display={"flex"} justifyContent={"space-between"} alignItems={"center"}>
-              <InputBase placeholder={"0"} type={"text"} value={inputValue} disabled={loadingApproval || loadingBridge} sx={{ fontSize: "22px", color: "text.main" }} onChange={(e) => numberPattern(e.currentTarget.value, onInput)} />
+              <InputBase placeholder={"0"} type={"text"} value={inputValue} error={!!amountError} inputProps={{ "aria-label": "Amount", inputMode: "decimal", "aria-describedby": amountError ? "bridge-amount-error" : undefined }} disabled={loadingApproval || loadingBridge} sx={{ fontSize: "22px", color: "text.main" }} onChange={(e) => onInput(e.currentTarget.value)} />
               <Button
                 disabled={loadingApproval || loadingBridge}
                 sx={{ width: { xs: "100%", sm: "40%", md: "25%" } }}
@@ -858,6 +860,7 @@ const Bridge = () => {
                 tokenToBridge ? <Typography variant="body1" component={"span"} sx={{ color: "text.grey2", marginTop: "5px" }}>Balance: {loadingBalance ? "loading..." : balance}</Typography> : null
               }
             </Box>
+            {amountError ? <Typography id="bridge-amount-error" role="alert" variant="body2" color="error">{amountError}</Typography> : null}
           </Box>
 
 
@@ -869,7 +872,7 @@ const Bridge = () => {
                   size="small"
                   sx={{ height: "36px", width: { xs: "100%", sm: "50%" }, marginRight: "5px", paddingX: "0px" }}
                   onClick={() => {
-                    numberPattern(balance, onInput);
+                    onInput(limitDecimals(balance, amountDecimals));
                   }}
                   disabled={loadingBalance || loadingApproval || loadingBridge}
                 >
@@ -882,14 +885,10 @@ const Bridge = () => {
                   variant="grey-contained"
                   size="small"
                   onClick={() => {
-                    // numberPattern(balance, halfButtonClick);
-                    numberPattern(balance, (b) => {
-                      let _network = _get(tokenToBridge, "networks", []).find(net => _get(net, 'chain', "") == _get(fromChain, "id", null));
-                      let fullAmount = parseTokenAmount(b, _get(_network, "decimals", 8)) || "0";
-                      let _amount = new BigNumber(fullAmount).dividedBy(2).toFixed(0, 1);
-                      let value = koilibUtils.formatUnits(_amount, _get(_network, "decimals", 8));
-                      onInput(value);
-                    });
+                    let fullAmount = parseTokenAmount(String(balance), _get(amountFromToken, "decimals", 8)) || "0";
+                    let _amount = new BigNumber(fullAmount).dividedBy(2).toFixed(0, 1);
+                    let value = koilibUtils.formatUnits(_amount, _get(amountFromToken, "decimals", 8));
+                    onInput(limitDecimals(value, amountDecimals));
                   }}
                   disabled={loadingBalance || loadingApproval || loadingBridge}
                 >
