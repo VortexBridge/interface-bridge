@@ -47,3 +47,28 @@ test("a stalled read is aborted", async () => {
   const reader = createJsonReader(Provider, "unused", { timeoutMs: 5, fetchFn: (_url, { signal }) => new Promise((_resolve, reject) => signal.addEventListener("abort", () => reject(new Error("aborted")))) });
   await assert.rejects(reader.call("chain.get_chain_id", {}), /timed out/);
 });
+
+test("correlated successful proto3 empty read responses normalize the omitted bytes default", async () => {
+  const operation = { contract_id: "fixture", entry_point: 1, args: "" };
+  for (const wire of [{ result: "" }, {}, { logs: [] }, { result: "CAE=" }]) {
+    const reader = createJsonReader(Provider, "unused", { fetchFn: async (_url, options) =>
+      result({ jsonrpc: "2.0", id: JSON.parse(options.body).id, result: wire }) });
+    assert.deepEqual(await reader.readContract(operation), { ...wire, result: wire.result ?? "" });
+  }
+});
+test("a missing outer result or malformed contract-read response never becomes zero", async () => {
+  const operation = { contract_id: "fixture", entry_point: 1, args: "" };
+  for (const malformed of [null, [], "", { result: null }, { result: 0 }, { result: false },
+    { logs: null }, { logs: [false] }, { error: "private upstream details" }]) {
+    let calls = 0;
+    const reader = createJsonReader(Provider, "unused", { fetchFn: async () => {
+      calls++; return result({ jsonrpc: "2.0", id: 1, result: malformed });
+    } });
+    await assert.rejects(reader.readContract(operation), /contract read returned an invalid result/);
+    assert.equal(calls, 1);
+  }
+  for (const reply of [{ jsonrpc: "2.0", id: 1 }, { jsonrpc: "2.0", id: 1, result: {}, error: {} }]) {
+    const reader = createJsonReader(Provider, "unused", { fetchFn: async () => result(reply) });
+    await assert.rejects(reader.readContract(operation), /invalid RPC envelope/);
+  }
+});

@@ -46,6 +46,18 @@ export function createJsonReader(Provider, url, { fetchFn = globalThis.fetch, ti
         throw new Error("Koinos read returned an invalid RPC envelope");
       // Do not display upstream error bodies: they can contain private URLs or arbitrary markup.
       if (Object.hasOwn(reply, "error")) throw new Error("Koinos RPC refused the read");
+      if (method === "chain.read_contract") {
+        const value = reply.result;
+        // The official witness omits a proto3-default empty bytes field: successful {} and
+        // {result:""} are equivalent. A missing OUTER RPC result still fails the envelope check.
+        if (!value || typeof value !== "object" || Array.isArray(value)
+            || Object.keys(value).some(key => key !== "result" && key !== "logs")
+            || (Object.hasOwn(value, "result") && typeof value.result !== "string")
+            || (Object.hasOwn(value, "logs") && (!Array.isArray(value.logs)
+              || value.logs.some(line => typeof line !== "string"))))
+          throw new Error("Koinos contract read returned an invalid result");
+        return Object.hasOwn(value, "result") ? value : { ...value, result: "" };
+      }
       return reply.result;
     } catch (error) {
       if (controller.signal.aborted) throw new Error("Koinos read timed out; check availability before retrying");
