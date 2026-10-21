@@ -5,6 +5,7 @@
 // partner token registered on the bridge, and the CURRENT validator set. The validator servers only return
 // signatures, and every signature is checked in the browser before it is used (vortex-v2.mjs).
 import { createVortex } from "./vortex-v2.mjs";
+import { membershipRpc } from "./membership-rpc.mjs";
 
 export const ETH_BRIDGE_ABI = [
   "function deposit(address token, uint256 amount, bytes25 recipient)",
@@ -259,16 +260,23 @@ export function createFlows({ ethers, koilib, fetch, cfg, koinosBridgeAbi, koino
   }
 
   // ------------------------------------------------------------------ signatures (verified) + the claim call
+  const membership = membershipRpc(fetch || globalThis.fetch);
   async function collectForEth(provider, claim) {
-    const b = eBridge(provider);
-    const quorum = vx.quorumFor((await bounded(() => b.validatorsLength())()).toNumber());
-    return vx.collect(claim, { expiry: vx.expiryFor(claim.direction), quorum, isValidator: (a) => b.isValidator(a) });
+    const read = async (method, args, signal) => eIface.decodeFunctionResult(method,
+      await membership.ethCall(provider, cfg.eth.networkChainId, cfg.eth.bridge, eIface.encodeFunctionData(method, args), signal))[0];
+    return vx.collect(claim, { expiry: vx.expiryFor(claim.direction), operationTimeoutMs: Math.min(rpcTimeoutMs, 20000), timeoutMs: Math.min(rpcTimeoutMs, 10000),
+      getValidatorCount: async ({ signal }) => (await read("validatorsLength", [], signal)).toNumber(),
+      isValidator: (a, { signal }) => read("isValidator", [a], signal) });
   }
   async function collectForKoinos(provider, claim) {
-    const n = (await bounded(kRead)(provider, "get_metadata")).nbValidators || 0;
-    const isValidator = async (a) => { const r = await kRead(provider, "get_validators", { start: a, limit: 1 });
-      return !!(r.addresses && r.addresses[0] === a); };
-    return vx.collect(claim, { expiry: vx.expiryFor(claim.direction), quorum: vx.quorumFor(n), isValidator });
+    const read = async (method, args, signal) => {
+      const cancellable = { readContract: (op) => membership.koinosRead(provider, op, signal) };
+      return (await kBridge(cancellable).functions[method](args)).result || {};
+    };
+    return vx.collect(claim, { expiry: vx.expiryFor(claim.direction), operationTimeoutMs: Math.min(rpcTimeoutMs, 20000), timeoutMs: Math.min(rpcTimeoutMs, 10000),
+      getValidatorCount: async ({ signal }) => (await read("get_metadata", {}, signal)).nbValidators || 0,
+      isValidator: async (a, { signal }) => { const r = await read("get_validators", { start: a, limit: 1 }, signal);
+        return !!(r.addresses && r.addresses[0] === a); } });
   }
   const collect = (providers, claim) => claim.direction === "k2e" ? collectForEth(providers.ethProvider, claim) : collectForKoinos(providers.koinosProvider, claim);
 

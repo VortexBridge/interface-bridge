@@ -193,8 +193,8 @@ export function createVortex({ ethers, fetch: fetchFn = globalThis.fetch, cfg })
   const KNOWN = [["not seen at finality", "deposit not final yet"], ["not ready", "not ready yet"], ["halted", "signing halted"],
     ["conflicting records", "conflicting records"], ["busy", "busy"], ["expiry must be", "expiry out of range"], ["record unavailable", "record unavailable"]];
   const reason = (status, text) => { const s = String(text || "").toLowerCase(); const k = KNOWN.find(([m]) => s.includes(m)); return k ? k[1] : `HTTP ${status}`; };
-  async function collect(claim, { expiry, isValidator, quorum, timeoutMs = 10000, operationTimeoutMs = 20000 }) {
-    if (!Number.isInteger(quorum) || quorum < 2 || quorum > 13) throw new Error("bad quorum");
+  async function collect(claim, { expiry, isValidator, getValidatorCount, quorum, timeoutMs = 10000, operationTimeoutMs = 20000 }) {
+    if (typeof getValidatorCount !== "function" && (!Number.isInteger(quorum) || quorum < 2 || quorum > 13)) throw new Error("bad quorum");
     if (typeof isValidator !== "function" || !["k2e", "e2k"].includes(claim.direction)) throw new Error("invalid collection request");
     if (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 10000 || !Number.isInteger(operationTimeoutMs) || operationTimeoutMs < 1 || operationTimeoutMs > 30000) throw new Error("invalid collection deadline");
     const c = { ...claim, depositNonce: BigInt(claim.depositNonce), expiry: BigInt(expiry) };
@@ -224,13 +224,21 @@ export function createVortex({ ethers, fetch: fetchFn = globalThis.fetch, cfg })
         })(), limit);
       } finally { clearTimeout(timer); ctrl.abort(); operation.signal.removeEventListener("abort", abort); }
     }
+    async function memberRead(fn) {
+      if (operation.signal.aborted || !remaining()) throw new Error("timeout");
+      const ctrl = new AbortController(), abort = () => ctrl.abort();
+      operation.signal.addEventListener("abort", abort, { once: true });
+      const ms = Math.min(timeoutMs, remaining()), timer = setTimeout(abort, ms);
+      try { return await withTimeout(Promise.resolve().then(() => fn({ signal: ctrl.signal })), ms); }
+      finally { clearTimeout(timer); ctrl.abort(); operation.signal.removeEventListener("abort", abort); }
+    }
     async function check(candidates) {
       const checked = await Promise.all(candidates.map(async (signature) => {
         if (operation.signal.aborted || !remaining()) return null;
         try {
           const sig = c.direction === "k2e" ? canonicalEth(signature) : canonicalKoinos(signature);
           const signer = c.direction === "k2e" ? U.verifyTypedData(ethDomain(), CLAIM_TYPES, ethValue(c), sig) : recoverKoinos(digest, sig);
-          if (!membership.has(signer)) membership.set(signer, withTimeout(Promise.resolve().then(() => isValidator(signer)), Math.min(timeoutMs, remaining())));
+          if (!membership.has(signer)) membership.set(signer, memberRead((options) => isValidator(signer, options)));
           return (await membership.get(signer)) === true && !operation.signal.aborted && remaining() ? [signer, sig] : null;
         } catch (e) { return null; }
       }));
@@ -256,6 +264,7 @@ export function createVortex({ ethers, fetch: fetchFn = globalThis.fetch, cfg })
       return signatures;
     }
     try {
+      if (typeof getValidatorCount === "function") quorum = quorumFor(await memberRead(getValidatorCount));
       if (expiresAt() <= BigInt(Date.now())) { issue("signature request expired"); }
       else if (collectionMode === "collector") {
         for (let i = 0; i < collectors.length && good.size < quorum && remaining() && !operation.signal.aborted; i++) {
