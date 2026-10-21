@@ -15,6 +15,10 @@ The build rejects validator URLs in collector mode before embedding environment 
 and VPN identity material on the servers, out of all `VITE_` variables and browser artifacts. Existing installations
 default to direct mode unless explicitly configured otherwise. Collector mode has no direct-origin fallback.
 
+The installed website's Content-Security-Policy must permit exactly the two configured public HTTPS origins
+in `connect-src`. Keeping an old self-only policy blocks collection even when server-side smoke tests pass.
+Keep every other CSP restriction and never add private origins or a wildcard.
+
 For each collection the client preserves the same claim and expiry, streams at most 16 KiB per collector answer,
 checks response metadata and bounded slots, recovers every signer against its own claim, checks current destination
 membership and deduplicates by signer. Four distinct validators are needed out of five, or all three out of three.
@@ -27,6 +31,33 @@ Verified partial results can be combined only for the identical claim/expiry. Th
 Destination validator-count reads share this same bound. The flows propagate AbortSignal into actual membership/count HTTP calls, preserve Ethereum chain ID and configured fallback weights/quorum, and use Koinos' selected koilib endpoint. The deadline cancels actual network work, not only a Promise.race wait. Custom reusable-client membership callbacks must propagate their supplied `{ signal }`. The page distinguishes signature-service
 unavailability, validators not ready, insufficient valid signatures, expiry and timeout. Claim preparation remains
 disabled without an independently verified quorum. The destination contract checks again at submission.
+
+Redeem also makes two bounded read-only `/healthz` requests when opened. If both are unavailable it shows
+a temporary collection warning with Retry; completed transfers remain independently readable. It cancels
+these requests on timeout/unmount and shows no positive readiness badge. A reachable collector says
+nothing about native validator health, membership or quorum; only verified collection results enable claims.
+
+## Installed pilot, 21 October 2026
+
+The actual private terminal-only VXTEST website uses primary/backup collectors on separate VPS hosts.
+Both are operated by Pablo and share his Tailscale control plane. Three original validator identities
+remain on their existing single host. This proves a private pilot, not independent operators or custody.
+The terminal-only experiment overlay remains separate from this repository's ordinary wallet flow.
+
+Real finalized, already-consumed deposits produced three independently verified current-member signatures
+in each direction. Actual primary outage, both-down refusal, recovery and split primary/backup partial
+retention passed without a blockchain transaction. The actual rendered site reads both completed deposits,
+rejects invalid inputs, preserves paused-state fencing and passes desktop/mobile checks. With both real
+collector services stopped it displays the collection warning while the completed receipt remains readable;
+restoring only the backup removes the warning and restores verified collection in both directions.
+
+Six rendered unclaimed/signature-state cases use explicit test fixtures. They are not new live transfers.
+The installed historical-claim collection checks use the same production client and real native signatures;
+already-consumed receipts correctly bypass collection on Redeem. Compatible collector-only website rollback
+was exercised with origin restrictions intact. See the coordinated server PR's sanitized installed evidence.
+Final pilot sign-off remains pending fresh all-three native readiness: the latest 20:00 UTC health check
+reports Ethereum source/no-progress and Koinos source failure/disagreement on two original instances while both collectors stay healthy.
+No native service was restarted and no source refusal was waived.
 
 ## Verification
 
