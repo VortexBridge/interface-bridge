@@ -77,6 +77,15 @@ Historical collection obtained 3/3 Ethereum-source signatures and 1/3 Koinos-sou
 the client refused the incomplete quorum. Both bridges remained paused. Final acceptance still
 requires a stable bounded all-three observation and genuine collection in both directions.
 
+The later complete 600-second observation retained 63/63 native HTTP 200 responses without reported
+problems. Nineteen of 21 snapshots had all three exactly caught up; two conservative monitor results
+were `catching_up` by 8/6 Koinos blocks and recovered by the next sample. These are not new RPC
+failures and are not relabeled ready: the strict all-samples monitor check remains false. Fresh real
+collection now verifies 3/3 current members in both directions, both pause reads are true, and both
+actual rendered completed receipts pass. See
+`evidence/collector-private-pilot-20261021/post-repair-native-window-and-historical-collection.json`.
+The pilot remains pending strict readiness acceptance; no client, signing fence or monitor was changed.
+
 ## Verification
 
 ```sh
