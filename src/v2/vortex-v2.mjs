@@ -19,6 +19,22 @@ const MAX_U64 = (1n << 64n) - 1n;
 
 export function createVortex({ ethers, fetch: fetchFn = globalThis.fetch, cfg }) {
   const U = ethers.utils;
+  const collectionMode = cfg.collectionMode || "direct";
+  if (!["direct", "collector"].includes(collectionMode)) throw new Error("unknown collection mode");
+  const collectors = collectionMode === "collector" ? validateCollectors(cfg) : [];
+  function validateCollectors(config) {
+    if ((config.validators || []).length) throw new Error("collector mode must not contain validator URLs");
+    if (!/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}$/.test(config.deployment || "")) throw new Error("collector deployment is required");
+    if (!Array.isArray(config.collectors) || config.collectors.length !== 2) throw new Error("primary and backup collectors are required");
+    const result = config.collectors.map((base) => {
+      const u = new URL(base);
+      const local = config.allowInsecureLocal === true && u.protocol === "http:" && ["127.0.0.1", "[::1]", "localhost"].includes(u.hostname);
+      if ((!local && u.protocol !== "https:") || u.username || u.password || u.search || u.hash || !["", "/"].includes(u.pathname)) throw new Error("invalid collector URL");
+      return u.origin;
+    });
+    if (new Set(result).size !== 2) throw new Error("collectors must have distinct URLs");
+    return result;
+  }
   const b58 = (s) => U.arrayify(U.base58.decode(s));
   const hex = (b) => U.hexlify(b);
   const b64url = {
@@ -177,37 +193,102 @@ export function createVortex({ ethers, fetch: fetchFn = globalThis.fetch, cfg })
   const KNOWN = [["not seen at finality", "deposit not final yet"], ["not ready", "not ready yet"], ["halted", "signing halted"],
     ["conflicting records", "conflicting records"], ["busy", "busy"], ["expiry must be", "expiry out of range"], ["record unavailable", "record unavailable"]];
   const reason = (status, text) => { const s = String(text || "").toLowerCase(); const k = KNOWN.find(([m]) => s.includes(m)); return k ? k[1] : `HTTP ${status}`; };
-  async function collect(claim, { expiry, isValidator, quorum, timeoutMs = 10000 }) {
-    if (!Number.isInteger(quorum) || quorum < 2) throw new Error("bad quorum");
-    const c = { ...claim, expiry: BigInt(expiry) };
-    const digest = claim.direction === "k2e" ? ethClaimDigest(c) : koinosClaimDigest(c);
-    const problems = [];
-    const answers = await Promise.all(cfg.validators.map(async (base) => {
-      const ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
-      const t = ctrl && setTimeout(() => ctrl.abort(), timeoutMs);
-      const who = plain(base.replace(/^https?:\/\//, "").replace(/\/$/, ""));
+  async function collect(claim, { expiry, isValidator, quorum, timeoutMs = 10000, operationTimeoutMs = 20000 }) {
+    if (!Number.isInteger(quorum) || quorum < 2 || quorum > 13) throw new Error("bad quorum");
+    if (typeof isValidator !== "function" || !["k2e", "e2k"].includes(claim.direction)) throw new Error("invalid collection request");
+    if (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 10000 || !Number.isInteger(operationTimeoutMs) || operationTimeoutMs < 1 || operationTimeoutMs > 30000) throw new Error("invalid collection deadline");
+    const c = { ...claim, depositNonce: BigInt(claim.depositNonce), expiry: BigInt(expiry) };
+    if (c.depositNonce < 1n || c.depositNonce > MAX_U64 || c.expiry < 1n || c.expiry > MAX_U64) throw new Error("claim integer out of range");
+    const digest = c.direction === "k2e" ? ethClaimDigest(c) : koinosClaimDigest(c);
+    const problems = [], good = new Map(), membership = new Map();
+    const end = Date.now() + operationTimeoutMs;
+    const operation = new AbortController();
+    const overallTimer = setTimeout(() => operation.abort(), operationTimeoutMs);
+    const remaining = () => Math.max(0, end - Date.now());
+    const expiresAt = () => c.expiry * (c.direction === "k2e" ? 1000n : 1n);
+    let answered = 0, notReady = false, usedBackup = false, deadlineExpired = false;
+    const issue = (text) => { if (problems.length < 3 && !problems.includes(text)) problems.push(text); };
+    async function request(base, path, max, ms) {
+      if (operation.signal.aborted || !remaining()) throw new Error("timeout");
+      const ctrl = new AbortController();
+      const abort = () => ctrl.abort();
+      operation.signal.addEventListener("abort", abort, { once: true });
+      const limit = Math.min(ms, remaining());
+      const timer = setTimeout(abort, limit);
       try {
-        const r = await fetchFn(`${base.replace(/\/$/, "")}/v2/claim/${claim.direction}/${claim.depositNonce}?expiry=${expiry}`, ctrl ? { signal: ctrl.signal } : {});
-        if (r.status !== 200) { let text = ""; try { const j = await readSmall(r); if (j && j.error) text = j.error; } catch (e) { /* keep the status */ }
-          problems.push(`${who}: ${reason(r.status, text)}`); return null; }
-        return await readSmall(r);
-      } catch (e) { problems.push(`${who}: no answer`); return null; } finally { if (t) clearTimeout(t); }
-    }));
-    // each answer: recover the signer of OUR message, then ask the chain whether it is a validator (in parallel, bounded)
-    const checked = await Promise.all(answers.map(async (a) => {
-      if (!a || typeof a.signature !== "string") return null;
-      try {
-        const sig = claim.direction === "k2e" ? canonicalEth(a.signature) : canonicalKoinos(a.signature);   // what gets submitted
-        const signer = claim.direction === "k2e" ? U.verifyTypedData(ethDomain(), CLAIM_TYPES, ethValue(c), sig) : recoverKoinos(digest, sig);
-        return (await withTimeout(Promise.resolve(isValidator(signer)), timeoutMs)) === true ? [signer, sig] : null;
-      } catch (e) { return null; }   // malformed / non-canonical / wrong message / no answer from the chain: ignore
-    }));
-    const good = new Map();   // signer -> signature (one per signer)
-    for (const x of checked) if (x && !good.has(x[0])) good.set(x[0], x[1]);
-    const list = [...good.entries()];
-    if (claim.direction === "k2e") list.sort((x, y) => (x[0].toLowerCase() < y[0].toLowerCase() ? -1 : 1));   // contract wants ascending signers
-    return { claim: c, digest, quorum, signatures: list.map((x) => x[1]).slice(0, quorum), signers: list.map((x) => x[0]), enough: list.length >= quorum,
-      problems: problems.slice(0, 3) };
+        // Bound even a non-cooperating custom fetch/body reader; native fetch also cancels the network work.
+        return await withTimeout((async () => {
+          const r = await fetchFn(base + path, { signal: ctrl.signal, redirect: "error", credentials: "omit", cache: "no-store" });
+          const body = await readSmall(r, max);
+          return { status: r.status, body };
+        })(), limit);
+      } finally { clearTimeout(timer); ctrl.abort(); operation.signal.removeEventListener("abort", abort); }
+    }
+    async function check(candidates) {
+      const checked = await Promise.all(candidates.map(async (signature) => {
+        if (operation.signal.aborted || !remaining()) return null;
+        try {
+          const sig = c.direction === "k2e" ? canonicalEth(signature) : canonicalKoinos(signature);
+          const signer = c.direction === "k2e" ? U.verifyTypedData(ethDomain(), CLAIM_TYPES, ethValue(c), sig) : recoverKoinos(digest, sig);
+          if (!membership.has(signer)) membership.set(signer, withTimeout(Promise.resolve().then(() => isValidator(signer)), Math.min(timeoutMs, remaining())));
+          return (await membership.get(signer)) === true && !operation.signal.aborted && remaining() ? [signer, sig] : null;
+        } catch (e) { return null; }
+      }));
+      for (const pair of checked) if (pair && !good.has(pair[0])) good.set(pair[0], pair[1]);
+    }
+    function collectorCandidates(rep) {
+      if (!rep || rep.version !== 1 || rep.deployment !== cfg.deployment || rep.direction !== c.direction || rep.depositNonce !== c.depositNonce.toString() || rep.expiry !== c.expiry.toString()
+          || !Array.isArray(rep.responses) || !Array.isArray(rep.unavailable) || rep.responses.length + rep.unavailable.length > 19) throw new Error("invalid collector response");
+      const ids = new Set(), signatures = [];
+      for (const item of [...rep.responses, ...rep.unavailable]) {
+        if (!item || !/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}$/.test(item.validatorId || "") || ids.has(item.validatorId)) throw new Error("invalid collector slots");
+        ids.add(item.validatorId);
+      }
+      const fixedReasons = ["timeout", "unavailable", "busy", "not ready", "deposit not final", "halted", "invalid response", "expiry rejected"];
+      for (const item of rep.unavailable) {
+        if (!fixedReasons.includes(item.reason)) throw new Error("invalid collector reason");
+        if (["not ready", "deposit not final", "halted"].includes(item.reason)) notReady = true;
+      }
+      for (const item of rep.responses) {
+        if (typeof item.signature !== "string" || item.signature.length > 200 || /[^\x20-\x7e]/.test(item.signature)) throw new Error("invalid signature field");
+        signatures.push(item.signature);
+      }
+      return signatures;
+    }
+    try {
+      if (expiresAt() <= BigInt(Date.now())) { issue("signature request expired"); }
+      else if (collectionMode === "collector") {
+        for (let i = 0; i < collectors.length && good.size < quorum && remaining() && !operation.signal.aborted; i++) {
+          usedBackup = i === 1;
+          try {
+            const { status, body } = await request(collectors[i], `/v1/claims/${c.direction}/${c.depositNonce}?expiry=${c.expiry}`, 16384, Math.min(timeoutMs, 5000));
+            if (status !== 200) { issue(i === 0 ? "primary collector unavailable" : "backup collector unavailable"); continue; }
+            const candidates = collectorCandidates(body);
+            answered++;
+            await check(candidates);
+          } catch (e) { issue(i === 0 ? "primary collector unavailable" : "backup collector unavailable"); }
+        }
+      } else {
+        if (!Array.isArray(cfg.validators) || cfg.validators.length < 1 || cfg.validators.length > 19) throw new Error("invalid validator endpoints");
+        const answers = await Promise.all(cfg.validators.map(async (base) => {
+          const who = plain(base.replace(/^https?:\/\//, "").replace(/\/$/, ""));
+          try {
+            const { status, body } = await request(base.replace(/\/$/, ""), `/v2/claim/${c.direction}/${c.depositNonce}?expiry=${c.expiry}`, 4096, timeoutMs);
+            if (status !== 200) { issue(`${who}: ${reason(status, body && body.error)}`); return null; }
+            return body && body.signature;
+          } catch (e) { issue(`${who}: no answer`); return null; }
+        }));
+        await check(answers.filter((s) => typeof s === "string"));
+      }
+      deadlineExpired = operation.signal.aborted || !remaining();
+    } finally { clearTimeout(overallTimer); operation.abort(); }
+    const expired = expiresAt() <= BigInt(Date.now());
+    const list = expired || deadlineExpired ? [] : [...good.entries()];
+    if (c.direction === "k2e") list.sort((x, y) => (x[0].toLowerCase() < y[0].toLowerCase() ? -1 : 1));
+    const enough = list.length >= quorum;
+    const outcome = enough ? "ready" : expired ? "expired" : deadlineExpired ? "timeout" : collectionMode === "collector" && !answered ? "collector unavailable" : notReady ? "validators not ready" : "insufficient signatures";
+    return { claim: c, digest, quorum, signatures: list.map((x) => x[1]).slice(0, quorum), signers: list.map((x) => x[0]), enough,
+      problems, outcome, usedBackup };
   }
 
   // ------------------------------------------------------------ transaction arguments

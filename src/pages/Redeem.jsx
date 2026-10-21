@@ -1,6 +1,6 @@
 /* eslint-disable */
 import moment from 'moment';
-import { Box, Button, ButtonGroup, Card, CardContent, CardHeader, Chip, CircularProgress, InputBase, LinearProgress, Link, styled, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Button, ButtonGroup, Card, CardContent, CardHeader, Chip, CircularProgress, InputBase, Link, styled, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useAccount } from 'wagmi';
 import { ethers } from 'ethers';
 import { get as _get } from "lodash";
@@ -18,6 +18,8 @@ import { BRIDGE_TOKENS, payoutSymbol } from "../constants/tokens";
 // helpers
 import { WormholeTokenBridgeContract, getWormholeMessage, fetchSignedVaa, parseTransferVaa, fromWormholeAddress, wormholescanTx } from "../helpers/wormhole";
 import { vortex, koinosReader, VORTEX_EVM } from "../v2";
+import { collectionStatus } from "../v2/collection-status.mjs";
+import SignatureCollection from "../components/SignatureCollection";
 import { listTransfers, forgetTransfer } from "../v2/history";
 import { journeyOf, forgetJourney } from "../v2/journey";
 
@@ -594,9 +596,7 @@ const Redeem = (props) => {
       }
       const got = await vortex.collect(vortexProvidersRef.current, claim);
       if (stale()) return;
-      // when the quorum is missing, say what the validators answered (plain text, shortened by the library)
-      const why = !got.enough && got.problems && got.problems.length ? ` — ${got.problems[0]}` : "";
-      setRecover({ vortex: true, claim, got, more: index + 1 < claims.length, status: (got.enough ? "ready to redeem" : "waiting for the validators" + why) + part });
+      setRecover({ vortex: true, claim, got, more: index + 1 < claims.length, status: collectionStatus(got) + part });
       tries.current = 0;
       setLoading(false);
       if (!got.enough) retry(15000);
@@ -914,22 +914,8 @@ const Redeem = (props) => {
                     <Link target="_blank" rel="noopener noreferrer" href={`${_get(fromChain, "explorer", "")}/${encodeURIComponent(String(sourceTX).trim())}`}>View on the explorer</Link>
                   </Box>
                   : null}
-                {_get(recover, "got", null) && !_get(recover, "completed", false) ?
-                  <>
-                    <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
-                      <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Validator signatures:</Typography>
-                      <Typography variant="h6" component={"span"}>{`${_get(recover, "got.signers", []).length} verified, ${_get(recover, "got.quorum", "")} needed`}</Typography>
-                    </Box>
-                    <LinearProgress variant="determinate" aria-label="validator signatures verified"
-                      color={_get(recover, "got.enough", false) ? "success" : "primary"}
-                      value={Math.min(100, 100 * _get(recover, "got.signers", []).length / Math.max(1, Number(_get(recover, "got.quorum", 1))))}
-                      sx={{ height: 6, borderRadius: 3, marginY: "6px" }} />
-                    <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
-                      <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Signatures valid until:</Typography>
-                      <Typography variant="h6" component={"span"}>{moment(expiryMs(_get(recover, "got", null))).format("DD-MM-YYYY, HH:mm")}</Typography>
-                    </Box>
-                  </>
-                  : null}
+                {_get(recover, "got", null) && !_get(recover, "completed", false)
+                  ? <SignatureCollection got={recover.got} /> : null}
                 {_get(recover, "claimTx", null) && _get(toChain, "explorer", "") ?
                   <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
                     <Typography variant="body1" component={"span"} sx={{ color: "text.grey2" }}>Claim:</Typography>
