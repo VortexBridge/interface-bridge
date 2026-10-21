@@ -66,6 +66,17 @@ final sample retains an Ethereum source refusal as well. Both pause reads stay t
 was waived and no transaction was sent. See `evidence/collector-private-pilot-20261021/installed-native-cadence-20261021.json` for the retained
 bounded observation. Collector reachability never substitutes for consistent native readiness.
 
+A later repair affects only the existing Ethereum witness gateway: one same-provider retry of an
+identical read on HTTP 408, inside the remaining original transport timeout. Eleven local tests,
+an actual recovered 408 and installed paired finalized reads pass; collector/client sources and
+native validator processes are unchanged. The patch and installed proof are retained in
+`evidence/collector-private-pilot-20261021/installed-ethereum-witness-408-repair.json`.
+The first subsequent sample passed Ethereum on all three instances but refused Koinos on two, with
+834 blocks between reported finality thresholds. No new 600-second window started from that refusal.
+Historical collection obtained 3/3 Ethereum-source signatures and 1/3 Koinos-source signatures;
+the client refused the incomplete quorum. Both bridges remained paused. Final acceptance still
+requires a stable bounded all-three observation and genuine collection in both directions.
+
 ## Verification
 
 ```sh

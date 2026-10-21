@@ -1,0 +1,42 @@
+--- a/ethereum-read-proxy-r3-shared-verified-tls.py
++++ b/ethereum-read-proxy-r4-bounded-408.py
+@@ -120,12 +120,33 @@
+         'Content-Type': 'application/json', 'Accept': 'application/json',
+         'User-Agent': 'Vortex-private-read-gateway/1',
+     })
+-    with opener.open(req, timeout=_timeout) as reply:
+-        if reply.status != 200:
+-            raise ValueError('upstream unavailable')
+-        body = reply.read(MAX_RESPONSE + 1)
+-        if len(body) > MAX_RESPONSE:
+-            raise ValueError('upstream response exceeds bound')
++    deadline = time.monotonic() + _timeout
++    for attempt in range(2):
++        remaining = deadline - time.monotonic()
++        if remaining <= 0:
++            raise ValueError('bounded upstream read elapsed')
++        try:
++            reply = opener.open(req, timeout=remaining)
++        except urllib.error.HTTPError as error:
++            # Repeat only an actual witness HTTP 408, before accepting any body.
++            # validate() above excludes writes. The same request, provider and
++            # original transport time budget apply to both attempts.
++            if (attempt == 0 and upstream == UPSTREAMS['witness'][0]
++                    and error.code == 408 and time.monotonic() < deadline):
++                error.close()
++                print('{"scope":"ethereum-read-transient-retry","httpStatus":408,"attempt":2}',
++                      file=sys.stderr, flush=True)
++                continue
++            raise
++        with reply:
++            if reply.status != 200:
++                raise ValueError('upstream unavailable')
++            body = reply.read(MAX_RESPONSE + 1)
++            if len(body) > MAX_RESPONSE:
++                raise ValueError('upstream response exceeds bound')
++        if time.monotonic() > deadline:
++            raise ValueError('bounded upstream read elapsed')
++        break
+     result = strict_json(body)
+     replies = result if isinstance(result, list) else [result]
+     if isinstance(request, list) != isinstance(result, list) or len(rows) != len(replies):
