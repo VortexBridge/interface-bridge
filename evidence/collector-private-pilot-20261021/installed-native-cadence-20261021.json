@@ -1,0 +1,454 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-21T20:47:40.633833+00:00",
+  "scope": "Actual polling-only native repair after installed collector pilot; acceptance remains pending",
+  "installedPilotAccepted": false,
+  "pending": "Consistent native readiness: public Koinos witness lag and intermittent Ethereum source failures remain; credentials are authorized",
+  "existingCredentialReuseAuthorizedByDirectOwner": true,
+  "newPlaintextCredentialCopies": 0,
+  "changes": {
+    "koinosPollSeconds": {
+      "before": 3,
+      "after": 15
+    },
+    "ethereumPollSeconds": {
+      "before": 3,
+      "after": 30
+    },
+    "manualNativeRestarts": 3,
+    "rollingInstancesPassedFullNativeReadiness": [
+      1,
+      2,
+      3
+    ],
+    "nativeBinarySha256Unchanged": "90c07d1278df1005e52fb3dbb2f88056f0752a5d91dae3c6f9f7c3d9c91eaf49",
+    "originalKeysUnitsIdentitiesSourcesAndJournalsPreserved": true,
+    "nativeStoreFingerprintUnchanged": true,
+    "nativeConfigLoaderQualificationPassed": true,
+    "anchorMaxAgeSecondsUnchanged": 120,
+    "quorumUnchanged": "3-of-3",
+    "nativeStoreResetArchivedOrHistorySkipped": false,
+    "configurationHashes": [
+      {
+        "instance": 1,
+        "before": "43995347b41632247597c6a78cd045282a932470e1f205176e904445bce8e788",
+        "after": "4925b76499a944dadd25b16b151f82c42bf5a918e7922f0169c3bbc3e3090e1a"
+      },
+      {
+        "instance": 2,
+        "before": "9eb89957b6d61062d635260a5c2742a96895b18a78f763f16a35bfdf3e417daf",
+        "after": "25d3d48d6ddf95f76ed5f5705cb8ee68876565b53c34f50e998e5e350f6521f8"
+      },
+      {
+        "instance": 3,
+        "before": "32da7e0b7e9b8d22228db703d672ada3cea2f240a0f320d97e9e3152a6fbc8a9",
+        "after": "20aac868b854b2d2b61bd8783bcdc563320a8355d38784806e2f6cd1b8bb28a5"
+      }
+    ]
+  },
+  "actualNativeObservation": {
+    "recordedAt": "2026-10-21T20:47:09.704543+00:00",
+    "observationSeconds": 600.16,
+    "sampleCount": 21,
+    "allSamplesAllThreeReady": false,
+    "allThreeReadySamples": 3,
+    "samples": [
+      {
+        "at": "2026-10-21T20:37:09.559119+00:00",
+        "httpStatus": [
+          200,
+          503,
+          200
+        ],
+        "ready": [
+          true,
+          false,
+          true
+        ]
+      },
+      {
+        "at": "2026-10-21T20:37:39.566067+00:00",
+        "httpStatus": [
+          503,
+          503,
+          503
+        ],
+        "ready": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "at": "2026-10-21T20:38:09.571826+00:00",
+        "httpStatus": [
+          200,
+          200,
+          200
+        ],
+        "ready": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "at": "2026-10-21T20:38:39.578031+00:00",
+        "httpStatus": [
+          503,
+          503,
+          503
+        ],
+        "ready": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "at": "2026-10-21T20:39:09.584786+00:00",
+        "httpStatus": [
+          503,
+          503,
+          503
+        ],
+        "ready": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "at": "2026-10-21T20:39:39.592673+00:00",
+        "httpStatus": [
+          503,
+          503,
+          503
+        ],
+        "ready": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "at": "2026-10-21T20:40:09.597287+00:00",
+        "httpStatus": [
+          503,
+          503,
+          503
+        ],
+        "ready": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "at": "2026-10-21T20:40:39.605126+00:00",
+        "httpStatus": [
+          503,
+          503,
+          200
+        ],
+        "ready": [
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "at": "2026-10-21T20:41:09.615994+00:00",
+        "httpStatus": [
+          503,
+          503,
+          200
+        ],
+        "ready": [
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "at": "2026-10-21T20:41:39.624128+00:00",
+        "httpStatus": [
+          503,
+          200,
+          200
+        ],
+        "ready": [
+          false,
+          true,
+          true
+        ]
+      },
+      {
+        "at": "2026-10-21T20:42:09.631755+00:00",
+        "httpStatus": [
+          503,
+          200,
+          503
+        ],
+        "ready": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "at": "2026-10-21T20:42:39.640683+00:00",
+        "httpStatus": [
+          200,
+          503,
+          200
+        ],
+        "ready": [
+          true,
+          false,
+          true
+        ]
+      },
+      {
+        "at": "2026-10-21T20:43:09.646383+00:00",
+        "httpStatus": [
+          200,
+          200,
+          200
+        ],
+        "ready": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "at": "2026-10-21T20:43:39.653860+00:00",
+        "httpStatus": [
+          503,
+          503,
+          503
+        ],
+        "ready": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "at": "2026-10-21T20:44:09.661153+00:00",
+        "httpStatus": [
+          200,
+          200,
+          200
+        ],
+        "ready": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "at": "2026-10-21T20:44:39.667697+00:00",
+        "httpStatus": [
+          200,
+          503,
+          200
+        ],
+        "ready": [
+          true,
+          false,
+          true
+        ]
+      },
+      {
+        "at": "2026-10-21T20:45:09.674819+00:00",
+        "httpStatus": [
+          503,
+          503,
+          200
+        ],
+        "ready": [
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "at": "2026-10-21T20:45:39.681222+00:00",
+        "httpStatus": [
+          200,
+          200,
+          503
+        ],
+        "ready": [
+          true,
+          true,
+          false
+        ]
+      },
+      {
+        "at": "2026-10-21T20:46:09.689641+00:00",
+        "httpStatus": [
+          503,
+          200,
+          503
+        ],
+        "ready": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "at": "2026-10-21T20:46:39.695303+00:00",
+        "httpStatus": [
+          503,
+          503,
+          200
+        ],
+        "ready": [
+          false,
+          false,
+          true
+        ]
+      },
+      {
+        "at": "2026-10-21T20:47:09.704344+00:00",
+        "httpStatus": [
+          503,
+          200,
+          503
+        ],
+        "ready": [
+          false,
+          true,
+          false
+        ]
+      }
+    ],
+    "sourceErrorCounts": [
+      {
+        "instance": 1,
+        "categories": {
+          "lib-regression": 17,
+          "other-native-message": 9,
+          "gateway-502": 9
+        }
+      },
+      {
+        "instance": 2,
+        "categories": {
+          "lib-regression": 25,
+          "other-native-message": 2,
+          "gateway-502": 2
+        }
+      },
+      {
+        "instance": 3,
+        "categories": {
+          "lib-regression": 17,
+          "other-native-message": 1,
+          "gateway-502": 1
+        }
+      }
+    ],
+    "finalNativeProblems": [
+      {
+        "instance": 1,
+        "problems": [
+          "eth: a data source failed or the sources disagree (details in the local log)"
+        ]
+      },
+      {
+        "instance": 2,
+        "problems": []
+      },
+      {
+        "instance": 3,
+        "problems": [
+          "koinos: a data source failed or the sources disagree (details in the local log)",
+          "k2e: not ready to sign (source-chain finality not re-validated recently)"
+        ]
+      }
+    ]
+  },
+  "actualPairedKoinosSourceRead": {
+    "observedAt": "2026-10-21T20:39:54.653022+00:00",
+    "reads": [
+      {
+        "sourceRole": "primary",
+        "method": "chain.get_head_info",
+        "httpStatus": 200,
+        "head": "40406346",
+        "headDerivedLib": "40406286"
+      },
+      {
+        "sourceRole": "primary",
+        "method": "chain.get_fork_heads",
+        "httpStatus": 200,
+        "committedLib": "40406286"
+      },
+      {
+        "sourceRole": "witness",
+        "method": "chain.get_head_info",
+        "httpStatus": 200,
+        "head": "40405924",
+        "headDerivedLib": "40405864"
+      },
+      {
+        "sourceRole": "witness",
+        "method": "chain.get_fork_heads",
+        "httpStatus": 200,
+        "committedLib": "40405864"
+      }
+    ]
+  },
+  "actualPostChangeHistoricalCollection": {
+    "observedAt": "2026-10-21T20:42:19.788Z",
+    "passed": false,
+    "results": [
+      {
+        "direction": "e2k",
+        "signatureCount": 3,
+        "quorum": 3,
+        "outcome": "ready",
+        "usedBackup": false,
+        "sourceAlreadyConsumed": true,
+        "elapsedMs": 750
+      },
+      {
+        "direction": "k2e",
+        "signatureCount": 2,
+        "quorum": 3,
+        "outcome": "validators not ready",
+        "usedBackup": true,
+        "sourceAlreadyConsumed": true,
+        "elapsedMs": 1530
+      }
+    ],
+    "observedPauseStates": {
+      "eth": true,
+      "koinos": true
+    },
+    "newBlockchainTransactions": 0
+  },
+  "credentialHandling": "Existing encrypted source and fixed root/FIFO consumer; values used in memory, no new login grant or plaintext copy",
+  "evidenceSha256": {
+    "nativeLoaderQualification": "c2d5053d4d7a8ba6718f0f2e9d5347d9359b34c6bb0fe6d430f49e41d5356ff5",
+    "directHumanAuthority": "a26ff44ee50c0c787e8f169719cfeef25744fb6f9ddc96dd08cb05c663fad1a2",
+    "independentCurrentReadback": "3c20b8c9a32ee79d651c7aa1c5f8c67b4f1ea9adc30beb1d967e6911922f9d4b",
+    "rootStabilityReceipt": "6cbaf9d91e994b3a9e60575766f9558a890ace70c8544eb5bdf4a68b8f7f9b7c",
+    "actualHistoricalCollection": "73c83703dcdeb94e8b1fc3fa1ae5e70b053fb2024129b1698d9fffbf439254a4"
+  },
+  "limits": [
+    "Polling change reduces configured baseline request frequency; it does not certify RPC capacity or continuous availability",
+    "The public witness returned a committed Koinos height 422 blocks behind the private primary in the bounded paired read",
+    "Final observation also retains an Ethereum data-source refusal",
+    "No source switch, lowered quorum, relaxed proof, history reset or repeated restart was used to obtain a pass"
+  ],
+  "blockchainTransactionsSent": 0,
+  "telegramMessagesSent": 0,
+  "purchases": 0,
+  "excludedHostTouched": false
+}

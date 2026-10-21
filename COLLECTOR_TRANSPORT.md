@@ -55,9 +55,16 @@ Six rendered unclaimed/signature-state cases use explicit test fixtures. They ar
 The installed historical-claim collection checks use the same production client and real native signatures;
 already-consumed receipts correctly bypass collection on Redeem. Compatible collector-only website rollback
 was exercised with origin restrictions intact. See the coordinated server PR's sanitized installed evidence.
-Final pilot sign-off remains pending fresh all-three native readiness: the latest 20:00 UTC health check
-reports Ethereum source/no-progress and Koinos source failure/disagreement on two original instances while both collectors stay healthy.
-No native service was restarted and no source refusal was waived.
+Final pilot sign-off remains pending consistent all-three native readiness. A subsequent owner-authorized,
+native-loader-qualified polling-only adjustment uses Koinos 15 seconds and Ethereum 30 seconds, with
+three sequential guarded restarts. The original binary, sources, keys, history, quorum and 120-second
+signing fence are unchanged. The public Koinos witness still sometimes trails the private primary by
+more than 400 blocks. Post-change collection gets 3/3 signatures in Ethereum-to-Koinos and only 2/3 in
+the reverse direction; verified partials survive backup fallback and the client correctly refuses the
+incomplete quorum. The 600-second observation has all three ready in only 3 of 21 samples, and its
+final sample retains an Ethereum source refusal as well. Both pause reads stay true; no source refusal
+was waived and no transaction was sent. See `evidence/collector-private-pilot-20261021/installed-native-cadence-20261021.json` for the retained
+bounded observation. Collector reachability never substitutes for consistent native readiness.
 
 ## Verification
 
