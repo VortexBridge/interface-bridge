@@ -17,9 +17,10 @@ import { BRIDGE_TOKENS, payoutSymbol } from "../constants/tokens";
 
 // helpers
 import { WormholeTokenBridgeContract, getWormholeMessage, fetchSignedVaa, parseTransferVaa, fromWormholeAddress, wormholescanTx } from "../helpers/wormhole";
-import { vortex, koinosReader, VORTEX_EVM } from "../v2";
+import { vortex, koinosReader, VORTEX_EVM, collection } from "../v2";
 import { collectionStatus } from "../v2/collection-status.mjs";
 import SignatureCollection from "../components/SignatureCollection";
+import CollectorAvailability from "../components/CollectorAvailability";
 import { listTransfers, forgetTransfer } from "../v2/history";
 import { journeyOf, forgetJourney } from "../v2/journey";
 
@@ -792,6 +793,7 @@ const Redeem = (props) => {
       <Card variant="outlined" sx={{ maxWidth: "600px", marginX: "auto", marginBottom: "20px", borderRadius: "10px", padding: "15px 20px" }}>
         <CardHeader title="REDEEM" sx={{ paddingBottom: "4px" }} />
         <CardContent>
+          <CollectorAvailability collectors={route === BRIDGE_ROUTES_TYPES.VORTEX && collection.cfg.collectionMode === "collector" ? collection.cfg.collectors : null} />
           <Box marginY={".8em"} display={"flex"} justifyContent={"space-between"} alignItems={"center"} sx={{ flexDirection: { xs: "column", md: "row" } }}>
             <Chip variant={"outlined"} sx={{
               padding: "3px",

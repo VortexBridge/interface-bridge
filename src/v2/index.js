@@ -12,7 +12,7 @@ export { KIND } from "./flows.mjs";
 export const VORTEX_KOINOS = BRIDGE_CHAINS.find((c) => c.chainType == BRIDGE_CHAINS_TYPES.KOIN) || null;
 export const VORTEX_EVM = BRIDGE_CHAINS.find((c) => c.chainType == BRIDGE_CHAINS_TYPES.EVM && c.bridgeAddress) || null;
 
-const collection = collectionConfig(import.meta.env);
+export const collection = collectionConfig(import.meta.env);
 
 const configured = !!(VORTEX_KOINOS && VORTEX_EVM && collection.ready && ethers.utils.isAddress(VORTEX_EVM.bridgeAddress)
   && VORTEX_EVM.bridgeAddress != ethers.constants.AddressZero);
