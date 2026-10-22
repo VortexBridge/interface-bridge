@@ -37,7 +37,42 @@ a temporary collection warning with Retry; completed transfers remain independen
 these requests on timeout/unmount and shows no positive readiness badge. A reachable collector says
 nothing about native validator health, membership or quorum; only verified collection results enable claims.
 
-## Latest actual legacy source recovery — 22 October 2026
+## Owner-approved free Ethereum reader cutover — 22 October 2026
+
+The owner requested a free dRPC replacement with no weaker checks. The installed Ethereum witness
+now uses BlockPI's public endpoint. PublicNode remains the primary for ordinary reads. Only primary
+`eth_getLogs` uses MEV Blocker's free endpoint, independently corroborated by BlockPI. Koinos still
+uses private Teleno plus the owner's existing legacy witness; no Koinos source changed in this cutover.
+
+The history-only repair is necessary: the old primary history route returned no Deposit in a containing
+100/1,000-block range, including the native wire format, while its exact-block query returned the real
+canonical event. Those refusals are retained. The replacement pair agrees on the complete actual
+1,000-block trial range, the original deployment sample and the finalized canonical block. Separate
+installed process/source/drop-in/limits and loopback readback passes. Rejected free candidates were
+not installed or retried through rate limits.
+
+Both gateway source changes are exact endpoint substitutions. The original files are retained. TLS
+verification, disabled redirects/environment proxies, method whitelist, body/concurrency bounds,
+10-second budget and the existing single conditional 408 retry remain unchanged. No fallback silently
+converts disagreement into agreement. Native binary/configuration, identities, keys, full history,
+120-second signing fence, finality and 3-of-3 transfer quorum are unchanged. Only the two read gateways
+were manually restarted once each; the three native processes, collectors and website were preserved.
+
+The unchanged strict window now passes: all 21 samples over 600.20 seconds have all three validators ready,
+with 63 native HTTP 200 replies and no source/signing problems. The exact matched gateway journal has no
+recorded refusal or unclassified message. Native PIDs and automatic restart counts are unchanged.
+Fresh primary-first and backup-first requests each return3/3 verified current members in both directions
+for the same already-consumed deposits; actual request origins are checked. Both bridges remain paused.
+The current rendered website shows both real 1 VXTEST receipts redeemed, disabled Redeemed buttons and
+fresh both-chain paused status. All 36 retained accepted security/recovery receipts still match their hashes.
+
+Installed private-pilot technical acceptance passes. Earlier refusals remain historical evidence.
+This bounded observation is not a continuous-availability guarantee. The public Ethereum services are
+distinct provider routes; backend physical independence and independent operator custody are not certified.
+
+See `evidence/collector-private-pilot-20261021/free-ethereum-reader-cutover-20261022.json` for every sanitized sample and immutable receipt digests.
+
+## Earlier actual legacy source recovery — 22 October 2026
 
 The approved Koinos witness stalled while its RPC container remained up. A single guarded restart of
 the existing P2P container restored current block ingestion. Independent readback verifies all thirteen

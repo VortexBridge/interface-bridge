@@ -1,0 +1,941 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-22T16:40:56.107310+00:00",
+  "scope": "Actual installed same private collector pilot after owner-requested free Ethereum reader replacement; no new transfer",
+  "installedPilotRuntimeAccepted": true,
+  "sourceProfile": {
+    "ethereumOrdinaryPrimary": "PublicNode unchanged",
+    "ethereumPrimaryLogsOnly": "MEV Blocker public no-key endpoint",
+    "ethereumWitness": "BlockPI public endpoint without an API key; existing aggregation in 100-block ranges retained",
+    "koinos": "Private Teleno primary and owner-operated private legacy witness unchanged",
+    "witnessOfficialEndpointSource": "https://blockpi.io/chain/ethereum/",
+    "historyOfficialEndpointSource": "https://docs.mevblocker.io/reference/api/transaction-endpoints",
+    "historyFreeAndPermissionlessSource": "https://docs.mevblocker.io/",
+    "newAccountOrPaidSubscription": false,
+    "primaryOrdinaryEndpoint": "https://ethereum-rpc.publicnode.com"
+  },
+  "demonstratedAdditionalHistoryRepair": {
+    "oldPrimaryHistoryContainingRangeOmittedActualDeposit": true,
+    "exactBlockOnOldHistoryReturnedCanonicalDeposit": true,
+    "nativeWireFormatAlsoOmittedDeposit": true,
+    "newPairMatchesFull1000BlockActualTrialRange": true,
+    "originalDeploymentHistorySampleMatches": true,
+    "rejectedAndMissingDataAttemptsRetained": true,
+    "noMissingLogRelabeledAgreement": true
+  },
+  "sourceArtifacts": {
+    "originalWitnessSha256": "564cc1ce9abc25fe97590644a3b30580ce75ef6f0f5f4a1fab67344fcb1fc282",
+    "newWitnessSha256": "605eb32894513cc54168f713d4499b31f67f3da7248759a9e96c3de08fa9a898",
+    "originalPrimarySha256": "53aa6c1823dec4814de241b0f36eb05c10c24ec0ccb23578f69c82bd082cfb86",
+    "newHistoryOnlyPrimarySha256": "2e595b883276e051d6c51bd396a238c58fe7fac45886158986fa1e9312325de0",
+    "reverseExactEndpointOnlyDiffsVerified": true,
+    "originalFilesRetained": true,
+    "nativeBinarySha256": "90c07d1278df1005e52fb3dbb2f88056f0752a5d91dae3c6f9f7c3d9c91eaf49",
+    "nativeBinaryConfigurationKeysHistoryQuorumAndGuardsChanged": false
+  },
+  "transportQualification": {
+    "retainedLocalTestsPassed": 11,
+    "localFixtureScopeOnly": true,
+    "initialFixtureDefaultRebindingFailureRetained": true,
+    "tlsHostnameChecksAndDisabledProxyRedirectsPreserved": true,
+    "readOnlyWhitelistRequestResponseConcurrencyAndDeadlineBoundsPreserved": true,
+    "singleExistingIdentical408RetryNotEscalated": true,
+    "actualShadowMainnetContractMembershipAndHistoryPassed": true,
+    "separateInstalledProcessDropinOwnerModeLimitsAndReadbackPassed": true,
+    "actualInstalledCommonFinalized": {
+      "number": 26249229,
+      "hash": "0x0b5f790369df41129706ea3421b00c4cd8c7e48a70327605ce544180eaa8ceff"
+    },
+    "manualReadGatewayRestarts": 2,
+    "nativeRestarts": 0,
+    "collectorOrWebsiteRestarted": false
+  },
+  "nativeWindow": {
+    "since": "2026-10-22T16:19:43.180971+00:00",
+    "until": "2026-10-22T16:29:43.308029+00:00",
+    "seconds": 600.2,
+    "sampleCount": 21,
+    "allThreeReadySamples": 21,
+    "nativeHttp200Replies": 63,
+    "nativeHttp503Replies": 0,
+    "runtimeUnchanged": true,
+    "originalFrozenGateLogicUnchanged": true,
+    "samples": [
+      {
+        "recordedAt": "2026-10-22T16:19:43.180971+00:00",
+        "elapsedSeconds": 0.01,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792685980,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792685980,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792685980,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-22T16:20:13.186542+00:00",
+        "elapsedSeconds": 30.01,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686000,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686000,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686000,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-22T16:20:43.192942+00:00",
+        "elapsedSeconds": 60.02,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686041,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686041,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686041,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-22T16:21:13.200943+00:00",
+        "elapsedSeconds": 90.03,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686061,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686061,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686061,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-22T16:21:43.208022+00:00",
+        "elapsedSeconds": 120.03,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686101,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686101,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686101,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-22T16:22:13.215100+00:00",
+        "elapsedSeconds": 150.04,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686121,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686122,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686121,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-22T16:22:43.222745+00:00",
+        "elapsedSeconds": 180.05,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686162,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686162,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686162,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-22T16:23:13.228595+00:00",
+        "elapsedSeconds": 210.05,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686182,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686182,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686182,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-22T16:23:43.234955+00:00",
+        "elapsedSeconds": 240.06,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686222,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686222,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686222,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-22T16:24:13.240344+00:00",
+        "elapsedSeconds": 270.07,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686243,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686243,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686242,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-22T16:24:43.247728+00:00",
+        "elapsedSeconds": 300.07,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686263,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686263,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686263,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-22T16:25:13.251675+00:00",
+        "elapsedSeconds": 330.08,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686303,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686303,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686303,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-22T16:25:43.256025+00:00",
+        "elapsedSeconds": 360.08,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686323,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686323,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686323,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-22T16:26:13.259934+00:00",
+        "elapsedSeconds": 390.09,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686364,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686364,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686363,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-22T16:26:43.266924+00:00",
+        "elapsedSeconds": 420.09,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686384,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686384,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686384,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-22T16:27:13.273258+00:00",
+        "elapsedSeconds": 450.1,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686424,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686424,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686424,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-22T16:27:43.279650+00:00",
+        "elapsedSeconds": 480.11,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686444,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686444,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686444,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-22T16:28:13.287803+00:00",
+        "elapsedSeconds": 510.11,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686485,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686485,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686484,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-22T16:28:43.293786+00:00",
+        "elapsedSeconds": 540.12,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686505,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686505,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686505,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-22T16:29:13.300158+00:00",
+        "elapsedSeconds": 570.13,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686545,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686545,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686545,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-22T16:29:43.308029+00:00",
+        "elapsedSeconds": 600.13,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686565,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686565,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "ready": true,
+            "nativeMonitorReason": "ready",
+            "checkedAt": 1792686565,
+            "problems": [],
+            "bothSourceDepositCountersMatchRetainedHistory": true
+          }
+        ]
+      }
+    ]
+  },
+  "matchedPassiveGatewayJournal": {
+    "since": "2026-10-22T16:19:43.180971+00:00",
+    "until": "2026-10-22T16:29:43.308029+00:00",
+    "categoriesByRole": {
+      "primary": {},
+      "witness": {}
+    },
+    "unclassifiedMessages": 0,
+    "currentSourceRuntimePinsMatched": true,
+    "additionalUpstreamProbe": false
+  },
+  "actualHistoricalCollection": {
+    "sourceScope": "The same finalized, already-consumed deposits of 1 VXTEST; no new deposit or claim was broadcast",
+    "primaryFirst": [
+      {
+        "direction": "e2k",
+        "elapsedMs": 10189,
+        "alreadyConsumed": true,
+        "enough": true,
+        "quorum": 3,
+        "signatureCount": 3,
+        "distinctVerifiedSigners": 3,
+        "outcome": "ready",
+        "usedBackup": false
+      },
+      {
+        "direction": "k2e",
+        "elapsedMs": 1881,
+        "alreadyConsumed": true,
+        "enough": true,
+        "quorum": 3,
+        "signatureCount": 3,
+        "distinctVerifiedSigners": 3,
+        "outcome": "ready",
+        "usedBackup": false
+      }
+    ],
+    "backupFirst": [
+      {
+        "direction": "e2k",
+        "elapsedMs": 7323,
+        "alreadyConsumed": true,
+        "enough": true,
+        "quorum": 3,
+        "signatureCount": 3,
+        "distinctVerifiedSigners": 3,
+        "outcome": "ready",
+        "usedBackup": false
+      },
+      {
+        "direction": "k2e",
+        "elapsedMs": 924,
+        "alreadyConsumed": true,
+        "enough": true,
+        "quorum": 3,
+        "signatureCount": 3,
+        "distinctVerifiedSigners": 3,
+        "outcome": "ready",
+        "usedBackup": false
+      }
+    ],
+    "actualCollectorOriginProofs": [
+      {
+        "order": "primary-first",
+        "expectedCollectorActuallyServed": true,
+        "collectorRequestCount": 2
+      },
+      {
+        "order": "backup-first",
+        "expectedCollectorActuallyServed": true,
+        "collectorRequestCount": 2
+      }
+    ],
+    "privateSignedPayloadsExcluded": true,
+    "bothBridgesPaused": true
+  },
+  "renderedWebsite": {
+    "currentRealReceiptStates": [
+      {
+        "direction": "k2e",
+        "sourceTransaction": "0x1220afe5260aa1eab4a564a7392f626bdea37fe216390ea53851a000ce310ebc8c95",
+        "status": "redeemed",
+        "recipientAbbreviation": "0xDbF...FaDdD",
+        "amount": "1.0 VXTEST",
+        "depositNumber": 1,
+        "redeemedButtonDisabled": true
+      },
+      {
+        "direction": "e2k",
+        "sourceTransaction": "0x9fec281ab5109bdee9da683ed11e7f3d32cd90fea2fdea01bc96fa825e312c18",
+        "status": "redeemed",
+        "recipientAbbreviation": "1EYpS...FV93m",
+        "amount": "1.0 VXTEST",
+        "depositNumber": 1,
+        "redeemedButtonDisabled": true
+      }
+    ],
+    "bothChainPauseStatusVisible": {
+      "visibleStatus": "Both-chain status checked. Transfers paused.",
+      "visibleLastSuccessfulRead": "2026-10-22T16:35:28.240Z",
+      "visibleRefreshSeconds": 60,
+      "reviewTerminalRequestDisabled": true
+    },
+    "oldInvalidFieldAndWrongChainValidationRefusalsRetained": true,
+    "noBrowserSigningOrWallet": true,
+    "layoutScreenshotsPreviouslyAcceptedAndUnchanged": true
+  },
+  "retainedAcceptedSecurityAndRecoveryReceiptsMatched": 36,
+  "retainedPriorAcceptedReceiptSha256": {
+    "actual-installed-recovery-drills.json": "056e7d3816952b31f6cd9d175dac267d3e097875d3e4a0d56e373b926468f370",
+    "website-actual-collector-cgroup-egress-and-uid-successor.json": "0ff3ddc7a70f0b2bbe9f4e28a7350356b7b08d717eea0288ca1108c68c15f3fe",
+    "backup-actual-collector-cgroup-egress-and-uid-acceptance.json": "250924559ec33904133aac38bf209ccd0b742e260525adc92fec97fea727d5a6",
+    "actual-tailscale-backup-api-revocation-denied.json": "868653dde31216ad454608433ffa0de5de8ce91909b3da420bdcc3c3ec79d42a",
+    "actual-tailscale-backup-api-revocation-restored.json": "7f9138f1cf72275dda32132738be10be37a9ebbd9c4563a3790bd94e75b4c3ab",
+    "website-actual-final-api-only-isolation-acceptance.json": "fe4bbb71420d40ec7c43b5f97658da1ed99289531d49416894281fadf4ef9da5",
+    "backup-actual-final-api-only-isolation-acceptance.json": "660744797c67e6e9e5b48eadeeee0d3f9d4416745c923b2a729ee7a9b894d61c",
+    "actual-validator-final-private-origin-cutover.json": "dfebce5c7fc597c0938b58b010d99d751639cb987f46eba1c356cb3e3b7b5a83",
+    "website-actual-certificate-renewal-dry-run.json": "8ac51581893c4a29c7738391c19069759b22fba46d1d879031b3a4d9e39fec7d",
+    "backup-actual-certificate-renewal-dry-run.json": "b384500109aa28d5088e40b15124b7f22821190a561b3d5bc85e2ad19efc47ea",
+    "website-actual-slow-header-deadline-successor.json": "8555ffdf42ae0f8b88fbd8666281fc8f03f54ae3df81d8e24a9523b1ff24be92",
+    "backup-actual-slow-header-deadline-successor.json": "e5afdbe8a4550d3eb4932740be9e1a0fac47b082d2c0879b1baa86c5fd70ce6a",
+    "website-actual-502-cors-no-store-and-recovery.json": "199c147de4b3fe58b5e26e446b4660306a12c92a9b1460ea76ea59de561692bc",
+    "backup-actual-502-cors-no-store-and-ready-recovery-successor.json": "5906172700085a36c5c9ab6ecc0f8ea2b132e201adbf80ecf4891d3138fc6577",
+    "website-collector-mode-20261021-r1/final-accepted-pilot-primary-recovery-installed-native-collection.json": "f58dce270ec180f61b7138c747219244add73bc241327de3d998b3f56c318231",
+    "website-collector-mode-20261021-r1/ui-backup-only-rendered-recovery-installed-native-collection.json": "f2ea72450f9da5c7b1668876974009c66bd7b567dc2cd3250763f701459e2794",
+    "website-collector-availability-20261021-r2/verified-installation.json": "2457076c66c6d399de3dbe960a885699ae1501b9493c31ed61f950e811a8db14",
+    "website-actual-collector-browser-csp-successor.json": "4d4e2fb41dc8bffbe74ec09719afb9c9c6abcdad2774d24f54d99b8435d1c91c",
+    "website-actual-compatible-collector-mode-rollback.json": "a13f1cd77c9e42e357cbe0d3d901aaa730a549269d03867886b7d97d9631c62d",
+    "actual-collector-ui-primary-down.json": "edf682217f599fc11f5e676d0bbb55999dcf8c2cf592032656ef6d92885d7411",
+    "actual-collector-ui-both-down.json": "d95f1e4af8c2ddfbed2e69308b7ce5f01e1b899b354d874bd6da587bf18355b7",
+    "actual-collector-ui-backup-recovery.json": "022880362101d9aae385137421aa01f8b73b3aefcba2c843f063fe5f29fb0303",
+    "actual-collector-website-k2e-paused.json": "d3d94f2dfb8d3ef298070d3ccc15cf5a90b88b7655eafe16eb61387773e94ea3",
+    "actual-collector-website-e2k-paused.json": "f4bd0f05a4bda6a34f0cdd76144503f11ad2f2f0ce5842b062a156cc1ee53267",
+    "actual-collector-website-e2k-redeemed.json": "9fd6f68564a0326114cce129f29e43a07b6a4c39393cc26b6735376ce8eb0306",
+    "actual-collector-website-k2e-redeemed.json": "9a3195810e5de0171bb2e93990522811d984f037fb6f710b8b43c18936b12767",
+    "actual-collector-website-mobile-layout.json": "1456aa857e9f03557eaccb8bf1f5aef2efe8af09b291f30a56918d6b008cc7fd",
+    "tailscale-api-only-final-saved-readback.hujson": "9852f94d340da9666f15485866810313e6206eaa808f218c2995d6b86265f082",
+    "ui-primary-down-actual-service-action.json": "8d4914c937465c9eb7340f53efea16ed40874a3dd300c60f331a400d29360022",
+    "ui-both-down-actual-service-action.json": "a1a5149f89e5bc15d025ec5bd9bee3705c45fb77a343475be9f76f9edd2c8134",
+    "ui-backup-recovery-actual-service-action.json": "e256fb332ca58ac2c419660b9b8038288754fd8fa6a5c7bbc5cb4951b985ffe9",
+    "ui-primary-recovery-actual-service-action.json": "6011b07b67950c235fd66ca7bd21e888ad755bbac1d8eb3ba0e81206c7ed8725",
+    "website-actual-installed-private-watchdog-accepted-final.json": "5b6eeefa67138ea60c6180aeccb9b3b1b533f6129b60a60156f30fe4621f9471",
+    "website-actual-installed-private-watchdog-accepted-successor.json": "0b6f02620e634ae29a1cc0bbaf776a30a4ad816cd2fbc1765ef4111e9e4f8ea7",
+    "actual-native-late-readiness-readonly-diagnostic.json": "14d6f16f75fb47bc6d439b194bd4ac0742542eaf9f40167aa164da4d3b4da307",
+    "website-actual-installed-private-watchdog-handoff-readiness.json": "9b34a990270acfffc521e5edd702adf6d040aedd31ae024058d51c313d292650"
+  },
+  "privateEvidenceSha256": {
+    "candidate-change.json": "0a4749a67f6346b9e6fd2a6216d445d60eb7a336ba6a06c53fb922a9a0074fc1",
+    "actual-blockpi-shadow-qualification.json": "a4cc74af4a7f9daecfce4e48fa55072ff6325848bc5dbffd9f8f00344dfc8b63",
+    "actual-blockpi-shadow-qualification-r2.json": "bdb5f6d7b3dbe0f2b5c7608a3cdda12f398d063bf1bcaf5f30661d83e697ca40",
+    "actual-original-history-range-diagnosis.json": "ebe550aae199beb21141a1d4d1af86f191964f490f3b23036a15319be4126499",
+    "actual-original-history-native-shape-diagnosis.json": "e47aff80dc4721600f649d3e7b6d2ff9e368a0ca95ec4d7e35564a70b9f784ec",
+    "actual-two-source-shadow-qualification-r3.json": "5654693139812134f2d7ca9593228aa648a85687ed967980fd24ef41eea06979",
+    "actual-two-source-shadow-qualification-r4.json": "8d1fcf306f4945de92af1abc242137559472c9ea3b3c2690ff24052793b0952a",
+    "actual-two-source-shadow-qualification-r5.json": "6b741a8f5d3f6ef4e80b76247a0a103df37ae4c3e6b05125e906ba04fa455d7c",
+    "actual-two-source-shadow-qualification-r6.json": "cc1faecb271834b7c99c96b78336c996cdc0622887b5e268e3f46c044c964a4f",
+    "local-retained-transport-qualification.json": "e4eb1411a56693640ed07c10ec6bcd2b62040608543223241283f2570734b4cb",
+    "local-retained-transport-qualification-r2.json": "0ca2b9d3f35b7dd3a0b40de5bb4dea2375937c19be754ac7b0ea85bd02bbd702",
+    "actual-installed-free-readers.json": "94729211b84495456f09e7ed50d9ba864ede08eb89beb437e5224f4e7aae21c9",
+    "actual-independent-installed-readback.json": "c1f4136c9cf0fa717bce29bd0da1145772a50d5a8a8334de6708e1422e9fab77",
+    "actual-native-stability-after-free-readers.json": "cf80c6e74f5d13063f6ea3e03aa1a16bbaccefddb07998ae8c37f8bcdc6b2342",
+    "actual-new-reader-native-window-journal.json": "d3fbfaa798299f6d43e295380ae330c746a7bab632fcd1f697783464ab888ec2",
+    "actual-new-reader-native-window-journal-r2.json": "ee6b04d8601ff060c3daabe109ebfe873c42f78a0c37ee9198cc125b9b6f45a2",
+    "actual-current-historical-collection-summary.json": "21fb33f0608a65175b2d2c662b1fad347ac3198570741f01acaace119ec4d847",
+    "actual-current-backup-first-collection-summary.json": "af1d08732d38890732192a8972770d4f2e33d0619adefa77ee83696a2063098e",
+    "actual-rendered-website-after-free-readers.json": "8980b9150b915f558d5401e4545b2a66c4d12860b547b4a1c45921433178cdc1",
+    "actual-final-technical-acceptance.json": "2ddecf8d247edb5a5f31c0f5933c4c0008f32b5e1db221178ce2464554adabf8"
+  },
+  "limits": {
+    "singleOperatorPilotNotIndependentCustody": true,
+    "threeValidatorIdentitiesRemainOnOneHost": true,
+    "publicRpcPhysicalBackendIndependenceNotCertified": true,
+    "noContinuousAvailabilityGuarantee": true,
+    "noFullWatchdogCertification": true,
+    "earlierRefusalsRemainHistoricalEvidence": true,
+    "noNewClientOrCollectorBuild": true
+  },
+  "blockchainTransactionsSent": 0,
+  "newEthFeesWei": "0",
+  "newKoinosMana": "0",
+  "purchases": 0,
+  "telegramMessagesSent": 0
+}
