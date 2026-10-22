@@ -56,10 +56,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "test:vortex:collector": "node --test src/v2/test/*.test.mjs",
     "preview": "vite preview",
     "lint": "eslint \"src/**/*.{js,jsx}\"",
-    "lint:fix": "eslint \"src/**/*.{js,jsx}\" --fix",
-    "test:vortex:collector": "node --test src/v2/test/*.test.mjs"
+    "lint:fix": "eslint \"src/**/*.{js,jsx}\" --fix"
   },
   "eslintConfig": {
     "extends": [
