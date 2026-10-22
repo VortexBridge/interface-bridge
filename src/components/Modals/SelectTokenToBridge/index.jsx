@@ -13,6 +13,7 @@ import ModalHeader from "../ModalHeader";
 
 // constants
 import { BRIDGE_TOKENS } from "../../../constants/tokens";
+import { getBridgeRoute } from "../../../constants/routes";
 
 const ModalSelectTokenToBridge = () => {
   // hooks
@@ -37,7 +38,10 @@ const ModalSelectTokenToBridge = () => {
   };
 
   useEffect(() => {
+    // a token on both networks is not enough, there must be a direct route too
+    let route = getBridgeRoute(fromChain, toChain);
     let _tokens = BRIDGE_TOKENS.filter(_token => {
+      if (route == null) return false;
       let _networks = _get(_token, "networks")
       let toNet = _networks.find(n => _get(n, "chain", false) == _get(toChain, 'id', true));
       let fromNet = _networks.find(n => _get(n, "chain", false) == _get(fromChain, 'id', true));

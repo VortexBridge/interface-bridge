@@ -1,0 +1,314 @@
+{
+  "methods": {
+    "deposit": {
+      "description": "Lock (KOIN) or burn (wrapped) tokens and send them to an Ethereum address",
+      "argument": "bridge.deposit_arguments",
+      "return": "bridge.empty_object",
+      "entry_point": 3283745656,
+      "read_only": false
+    },
+    "claim": {
+      "description": "Pay a validator-approved Ethereum deposit (anyone may submit, fixed recipient)",
+      "argument": "bridge.claim_arguments",
+      "return": "bridge.empty_object",
+      "entry_point": 3709549617,
+      "read_only": false
+    },
+    "get_validators": {
+      "description": "Get validators (v1 compatible)",
+      "argument": "bridge.get_validators_arguments",
+      "return": "bridge.repeated_addresses",
+      "entry_point": 1342607250,
+      "read_only": true
+    },
+    "get_metadata": {
+      "description": "Get v1 metadata (chain id, number of validators)",
+      "argument": "bridge.get_metadata_arguments",
+      "return": "bridge.metadata_object",
+      "entry_point": 4244088463,
+      "read_only": true
+    },
+    "get_token": {
+      "description": "Get v2 token settings",
+      "argument": "bridge.get_token_arguments",
+      "return": "bridge.token_v2",
+      "entry_point": 3403107788,
+      "read_only": true
+    },
+    "get_limit": {
+      "description": "Get the rate limit of a token",
+      "argument": "bridge.get_limit_arguments",
+      "return": "bridge.limit_v2",
+      "entry_point": 3635634830,
+      "read_only": true
+    },
+    "is_consumed": {
+      "description": "Is a deposit identity already paid",
+      "argument": "bridge.is_consumed_arguments",
+      "return": "bridge.boole",
+      "entry_point": 927103409,
+      "read_only": true
+    },
+    "is_paused": {
+      "description": "Is the contract paused",
+      "argument": "bridge.is_paused_arguments",
+      "return": "bridge.boole",
+      "entry_point": 2791865854,
+      "read_only": true
+    }
+  },
+  "koilib_types": {
+    "nested": {
+      "bridge": {
+        "nested": {
+          "repeated_addresses": {
+            "fields": {
+              "addresses": {
+                "rule": "repeated",
+                "type": "bytes",
+                "id": 1,
+                "options": {
+                  "(koinos.btype)": "ADDRESS"
+                }
+              }
+            }
+          },
+          "metadata_object": {
+            "fields": {
+              "initialized": {
+                "type": "bool",
+                "id": 1
+              },
+              "nonce": {
+                "type": "uint64",
+                "id": 2,
+                "options": {
+                  "jstype": "JS_STRING"
+                }
+              },
+              "chainId": {
+                "type": "uint32",
+                "id": 3
+              },
+              "nbValidators": {
+                "type": "uint32",
+                "id": 4
+              }
+            }
+          },
+          "empty_object": {
+            "fields": {}
+          },
+          "boole": {
+            "fields": {
+              "value": {
+                "type": "bool",
+                "id": 1
+              }
+            }
+          },
+          "token_v2": {
+            "fields": {
+              "kind": {
+                "type": "uint32",
+                "id": 1
+              },
+              "remoteDecimals": {
+                "type": "uint32",
+                "id": 2
+              },
+              "enabled": {
+                "type": "bool",
+                "id": 3
+              },
+              "maxDeposit8": {
+                "type": "uint64",
+                "id": 4,
+                "options": {
+                  "jstype": "JS_STRING"
+                }
+              },
+              "remoteToken": {
+                "type": "bytes",
+                "id": 5,
+                "options": {
+                  "(koinos.btype)": "HEX"
+                }
+              }
+            }
+          },
+          "get_validators_arguments": {
+            "fields": {
+              "start": {
+                "type": "bytes",
+                "id": 1,
+                "options": {
+                  "(koinos.btype)": "ADDRESS"
+                }
+              },
+              "limit": {
+                "type": "int32",
+                "id": 2
+              },
+              "descending": {
+                "type": "bool",
+                "id": 3
+              }
+            }
+          },
+          "get_metadata_arguments": {
+            "fields": {}
+          },
+          "get_token_arguments": {
+            "fields": {
+              "token": {
+                "type": "bytes",
+                "id": 1,
+                "options": {
+                  "(koinos.btype)": "CONTRACT_ID"
+                }
+              }
+            }
+          },
+          "is_consumed_arguments": {
+            "fields": {
+              "depositId": {
+                "type": "bytes",
+                "id": 1,
+                "options": {
+                  "(koinos.btype)": "HEX"
+                }
+              }
+            }
+          },
+          "is_paused_arguments": {
+            "fields": {}
+          },
+          "deposit_arguments": {
+            "fields": {
+              "from": {
+                "type": "bytes",
+                "id": 1,
+                "options": {
+                  "(koinos.btype)": "ADDRESS"
+                }
+              },
+              "token": {
+                "type": "bytes",
+                "id": 2,
+                "options": {
+                  "(koinos.btype)": "CONTRACT_ID"
+                }
+              },
+              "amount": {
+                "type": "uint64",
+                "id": 3,
+                "options": {
+                  "jstype": "JS_STRING"
+                }
+              },
+              "recipient": {
+                "type": "bytes",
+                "id": 4,
+                "options": {
+                  "(koinos.btype)": "HEX"
+                }
+              }
+            }
+          },
+          "claim_arguments": {
+            "fields": {
+              "sourceChain": {
+                "type": "uint32",
+                "id": 1
+              },
+              "sourceBridge": {
+                "type": "bytes",
+                "id": 2,
+                "options": {
+                  "(koinos.btype)": "HEX"
+                }
+              },
+              "depositNonce": {
+                "type": "uint64",
+                "id": 3,
+                "options": {
+                  "jstype": "JS_STRING"
+                }
+              },
+              "token": {
+                "type": "bytes",
+                "id": 4,
+                "options": {
+                  "(koinos.btype)": "CONTRACT_ID"
+                }
+              },
+              "recipient": {
+                "type": "bytes",
+                "id": 5,
+                "options": {
+                  "(koinos.btype)": "ADDRESS"
+                }
+              },
+              "amount8": {
+                "type": "uint64",
+                "id": 6,
+                "options": {
+                  "jstype": "JS_STRING"
+                }
+              },
+              "expiry": {
+                "type": "uint64",
+                "id": 7,
+                "options": {
+                  "jstype": "JS_STRING"
+                }
+              },
+              "signatures": {
+                "rule": "repeated",
+                "type": "bytes",
+                "id": 8
+              }
+            }
+          },
+          "get_limit_arguments": {
+            "fields": {
+              "token": {
+                "type": "bytes",
+                "id": 1,
+                "options": {
+                  "(koinos.btype)": "CONTRACT_ID"
+                }
+              }
+            }
+          },
+          "limit_v2": {
+            "fields": {
+              "capacity8": {
+                "type": "uint64",
+                "id": 1,
+                "options": {
+                  "jstype": "JS_STRING"
+                }
+              },
+              "available8": {
+                "type": "uint64",
+                "id": 2,
+                "options": {
+                  "jstype": "JS_STRING"
+                }
+              },
+              "lastUpdate": {
+                "type": "uint64",
+                "id": 3,
+                "options": {
+                  "jstype": "JS_STRING"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

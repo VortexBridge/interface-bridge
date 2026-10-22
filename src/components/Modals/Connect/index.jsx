@@ -14,7 +14,7 @@ import { setNetwork } from "../../../redux/actions/settings";
 import { setConnected, setProvider, setSigner, setWallet } from "../../../redux/actions/wallet";
 
 // constants
-import { CHAIN_IDS_TO_NAMES, CHAINS_IDS } from "./../../../constants/chains";
+import { CHAIN_IDS_TO_NAMES, CHAINS_IDS, KOINOS_RPC } from "./../../../constants/chains";
 
 // components
 import ModalHeader from "./../ModalHeader";
@@ -38,7 +38,6 @@ const ModalConnect = () => {
 
   // have to wait for the WalletConnect library to load before we can use it (it's shoved into the window object)
   useEffect(() => {
-    console.log(window);
     if (window.WalletConnectKoinos !== "undefined") {
       // The Wallet object is defined, indicating the library is loaded.
       setWalletConnectLoaded(true);
@@ -77,7 +76,7 @@ const ModalConnect = () => {
       let timeOut = setTimeout(() => reject("Error Connect"), 1000 * 60)
       if (kondor) {
         try {
-          let provider = new Provider(import.meta.env.VITE_KOINOS_RPC || 'https://harbinger-api.koinos.io');
+          let provider = new Provider(KOINOS_RPC);
           let wallet = await kondor.getAccounts();
           let signer = await kondor.getSigner(_get(wallet, "[0].address", ""), { providerPrepareTransaction: provider });
           let chain_id = await kondor.provider.getChainId();
@@ -161,11 +160,7 @@ const ModalConnect = () => {
           )
           .then((accounts) => {
             if (accounts) {
-              const provider = new Provider([ // manually specify provider because the ones in walletconnect are old
-                (testnet == "true")
-                  ? "https://harbinger-api.koinos.io"
-                  : "https://api.koinos.io",
-              ]);
+              const provider = new Provider(KOINOS_RPC); // not walletconnect's own providers: they are old
               const signer = walletConnectKoinos.getSigner(accounts[0]);
               const connected = accounts ? true : false;
               dispatch(setSigner(signer));
@@ -239,14 +234,15 @@ const ModalConnect = () => {
               <ListItemText primary="Kondor Wallet" />
             </ListItemButton>
           </ListItem>
-          <ListItem sx={{ "&:hover": { backgroundColor: "background.light", borderRadius: "10px" } }} >
+          {/* WalletConnect knows only mainnet and testnet: not offered in the local LAB demo */}
+          {import.meta.env.VITE_CHAIN != "LAB" ? <ListItem sx={{ "&:hover": { backgroundColor: "background.light", borderRadius: "10px" } }} >
             <ListItemButton sx={{ "&:hover": { backgroundColor: "background.light" } }} disabled={false} variant="outlined" onClick={() => selectWallet("wallet-connect")}>
               <ListItemIcon>
                 <img src={WalletConnectLogo} style={{ width: "40px", height: "40px" }} alt="WalletConnect logo" />
               </ListItemIcon>
               <ListItemText primary="WalletConnect" secondary="Mobile Wallets (Konio, etc)" />
             </ListItemButton>
-          </ListItem>
+          </ListItem> : null}
         </List>
       </Box>
     </div>

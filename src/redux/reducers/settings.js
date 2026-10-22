@@ -19,6 +19,9 @@ try {
 } catch (error) {
   initialState = baseState;
 }
+// the Terms acceptance is never taken from stored settings: only the versioned key of the notice counts (a new version
+// of the Terms asks again)
+initialState.disclaimer = false;
 
 // Reducer
 export default function chatReducer(state = initialState, action) {

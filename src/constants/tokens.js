@@ -1,4 +1,4 @@
-import { BRIDGE_CHAINS_NAMES } from "./chains";
+import { BRIDGE_CHAINS_NAMES, LAB_CONFIG } from "./chains";
 const CHAIN = import.meta.env.VITE_CHAIN || "TESTNET"
 
 /**
@@ -34,6 +34,24 @@ let tokens = {
           allowance: true,
           native: false,
           address: "0xa50ad3a559A10f384a5bB2e27516f63E0B937b1A"
+        },
+        {
+          // wormhole wrapped vKOIN, wrappedAsset(2, vKOIN) on the base token bridge
+          chain: BRIDGE_CHAINS_NAMES.BASE,
+          decimals: 8,
+          symbol: "vKOIN",
+          allowance: true,
+          native: false,
+          address: "0x9b61660Cb1a6920E9c912570cD210020B956F34E"
+        },
+        {
+          // wormhole wrapped vKOIN on Solana (the mint of the token bridge for Ethereum vKOIN)
+          chain: BRIDGE_CHAINS_NAMES.SOL,
+          decimals: 8,
+          symbol: "vKOIN",
+          allowance: false,
+          native: false,
+          address: "8AUxdPqYU4FBy5rZDhMJxTniPs7gtEfdHjP3UKM71m6G"
         }
       ]
     },
@@ -120,15 +138,6 @@ let tokens = {
           symbol: "KOIN",
           allowance: false,
           address: "1FaSvLjQJsCJKq5ybmGsMMQs8RQYyVv8ju",
-          relayers: [
-            // {
-            //   id: `vortex-${BRIDGE_CHAINS_NAMES.SEP}`,
-            //   name: "Vortex",
-            //   description: "Relayer to koin deployed by vortex",
-            //   address: "x",
-            //   payment: "0"
-            // }
-          ]
         },
         {
           native: false,
@@ -137,15 +146,6 @@ let tokens = {
           symbol: "vKOIN",
           allowance: true,
           address: "0x7A348BD7461593C66CB6876BDE70B96CC8393605",
-          relayers: [
-            // {
-            //   id: `vortex-${BRIDGE_CHAINS_NAMES.KOIN}`,
-            //   name: "Vortex",
-            //   description: "Relayer to sepolia deployed by vortex",
-            //   address: "x",
-            //   payment: "500000000"
-            // }
-          ]
         }
       ]
     },
@@ -161,32 +161,15 @@ let tokens = {
           allowance: true,
           symbol: "vETH",
           address: "14Ha3UZnrjyXE5F9mvEfS28QhaNY1ehWXw",
-          relayers: [
-            // {
-            //   id: `vortex-${BRIDGE_CHAINS_NAMES.SEP}`,
-            //   name: "Vortex",
-            //   description: "Relayer to koin deployed by vortex",
-            //   address: "x",
-            //   payment: "0"
-            // }
-          ]
         },
         {
           native: true,
           chain: BRIDGE_CHAINS_NAMES.SEP,
-          decimals: 8,
+          // native ETH has 18 decimals (the bridge wraps it to WETH, 18 decimals)
+          decimals: 18,
           allowance: false,
           symbol: "ETH",
           address: "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14",
-          relayers: [
-            // {
-            //   id: `vortex-${BRIDGE_CHAINS_NAMES.KOIN}`,
-            //   name: "Vortex",
-            //   description: "Relayer to sepolia deployed by vortex",
-            //   address: "x",
-            //   payment: "500000000"
-            // }
-          ]
         }
       ]
     },
@@ -202,15 +185,6 @@ let tokens = {
           allowance: true,
           symbol: "vUSDT",
           address: "19DDFiZuf66XhxVBveZ2CPbMpb8wyiA6ja",
-          relayers: [
-            // {
-            //   id: `vortex-${BRIDGE_CHAINS_NAMES.SEP}`,
-            //   name: "Vortex",
-            //   description: "Relayer to koin deployed by vortex",
-            //   address: "x",
-            //   payment: "0"
-            // }
-          ]
         },
         {
           native: false,
@@ -219,18 +193,29 @@ let tokens = {
           allowance: true,
           symbol: "USDT",
           address: "0xaA8E23Fb1079EA71e0a56F48a2aA51851D8433D0",
-          relayers: [
-            // {
-            //   id: `vortex-${BRIDGE_CHAINS_NAMES.KOIN}`,
-            //   name: "Vortex",
-            //   description: "Relayer to sepolia deployed by vortex",
-            //   address: "x",
-            //   payment: "500000000"
-            // }
-          ]
         }
       ]
     }
   ]
 }
+// LAB = the local demo (lab/demo/up.sh): the same pairs as mainnet on the lab's contracts
+const labPair = (id, name, icon, koinos, eth) => ({ id, name, icon, networks: [
+  { chain: BRIDGE_CHAINS_NAMES.KOIN, allowance: true, native: false, ...koinos },
+  { chain: BRIDGE_CHAINS_NAMES.ETH, allowance: true, native: false, ...eth },
+] })
+if (LAB_CONFIG) tokens["LAB"] = [
+  labPair("koin", "Koinos", KOIN, { decimals: 8, symbol: "KOIN", address: LAB_CONFIG.koinos.tokens.KOIN },
+    { decimals: 8, symbol: "vKOIN", address: LAB_CONFIG.eth.tokens.vKOIN }),
+  labPair("USDT", "Tether", USDT, { decimals: 8, symbol: "vUSDT", address: LAB_CONFIG.koinos.tokens.vUSDT },
+    { decimals: 6, symbol: "USDT", address: LAB_CONFIG.eth.tokens.USDT }),
+  labPair("USDC", "USD Coin", USDC, { decimals: 8, symbol: "vUSDC", address: LAB_CONFIG.koinos.tokens.vUSDC },
+    { decimals: 6, symbol: "USDC", address: LAB_CONFIG.eth.tokens.USDC }),
+  // native ETH: the bridge wraps it to WETH (18 decimals); a claim on Ethereum pays WETH
+  labPair("ETH", "Ethereum", ETH, { decimals: 8, symbol: "vETH", address: LAB_CONFIG.koinos.tokens.vETH },
+    { decimals: 18, symbol: "ETH", address: LAB_CONFIG.eth.tokens.WETH, native: true, allowance: false }),
+]
+
 export const BRIDGE_TOKENS = tokens[CHAIN || "TESTNET"]
+
+// what arrives on a network: native ETH is wrapped by the Ethereum bridge, so a payout there is WETH
+export const payoutSymbol = (network) => (network && network.native ? "WETH" : (network && network.symbol) || "")

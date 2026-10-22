@@ -1,0 +1,199 @@
+# Primary and backup signature collection
+
+Coordinate this interface release with [Vortex V2 issue #11](https://github.com/VortexBridge/vortex-bridge-v2/issues/11)
+and the collector/server installation profile. The website never learns the private validator roster in this mode.
+
+```text
+VITE_VORTEX_COLLECTION_MODE=collector
+VITE_VORTEX_COLLECTORS=https://primary.example.org,https://backup.example.org
+VITE_VORTEX_DEPLOYMENT=the-reviewed-deployment
+VITE_VORTEX_VALIDATORS=
+```
+
+Both endpoints must be distinct HTTPS origins. The deployment identifier must match the configured collectors.
+The build rejects validator URLs in collector mode before embedding environment values. Keep all private origins
+and VPN identity material on the servers, out of all `VITE_` variables and browser artifacts. Existing installations
+default to direct mode unless explicitly configured otherwise. Collector mode has no direct-origin fallback.
+
+The installed website's Content-Security-Policy must permit exactly the two configured public HTTPS origins
+in `connect-src`. Keeping an old self-only policy blocks collection even when server-side smoke tests pass.
+Keep every other CSP restriction and never add private origins or a wildcard.
+
+For each collection the client preserves the same claim and expiry, streams at most 16 KiB per collector answer,
+checks response metadata and bounded slots, recovers every signer against its own claim, checks current destination
+membership and deduplicates by signer. Four distinct validators are needed out of five, or all three out of three.
+Responses, slot names and counts are untrusted. Existing canonical signature encoding, contract ordering, source
+deposit derivation, destination checks and wallet flow remain in place.
+
+A failed, slow, malformed or insufficient primary response triggers the backup once within the overall deadline.
+Verified partial results can be combined only for the identical claim/expiry. The default operation deadline is
+20 seconds including candidate verification and membership reads, with up to 5 seconds per collector request.
+Destination validator-count reads share this same bound. The flows propagate AbortSignal into actual membership/count HTTP calls, preserve Ethereum chain ID and configured fallback weights/quorum, and use Koinos' selected koilib endpoint. The deadline cancels actual network work, not only a Promise.race wait. Custom reusable-client membership callbacks must propagate their supplied `{ signal }`. The page distinguishes signature-service
+unavailability, validators not ready, insufficient valid signatures, expiry and timeout. Claim preparation remains
+disabled without an independently verified quorum. The destination contract checks again at submission.
+
+Redeem also makes two bounded read-only `/healthz` requests when opened. If both are unavailable it shows
+a temporary collection warning with Retry; completed transfers remain independently readable. It cancels
+these requests on timeout/unmount and shows no positive readiness badge. A reachable collector says
+nothing about native validator health, membership or quorum; only verified collection results enable claims.
+
+## Owner-approved free Ethereum reader cutover — 22 October 2026
+
+The owner requested a free dRPC replacement with no weaker checks. The installed Ethereum witness
+now uses BlockPI's public endpoint. PublicNode remains the primary for ordinary reads. Only primary
+`eth_getLogs` uses MEV Blocker's free endpoint, independently corroborated by BlockPI. Koinos still
+uses private Teleno plus the owner's existing legacy witness; no Koinos source changed in this cutover.
+
+The history-only repair is necessary: the old primary history route returned no Deposit in a containing
+100/1,000-block range, including the native wire format, while its exact-block query returned the real
+canonical event. Those refusals are retained. The replacement pair agrees on the complete actual
+1,000-block trial range, the original deployment sample and the finalized canonical block. Separate
+installed process/source/drop-in/limits and loopback readback passes. Rejected free candidates were
+not installed or retried through rate limits.
+
+Both gateway source changes are exact endpoint substitutions. The original files are retained. TLS
+verification, disabled redirects/environment proxies, method whitelist, body/concurrency bounds,
+10-second budget and the existing single conditional 408 retry remain unchanged. No fallback silently
+converts disagreement into agreement. Native binary/configuration, identities, keys, full history,
+120-second signing fence, finality and 3-of-3 transfer quorum are unchanged. Only the two read gateways
+were manually restarted once each; the three native processes, collectors and website were preserved.
+
+The unchanged strict window now passes: all 21 samples over 600.20 seconds have all three validators ready,
+with 63 native HTTP 200 replies and no source/signing problems. The exact matched gateway journal has no
+recorded refusal or unclassified message. Native PIDs and automatic restart counts are unchanged.
+Fresh primary-first and backup-first requests each return3/3 verified current members in both directions
+for the same already-consumed deposits; actual request origins are checked. Both bridges remain paused.
+The current rendered website shows both real 1 VXTEST receipts redeemed, disabled Redeemed buttons and
+fresh both-chain paused status. All 36 retained accepted security/recovery receipts still match their hashes.
+
+Installed private-pilot technical acceptance passes. Earlier refusals remain historical evidence.
+This bounded observation is not a continuous-availability guarantee. The public Ethereum services are
+distinct provider routes; backend physical independence and independent operator custody are not certified.
+
+See `evidence/collector-private-pilot-20261021/free-ethereum-reader-cutover-20261022.json` for every sanitized sample and immutable receipt digests.
+
+## Earlier actual legacy source recovery — 22 October 2026
+
+The approved Koinos witness stalled while its RPC container remained up. A single guarded restart of
+the existing P2P container restored current block ingestion. Independent readback verifies all thirteen
+original container identities/images/mount sets and the other twelve PIDs/start times, including both
+producers. Actual paired calls from the validator VPS agree on head 40424576, irreversible height
+40424516 and the canonical receipt. Teleno remains primary; both Koinos sources are owner-operated.
+No source/configuration/history change, producer action or native validator restart was made.
+Protected readback verifies all three original encrypted keys, configurations and loaded executables.
+
+The retained unchanged-gate 600.22-second native window has all three ready in 19/21 samples: 62 HTTP
+200 responses and one HTTP 503. The 503 is a progress-timer alert while a new finalized frontier is
+4.66 seconds old; processing follows the new frontier by two seconds. It has no source-failure flag.
+The separate four-block Koinos catch-up sample is HTTP 200. The matched gateway journal has four
+recovered 408 retry events and no terminal refusal in this window. The strict gate stays false.
+No native/monitor guard was changed to relabel these samples or manufacture acceptance.
+
+A later current pre-collection gate refuses Ethereum on instance 3; its matched original dRPC witness
+journal records three HTTP 408 refusals after the permitted retry. No per-request attribution is claimed.
+Both bridges currently read paused and both historical deposits read consumed. The collection stopped
+before signature requests. Stable all-three readiness, fresh post-change 3/3 collection in both directions
+and current rendered consistency/final sign-off remain pending. Earlier accepted security, recovery and
+UI evidence is retained. No transaction or Telegram message was sent; no client/collector build changed.
+
+See `evidence/collector-private-pilot-20261021/approved-legacy-source-recovery-20261022.json` for all sanitized samples and immutable private-evidence digests.
+
+## Earlier installed source and readiness checkpoint — 22 October 2026
+
+The owner explicitly approved replacing only the Koinos witness with his existing legacy API over the
+existing private VPN; Teleno remains primary. Both Koinos readers are owner-operated. This amendment
+proves two actual node implementations, not independent operators. Three guarded sequential restarts
+completed; independent protected readback verifies the new source pins and preserved original binary,
+keys, units, full history, signing fingerprints, quorum and 120-second fence. Ethereum sources are unchanged.
+
+A fresh 600.20-second observation retains all 21 samples: all three ready in 19, with 62 native HTTP 200
+responses and one HTTP 503. One HTTP 200 result is `catching_up` by one Koinos block and recovers at the
+next sample; it is not an RPC failure. The other exception is a real Ethereum source refusal with a
+32-block backlog, also recovered by the next sample. The bounded original dRPC witness journal records
+an HTTP 408 refusal after its permitted retry in this interval. No Koinos problem was reported in the
+sampled window; no uninterrupted-availability guarantee or per-request source attribution is claimed.
+
+The strict all-samples readiness gate still fails. No fresh signature collection is used to bypass it;
+post-change 3/3 collection, live pause/UI consistency and final technical sign-off remain pending. The
+original native and Go collector processes are unchanged. The backup nginx PID changed outside this
+continuation; its configuration and effective limits match accepted pins, and trusted public HTTPS
+returns 200 from the operator Mac. A refused self-connection from the backup itself is retained as a
+vantage-specific result. Do not infer its restart actor or reopen origins to make that probe succeed.
+No blockchain transaction, producer modification or Telegram message occurred. Preserve all earlier
+accepted isolation/recovery/UI proofs; do not replay completed controllers or poll until lucky.
+
+See `evidence/collector-private-pilot-20261021/approved-legacy-native-window-20261022.json` for every sample and sanitized immutable evidence digests. No client/collector code or
+installed website build changed for this documentation update.
+
+## Installed pilot, 21 October 2026
+
+The actual private terminal-only VXTEST website uses primary/backup collectors on separate VPS hosts.
+Both are operated by Pablo and share his Tailscale control plane. Three original validator identities
+remain on their existing single host. This proves a private pilot, not independent operators or custody.
+The terminal-only experiment overlay remains separate from this repository's ordinary wallet flow.
+
+Real finalized, already-consumed deposits produced three independently verified current-member signatures
+in each direction. Actual primary outage, both-down refusal, recovery and split primary/backup partial
+retention passed without a blockchain transaction. The actual rendered site reads both completed deposits,
+rejects invalid inputs, preserves paused-state fencing and passes desktop/mobile checks. With both real
+collector services stopped it displays the collection warning while the completed receipt remains readable;
+restoring only the backup removes the warning and restores verified collection in both directions.
+
+Six rendered unclaimed/signature-state cases use explicit test fixtures. They are not new live transfers.
+The installed historical-claim collection checks use the same production client and real native signatures;
+already-consumed receipts correctly bypass collection on Redeem. Compatible collector-only website rollback
+was exercised with origin restrictions intact. See the coordinated server PR's sanitized installed evidence.
+Final pilot sign-off remains pending consistent all-three native readiness. A subsequent owner-authorized,
+native-loader-qualified polling-only adjustment uses Koinos 15 seconds and Ethereum 30 seconds, with
+three sequential guarded restarts. The original binary, sources, keys, history, quorum and 120-second
+signing fence are unchanged. At that checkpoint, the public Koinos witness trailed the private primary by
+more than 400 blocks. Post-change collection gets 3/3 signatures in Ethereum-to-Koinos and only 2/3 in
+the reverse direction; verified partials survive backup fallback and the client correctly refuses the
+incomplete quorum. The 600-second observation has all three ready in only 3 of 21 samples, and its
+final sample retains an Ethereum source refusal as well. Both pause reads stay true; no source refusal
+was waived and no transaction was sent. See `evidence/collector-private-pilot-20261021/installed-native-cadence-20261021.json` for the retained
+bounded observation. Collector reachability never substitutes for consistent native readiness.
+
+A later repair affects only the existing Ethereum witness gateway: one same-provider retry of an
+identical read on HTTP 408, inside the remaining original transport timeout. Eleven local tests,
+an actual recovered 408 and installed paired finalized reads pass; collector/client sources and
+native validator processes are unchanged. The patch and installed proof are retained in
+`evidence/collector-private-pilot-20261021/installed-ethereum-witness-408-repair.json`.
+The first subsequent sample passed Ethereum on all three instances but refused Koinos on two, with
+834 blocks between reported finality thresholds. No new 600-second window started from that refusal.
+Historical collection obtained 3/3 Ethereum-source signatures and 1/3 Koinos-source signatures;
+the client refused the incomplete quorum. Both bridges remained paused. Final acceptance still
+requires a stable bounded all-three observation and genuine collection in both directions.
+
+The later complete 600-second observation retained 63/63 native HTTP 200 responses without reported
+problems. Nineteen of 21 snapshots had all three exactly caught up; two conservative monitor results
+were `catching_up` by 8/6 Koinos blocks and recovered by the next sample. These are not new RPC
+failures and are not relabeled ready: the strict all-samples monitor check remains false. Fresh real
+collection now verifies 3/3 current members in both directions, both pause reads are true, and both
+actual rendered completed receipts pass. See
+`evidence/collector-private-pilot-20261021/post-repair-native-window-and-historical-collection.json`.
+The pilot remains pending strict readiness acceptance; no client, signing fence or monitor was changed.
+
+## Verification
+
+```sh
+npm ci
+npm run test:vortex:collector
+npm run build
+```
+
+The test suite covers both claim encodings, 4-of-5/3-of-3, hostile and duplicate candidates, metadata isolation,
+bounded responses, stalled network/membership work and legacy direct mode. `src/v2/vortex-v2.mjs` and `src/v2/membership-rpc.mjs` must remain
+byte-identical to the coordinated reusable client in `vortex-bridge-v2/v2/client`.
+
+For rendered checks, run Vite and visit `/test/collector-browser.html`. This fixture uses the actual client,
+the same status wording and signature-progress component as Redeem, temporary public test keys and fixture
+responses. It supports healthy primary, failed primary, both unavailable, not-ready validators, insufficient
+signatures and expired attempts. It loads no wallet extension and sends no chain transaction. The fixture is
+outside the production build entry; verify that the production bundle contains no fixture code.
+
+Local fixture results do not satisfy installed pilot acceptance. Before live cutover, both operators must prove
+authenticated origin access, external IPv4/IPv6 origin denial, API-only VPN revocation/recovery and public collector certificate renewal/expiry checks, actual primary-host
+failure and recovery, current native readiness and both directions in the real rendered site under an approved
+signature-request scope. Record remaining common DNS/provider dependencies. Use a compatible collector build
+or maintenance state for rollback; never reopen origins or revert to a direct-origin browser configuration.
