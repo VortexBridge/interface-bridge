@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-21T21:54:06.217656+00:00",
+  "scope": "Installed private-pilot operator repair of the original read-only Ethereum witness; collector/client source unchanged",
+  "installedPilotAccepted": false,
+  "change": {
+    "originalSourceSha256": "7fb4e57d0e34a3b901381b8fe5414d21519249667c4a3a01a868dfa217a2b267",
+    "installedSourceSha256": "564cc1ce9abc25fe97590644a3b30580ce75ef6f0f5f4a1fab67344fcb1fc282",
+    "patchSha256": "79261488790e88d27175934e690cc86867ec16c64250fb94284c98efe4c5483f",
+    "behaviour": "At most one retry of the identical validated read-only request on witness HTTP 408, using the remaining original transport timeout",
+    "providerRosterTlsWhitelistResponseBoundsAndProofsUnchanged": true,
+    "otherHttpAndRpcErrorsNotRetried": true,
+    "bodyAndResponseIdentityValidationUnchanged": true,
+    "noNewServiceOrSource": true,
+    "originalNativeBinaryUnchanged": "90c07d1278df1005e52fb3dbb2f88056f0752a5d91dae3c6f9f7c3d9c91eaf49"
+  },
+  "validation": {
+    "localTransportFixtureTests": 11,
+    "fixtureProofIsNotInstalledAcceptance": true,
+    "actualShadowQualificationPassed": true,
+    "actualHttp408RecoveryObservedInShadow": 1,
+    "actualShadow101BlockReadOnOriginalWitness": true,
+    "installedEffectiveCommandAndActualProcessVerified": true,
+    "installedListenerAndActualPairedReadPassed": true,
+    "actualInstalledPairedFinalizedHeight": 26243710,
+    "actualInstalledPairedBlockHash": "0x24be5c10f90ee1c234813f02eeb4afef605a34017be11536d75886b5e785196c",
+    "allPreviouslyPresentGatewayAndGuardSourcesUnchanged": true,
+    "otherWebsiteServicesUnchanged": true
+  },
+  "retainedInstallationRefusals": {
+    "count": 2,
+    "causes": [
+      "Type=simple process reported active before the TCP listener was ready",
+      "Existing 95-shared TLS drop-in overrode the first candidate drop-in"
+    ],
+    "corrections": "Bounded listener startup check and effective-command verification before restart; final override follows existing ExecStart entries",
+    "refusedAttemptsRolledBackAndRetained": true,
+    "witnessGatewayRestartsAcrossAllAttempts": 5
+  },
+  "postChangeNativeReadiness": {
+    "observedAt": "2026-10-21T21:55:54.891179+00:00",
+    "initialAllThreeReady": false,
+    "observationSeconds": 0.07,
+    "meaningfulWindowStarted": false,
+    "meaningfulWindowCompleted": false,
+    "runtimePidsRetained": true,
+    "instances": [
+      {
+        "instance": 1,
+        "httpStatus": 503,
+        "ready": false,
+        "problems": [
+          "koinos: a data source failed or the sources disagree (details in the local log)",
+          "k2e: not ready to sign (source-chain finality not re-validated recently)"
+        ],
+        "koinosReportedMinimumLib": 40406836,
+        "koinosReportedMaximumLib": 40407670,
+        "koinosProcessed": 40407663,
+        "koinosAnchor": 0,
+        "ethereumFinalized": 26243710,
+        "ethereumProcessed": 26243710
+      },
+      {
+        "instance": 2,
+        "httpStatus": 200,
+        "ready": true,
+        "problems": [],
+        "koinosReportedMinimumLib": 40407673,
+        "koinosReportedMaximumLib": 40407673,
+        "koinosProcessed": 40407673,
+        "koinosAnchor": 1792619742,
+        "ethereumFinalized": 26243710,
+        "ethereumProcessed": 26243710
+      },
+      {
+        "instance": 3,
+        "httpStatus": 503,
+        "ready": false,
+        "problems": [
+          "koinos: a data source failed or the sources disagree (details in the local log)",
+          "k2e: not ready to sign (source-chain finality not re-validated recently)"
+        ],
+        "koinosReportedMinimumLib": 40406836,
+        "koinosReportedMaximumLib": 40407670,
+        "koinosProcessed": 40407663,
+        "koinosAnchor": 0,
+        "ethereumFinalized": 26243710,
+        "ethereumProcessed": 26243710
+      }
+    ],
+    "remainingDependency": "Original Koinos source finality readings disagree by 834 blocks; native signing fences remain active for affected instances"
+  },
+  "postChangeHistoricalCollection": {
+    "observedAt": "2026-10-21T21:58:43.158Z",
+    "passed": false,
+    "results": [
+      {
+        "direction": "e2k",
+        "signatureCount": 3,
+        "quorum": 3,
+        "outcome": "ready",
+        "usedBackup": false,
+        "alreadyConsumed": true,
+        "elapsedMs": 676
+      },
+      {
+        "direction": "k2e",
+        "signatureCount": 1,
+        "quorum": 3,
+        "outcome": "validators not ready",
+        "usedBackup": true,
+        "alreadyConsumed": true,
+        "elapsedMs": 1514
+      }
+    ],
+    "pauseStates": {
+      "eth": true,
+      "koinos": true
+    },
+    "newTransactions": 0
+  },
+  "evidenceSha256": {
+    "localFixtureLog": "d1fd1a81aa4c02e9fb1a11dfe0f104ef59679297e90f6c2b0dfa3a173cd6d879",
+    "actualShadow": "591b445f233efca02eeab42ee0553453573ed5c1d563c40f87412687126c1cde",
+    "actualInstalledReadback": "448a8ae79f962abb17bcfef9a879e283001aa619d2bdb48699852e0b395def32",
+    "nativeReadiness": "2c9d509778775a62a342a7e06353c248f487b711296e1024d1f5ba5abdb86f61",
+    "historicalCollection": "43e564fb4218fc5e25c1554242cbc1ed4e7a8aa54933a57f435fec4fc8c84482"
+  },
+  "nativeRestarts": 0,
+  "newUnlocks": 0,
+  "newBlockchainTransactions": 0,
+  "telegramMessagesSent": 0,
+  "purchases": 0,
+  "excludedHostTouched": false,
+  "limits": [
+    "The successful retry is transport recovery, not repair or certification of an unmanaged provider",
+    "No consistent all-three readiness window has passed",
+    "Both collectors remain operated by one owner; no independent custody acceptance is claimed"
+  ]
+}

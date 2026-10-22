@@ -57,6 +57,7 @@
     "test:rpc-reader": "node --test src/v2/json-reader.test.mjs",
     "dev": "vite",
     "build": "vite build",
+    "test:vortex:collector": "node --test src/v2/test/*.test.mjs",
     "preview": "vite preview",
     "test:amount": "node --test src/utils/amount.test.mjs",
     "lint": "eslint \"src/**/*.{js,jsx}\"",

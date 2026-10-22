@@ -1,0 +1,2613 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-21T22:27:01.353196+00:00",
+  "scope": "Complete post-repair native observation and real consumed-deposit collection",
+  "installedPilotAccepted": false,
+  "observation": {
+    "start": "2026-10-21T22:11:18.630745+00:00",
+    "end": "2026-10-21T22:21:18.818324+00:00",
+    "seconds": 600.2,
+    "samples": 21,
+    "allThreeExactCaughtUpSamples": 19,
+    "nativeHttp200Responses": 63,
+    "nativeReportsWithoutProblems": 63,
+    "totalInstanceReports": 63,
+    "strictMonitorWindowPassed": false,
+    "monitorReasons": {
+      "ready": 61,
+      "catching_up": 2
+    },
+    "catchupDetails": [
+      {
+        "instance": 1,
+        "elapsedSeconds": 150.04,
+        "koinosBlocksBehindReportedLib": 8,
+        "readyAtNextSample": true
+      },
+      {
+        "instance": 3,
+        "elapsedSeconds": 300.08,
+        "koinosBlocksBehindReportedLib": 6,
+        "readyAtNextSample": true
+      }
+    ],
+    "maximumKoinosSourceThresholdDifference": 2,
+    "lastSampleAllThreeReady": true,
+    "originalMonitorAndNativeChecksUnchanged": true,
+    "nativeRuntimeUnchanged": true,
+    "retainedSamples": [
+      {
+        "recordedAt": "2026-10-21T22:11:18.630745+00:00",
+        "elapsedSeconds": 0.01,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620668,
+            "status": {
+              "koinos_lib": 40408002,
+              "koinos_processed": 40408002,
+              "eth_finalized": 26243806,
+              "eth_processed": 26243806,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620653,
+              "eth_last_progress": 1792620515,
+              "koinos_anchor_ok": 1792620653,
+              "eth_anchor_ok": 1792620638,
+              "koinos_lib_max": 40408002,
+              "eth_finalized_max": 26243806,
+              "koinos_lib_moved": 1792620653,
+              "eth_finalized_moved": 1792620511
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620677,
+            "status": {
+              "koinos_lib": 40408009,
+              "koinos_processed": 40408009,
+              "eth_finalized": 26243806,
+              "eth_processed": 26243806,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620672,
+              "eth_last_progress": 1792620532,
+              "koinos_anchor_ok": 1792620672,
+              "eth_anchor_ok": 1792620655,
+              "koinos_lib_max": 40408009,
+              "eth_finalized_max": 26243806,
+              "koinos_lib_moved": 1792620672,
+              "eth_finalized_moved": 1792620531
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620663,
+            "status": {
+              "koinos_lib": 40408002,
+              "koinos_processed": 40408002,
+              "eth_finalized": 26243806,
+              "eth_processed": 26243806,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620653,
+              "eth_last_progress": 1792620515,
+              "koinos_anchor_ok": 1792620653,
+              "eth_anchor_ok": 1792620638,
+              "koinos_lib_max": 40408002,
+              "eth_finalized_max": 26243806,
+              "koinos_lib_moved": 1792620653,
+              "eth_finalized_moved": 1792620513
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-21T22:11:48.636859+00:00",
+        "elapsedSeconds": 30.01,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620688,
+            "status": {
+              "koinos_lib": 40408011,
+              "koinos_processed": 40408011,
+              "eth_finalized": 26243806,
+              "eth_processed": 26243806,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620684,
+              "eth_last_progress": 1792620515,
+              "koinos_anchor_ok": 1792620685,
+              "eth_anchor_ok": 1792620668,
+              "koinos_lib_max": 40408011,
+              "eth_finalized_max": 26243806,
+              "koinos_lib_moved": 1792620684,
+              "eth_finalized_moved": 1792620511
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620697,
+            "status": {
+              "koinos_lib": 40408011,
+              "koinos_processed": 40408011,
+              "eth_finalized": 26243806,
+              "eth_processed": 26243806,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620688,
+              "eth_last_progress": 1792620532,
+              "koinos_anchor_ok": 1792620688,
+              "eth_anchor_ok": 1792620685,
+              "koinos_lib_max": 40408011,
+              "eth_finalized_max": 26243806,
+              "koinos_lib_moved": 1792620687,
+              "eth_finalized_moved": 1792620531
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620703,
+            "status": {
+              "koinos_lib": 40408014,
+              "koinos_processed": 40408014,
+              "eth_finalized": 26243806,
+              "eth_processed": 26243806,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620700,
+              "eth_last_progress": 1792620515,
+              "koinos_anchor_ok": 1792620700,
+              "eth_anchor_ok": 1792620699,
+              "koinos_lib_max": 40408014,
+              "eth_finalized_max": 26243806,
+              "koinos_lib_moved": 1792620700,
+              "eth_finalized_moved": 1792620513
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-21T22:12:18.642303+00:00",
+        "elapsedSeconds": 60.02,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620729,
+            "status": {
+              "koinos_lib": 40408018,
+              "koinos_processed": 40408018,
+              "eth_finalized": 26243806,
+              "eth_processed": 26243806,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620716,
+              "eth_last_progress": 1792620515,
+              "koinos_anchor_ok": 1792620716,
+              "eth_anchor_ok": 1792620699,
+              "koinos_lib_max": 40408018,
+              "eth_finalized_max": 26243806,
+              "koinos_lib_moved": 1792620715,
+              "eth_finalized_moved": 1792620511
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620737,
+            "status": {
+              "koinos_lib": 40408020,
+              "koinos_processed": 40408020,
+              "eth_finalized": 26243806,
+              "eth_processed": 26243806,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620735,
+              "eth_last_progress": 1792620532,
+              "koinos_anchor_ok": 1792620735,
+              "eth_anchor_ok": 1792620716,
+              "koinos_lib_max": 40408020,
+              "eth_finalized_max": 26243806,
+              "koinos_lib_moved": 1792620734,
+              "eth_finalized_moved": 1792620531
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620723,
+            "status": {
+              "koinos_lib": 40408018,
+              "koinos_processed": 40408018,
+              "eth_finalized": 26243806,
+              "eth_processed": 26243806,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620716,
+              "eth_last_progress": 1792620515,
+              "koinos_anchor_ok": 1792620716,
+              "eth_anchor_ok": 1792620699,
+              "koinos_lib_max": 40408018,
+              "eth_finalized_max": 26243806,
+              "koinos_lib_moved": 1792620715,
+              "eth_finalized_moved": 1792620513
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-21T22:12:48.650923+00:00",
+        "elapsedSeconds": 90.03,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620749,
+            "status": {
+              "koinos_lib": 40408023,
+              "koinos_processed": 40408023,
+              "eth_finalized": 26243806,
+              "eth_processed": 26243806,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620747,
+              "eth_last_progress": 1792620515,
+              "koinos_anchor_ok": 1792620747,
+              "eth_anchor_ok": 1792620729,
+              "koinos_lib_max": 40408023,
+              "eth_finalized_max": 26243806,
+              "koinos_lib_moved": 1792620746,
+              "eth_finalized_moved": 1792620511
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620757,
+            "status": {
+              "koinos_lib": 40408024,
+              "koinos_processed": 40408024,
+              "eth_finalized": 26243806,
+              "eth_processed": 26243806,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620750,
+              "eth_last_progress": 1792620532,
+              "koinos_anchor_ok": 1792620750,
+              "eth_anchor_ok": 1792620746,
+              "koinos_lib_max": 40408026,
+              "eth_finalized_max": 26243806,
+              "koinos_lib_moved": 1792620750,
+              "eth_finalized_moved": 1792620531
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620764,
+            "status": {
+              "koinos_lib": 40408027,
+              "koinos_processed": 40408027,
+              "eth_finalized": 26243806,
+              "eth_processed": 26243806,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620762,
+              "eth_last_progress": 1792620515,
+              "koinos_anchor_ok": 1792620762,
+              "eth_anchor_ok": 1792620760,
+              "koinos_lib_max": 40408027,
+              "eth_finalized_max": 26243806,
+              "koinos_lib_moved": 1792620762,
+              "eth_finalized_moved": 1792620513
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-21T22:13:18.658745+00:00",
+        "elapsedSeconds": 120.04,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620789,
+            "status": {
+              "koinos_lib": 40408039,
+              "koinos_processed": 40408039,
+              "eth_finalized": 26243806,
+              "eth_processed": 26243806,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620778,
+              "eth_last_progress": 1792620515,
+              "koinos_anchor_ok": 1792620778,
+              "eth_anchor_ok": 1792620760,
+              "koinos_lib_max": 40408039,
+              "eth_finalized_max": 26243806,
+              "koinos_lib_moved": 1792620778,
+              "eth_finalized_moved": 1792620511
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620798,
+            "status": {
+              "koinos_lib": 40408046,
+              "koinos_processed": 40408046,
+              "eth_finalized": 26243806,
+              "eth_processed": 26243806,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620797,
+              "eth_last_progress": 1792620532,
+              "koinos_anchor_ok": 1792620797,
+              "eth_anchor_ok": 1792620777,
+              "koinos_lib_max": 40408046,
+              "eth_finalized_max": 26243806,
+              "koinos_lib_moved": 1792620797,
+              "eth_finalized_moved": 1792620531
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620784,
+            "status": {
+              "koinos_lib": 40408039,
+              "koinos_processed": 40408039,
+              "eth_finalized": 26243806,
+              "eth_processed": 26243806,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620778,
+              "eth_last_progress": 1792620515,
+              "koinos_anchor_ok": 1792620778,
+              "eth_anchor_ok": 1792620760,
+              "koinos_lib_max": 40408039,
+              "eth_finalized_max": 26243806,
+              "koinos_lib_moved": 1792620778,
+              "eth_finalized_moved": 1792620513
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-21T22:13:48.665649+00:00",
+        "elapsedSeconds": 150.04,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "monitorReady": false,
+            "monitorReason": "catching_up",
+            "nativeProblems": [],
+            "checkedAt": 1792620809,
+            "status": {
+              "koinos_lib": 40408053,
+              "koinos_processed": 40408045,
+              "eth_finalized": 26243806,
+              "eth_processed": 26243806,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620794,
+              "eth_last_progress": 1792620515,
+              "koinos_anchor_ok": 1792620809,
+              "eth_anchor_ok": 1792620791,
+              "koinos_lib_max": 40408053,
+              "eth_finalized_max": 26243806,
+              "koinos_lib_moved": 1792620809,
+              "eth_finalized_moved": 1792620511
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620818,
+            "status": {
+              "koinos_lib": 40408053,
+              "koinos_processed": 40408053,
+              "eth_finalized": 26243806,
+              "eth_processed": 26243806,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620813,
+              "eth_last_progress": 1792620532,
+              "koinos_anchor_ok": 1792620813,
+              "eth_anchor_ok": 1792620808,
+              "koinos_lib_max": 40408053,
+              "eth_finalized_max": 26243806,
+              "koinos_lib_moved": 1792620812,
+              "eth_finalized_moved": 1792620531
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620824,
+            "status": {
+              "koinos_lib": 40408053,
+              "koinos_processed": 40408053,
+              "eth_finalized": 26243806,
+              "eth_processed": 26243806,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620809,
+              "eth_last_progress": 1792620515,
+              "koinos_anchor_ok": 1792620810,
+              "eth_anchor_ok": 1792620821,
+              "koinos_lib_max": 40408053,
+              "eth_finalized_max": 26243806,
+              "koinos_lib_moved": 1792620809,
+              "eth_finalized_moved": 1792620513
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-21T22:14:18.672197+00:00",
+        "elapsedSeconds": 180.05,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620850,
+            "status": {
+              "koinos_lib": 40408064,
+              "koinos_processed": 40408064,
+              "eth_finalized": 26243806,
+              "eth_processed": 26243806,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620841,
+              "eth_last_progress": 1792620515,
+              "koinos_anchor_ok": 1792620841,
+              "eth_anchor_ok": 1792620821,
+              "koinos_lib_max": 40408064,
+              "eth_finalized_max": 26243806,
+              "koinos_lib_moved": 1792620840,
+              "eth_finalized_moved": 1792620511
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620838,
+            "status": {
+              "koinos_lib": 40408058,
+              "koinos_processed": 40408058,
+              "eth_finalized": 26243806,
+              "eth_processed": 26243806,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620828,
+              "eth_last_progress": 1792620532,
+              "koinos_anchor_ok": 1792620829,
+              "eth_anchor_ok": 1792620808,
+              "koinos_lib_max": 40408060,
+              "eth_finalized_max": 26243806,
+              "koinos_lib_moved": 1792620828,
+              "eth_finalized_moved": 1792620531
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620844,
+            "status": {
+              "koinos_lib": 40408064,
+              "koinos_processed": 40408064,
+              "eth_finalized": 26243806,
+              "eth_processed": 26243806,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620841,
+              "eth_last_progress": 1792620515,
+              "koinos_anchor_ok": 1792620841,
+              "eth_anchor_ok": 1792620821,
+              "koinos_lib_max": 40408064,
+              "eth_finalized_max": 26243806,
+              "koinos_lib_moved": 1792620840,
+              "eth_finalized_moved": 1792620513
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-21T22:14:48.680522+00:00",
+        "elapsedSeconds": 210.06,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620870,
+            "status": {
+              "koinos_lib": 40408070,
+              "koinos_processed": 40408070,
+              "eth_finalized": 26243806,
+              "eth_processed": 26243806,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620856,
+              "eth_last_progress": 1792620515,
+              "koinos_anchor_ok": 1792620856,
+              "eth_anchor_ok": 1792620852,
+              "koinos_lib_max": 40408070,
+              "eth_finalized_max": 26243806,
+              "koinos_lib_moved": 1792620856,
+              "eth_finalized_moved": 1792620511
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620878,
+            "status": {
+              "koinos_lib": 40408079,
+              "koinos_processed": 40408079,
+              "eth_finalized": 26243806,
+              "eth_processed": 26243806,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620875,
+              "eth_last_progress": 1792620532,
+              "koinos_anchor_ok": 1792620875,
+              "eth_anchor_ok": 1792620869,
+              "koinos_lib_max": 40408079,
+              "eth_finalized_max": 26243806,
+              "koinos_lib_moved": 1792620875,
+              "eth_finalized_moved": 1792620531
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620885,
+            "status": {
+              "koinos_lib": 40408078,
+              "koinos_processed": 40408078,
+              "eth_finalized": 26243806,
+              "eth_processed": 26243806,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620872,
+              "eth_last_progress": 1792620515,
+              "koinos_anchor_ok": 1792620872,
+              "eth_anchor_ok": 1792620882,
+              "koinos_lib_max": 40408078,
+              "eth_finalized_max": 26243806,
+              "koinos_lib_moved": 1792620872,
+              "eth_finalized_moved": 1792620513
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-21T22:15:18.686999+00:00",
+        "elapsedSeconds": 240.06,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620910,
+            "status": {
+              "koinos_lib": 40408088,
+              "koinos_processed": 40408088,
+              "eth_finalized": 26243806,
+              "eth_processed": 26243806,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620903,
+              "eth_last_progress": 1792620515,
+              "koinos_anchor_ok": 1792620903,
+              "eth_anchor_ok": 1792620882,
+              "koinos_lib_max": 40408088,
+              "eth_finalized_max": 26243806,
+              "koinos_lib_moved": 1792620903,
+              "eth_finalized_moved": 1792620511
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620898,
+            "status": {
+              "koinos_lib": 40408084,
+              "koinos_processed": 40408084,
+              "eth_finalized": 26243806,
+              "eth_processed": 26243806,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620891,
+              "eth_last_progress": 1792620532,
+              "koinos_anchor_ok": 1792620891,
+              "eth_anchor_ok": 1792620869,
+              "koinos_lib_max": 40408084,
+              "eth_finalized_max": 26243806,
+              "koinos_lib_moved": 1792620890,
+              "eth_finalized_moved": 1792620531
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620905,
+            "status": {
+              "koinos_lib": 40408088,
+              "koinos_processed": 40408088,
+              "eth_finalized": 26243806,
+              "eth_processed": 26243806,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620903,
+              "eth_last_progress": 1792620515,
+              "koinos_anchor_ok": 1792620903,
+              "eth_anchor_ok": 1792620882,
+              "koinos_lib_max": 40408088,
+              "eth_finalized_max": 26243806,
+              "koinos_lib_moved": 1792620903,
+              "eth_finalized_moved": 1792620513
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-21T22:15:48.694401+00:00",
+        "elapsedSeconds": 270.07,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620930,
+            "status": {
+              "koinos_lib": 40408090,
+              "koinos_processed": 40408090,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620918,
+              "eth_last_progress": 1792620914,
+              "koinos_anchor_ok": 1792620919,
+              "eth_anchor_ok": 1792620915,
+              "koinos_lib_max": 40408090,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792620918,
+              "eth_finalized_moved": 1792620913
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620939,
+            "status": {
+              "koinos_lib": 40408098,
+              "koinos_processed": 40408098,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620938,
+              "eth_last_progress": 1792620903,
+              "koinos_anchor_ok": 1792620938,
+              "eth_anchor_ok": 1792620934,
+              "koinos_lib_max": 40408098,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792620937,
+              "eth_finalized_moved": 1792620899
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620945,
+            "status": {
+              "koinos_lib": 40408096,
+              "koinos_processed": 40408096,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620934,
+              "eth_last_progress": 1792620914,
+              "koinos_anchor_ok": 1792620934,
+              "eth_anchor_ok": 1792620915,
+              "koinos_lib_max": 40408096,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792620934,
+              "eth_finalized_moved": 1792620913
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-21T22:16:18.700162+00:00",
+        "elapsedSeconds": 300.08,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620971,
+            "status": {
+              "koinos_lib": 40408110,
+              "koinos_processed": 40408110,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620966,
+              "eth_last_progress": 1792620914,
+              "koinos_anchor_ok": 1792620966,
+              "eth_anchor_ok": 1792620945,
+              "koinos_lib_max": 40408110,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792620966,
+              "eth_finalized_moved": 1792620913
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620959,
+            "status": {
+              "koinos_lib": 40408104,
+              "koinos_processed": 40408104,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620953,
+              "eth_last_progress": 1792620903,
+              "koinos_anchor_ok": 1792620953,
+              "eth_anchor_ok": 1792620934,
+              "koinos_lib_max": 40408104,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792620953,
+              "eth_finalized_moved": 1792620899
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "monitorReady": false,
+            "monitorReason": "catching_up",
+            "nativeProblems": [],
+            "checkedAt": 1792620965,
+            "status": {
+              "koinos_lib": 40408109,
+              "koinos_processed": 40408103,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620950,
+              "eth_last_progress": 1792620914,
+              "koinos_anchor_ok": 1792620965,
+              "eth_anchor_ok": 1792620945,
+              "koinos_lib_max": 40408110,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792620965,
+              "eth_finalized_moved": 1792620913
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-21T22:16:48.705227+00:00",
+        "elapsedSeconds": 330.08,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620991,
+            "status": {
+              "koinos_lib": 40408114,
+              "koinos_processed": 40408114,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620981,
+              "eth_last_progress": 1792620914,
+              "koinos_anchor_ok": 1792620982,
+              "eth_anchor_ok": 1792620976,
+              "koinos_lib_max": 40408114,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792620981,
+              "eth_finalized_moved": 1792620913
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792620999,
+            "status": {
+              "koinos_lib": 40408114,
+              "koinos_processed": 40408114,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620984,
+              "eth_last_progress": 1792620903,
+              "koinos_anchor_ok": 1792620985,
+              "eth_anchor_ok": 1792620995,
+              "koinos_lib_max": 40408114,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792620984,
+              "eth_finalized_moved": 1792620899
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621006,
+            "status": {
+              "koinos_lib": 40408118,
+              "koinos_processed": 40408118,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792620997,
+              "eth_last_progress": 1792620914,
+              "koinos_anchor_ok": 1792620997,
+              "eth_anchor_ok": 1792620976,
+              "koinos_lib_max": 40408118,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792620997,
+              "eth_finalized_moved": 1792620913
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-21T22:17:18.712313+00:00",
+        "elapsedSeconds": 360.09,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621031,
+            "status": {
+              "koinos_lib": 40408124,
+              "koinos_processed": 40408124,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792621028,
+              "eth_last_progress": 1792620914,
+              "koinos_anchor_ok": 1792621029,
+              "eth_anchor_ok": 1792621007,
+              "koinos_lib_max": 40408125,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792621028,
+              "eth_finalized_moved": 1792620913
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621019,
+            "status": {
+              "koinos_lib": 40408121,
+              "koinos_processed": 40408121,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792621015,
+              "eth_last_progress": 1792620903,
+              "koinos_anchor_ok": 1792621016,
+              "eth_anchor_ok": 1792620995,
+              "koinos_lib_max": 40408121,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792621015,
+              "eth_finalized_moved": 1792620899
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621026,
+            "status": {
+              "koinos_lib": 40408120,
+              "koinos_processed": 40408120,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792621013,
+              "eth_last_progress": 1792620914,
+              "koinos_anchor_ok": 1792621013,
+              "eth_anchor_ok": 1792621007,
+              "koinos_lib_max": 40408120,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792621012,
+              "eth_finalized_moved": 1792620913
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-21T22:17:48.718612+00:00",
+        "elapsedSeconds": 390.1,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621051,
+            "status": {
+              "koinos_lib": 40408127,
+              "koinos_processed": 40408127,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792621044,
+              "eth_last_progress": 1792620914,
+              "koinos_anchor_ok": 1792621044,
+              "eth_anchor_ok": 1792621037,
+              "koinos_lib_max": 40408127,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792621044,
+              "eth_finalized_moved": 1792620913
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621060,
+            "status": {
+              "koinos_lib": 40408128,
+              "koinos_processed": 40408128,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792621047,
+              "eth_last_progress": 1792620903,
+              "koinos_anchor_ok": 1792621047,
+              "eth_anchor_ok": 1792621057,
+              "koinos_lib_max": 40408128,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792621046,
+              "eth_finalized_moved": 1792620899
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621066,
+            "status": {
+              "koinos_lib": 40408132,
+              "koinos_processed": 40408132,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792621060,
+              "eth_last_progress": 1792620914,
+              "koinos_anchor_ok": 1792621060,
+              "eth_anchor_ok": 1792621037,
+              "koinos_lib_max": 40408132,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792621059,
+              "eth_finalized_moved": 1792620913
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-21T22:18:18.722739+00:00",
+        "elapsedSeconds": 420.1,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621092,
+            "status": {
+              "koinos_lib": 40408140,
+              "koinos_processed": 40408140,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792621091,
+              "eth_last_progress": 1792620914,
+              "koinos_anchor_ok": 1792621091,
+              "eth_anchor_ok": 1792621068,
+              "koinos_lib_max": 40408140,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792621091,
+              "eth_finalized_moved": 1792620913
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621080,
+            "status": {
+              "koinos_lib": 40408136,
+              "koinos_processed": 40408136,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792621078,
+              "eth_last_progress": 1792620903,
+              "koinos_anchor_ok": 1792621078,
+              "eth_anchor_ok": 1792621057,
+              "koinos_lib_max": 40408136,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792621077,
+              "eth_finalized_moved": 1792620899
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621087,
+            "status": {
+              "koinos_lib": 40408136,
+              "koinos_processed": 40408136,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792621075,
+              "eth_last_progress": 1792620914,
+              "koinos_anchor_ok": 1792621075,
+              "eth_anchor_ok": 1792621068,
+              "koinos_lib_max": 40408136,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792621075,
+              "eth_finalized_moved": 1792620913
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-21T22:18:48.729849+00:00",
+        "elapsedSeconds": 450.11,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621112,
+            "status": {
+              "koinos_lib": 40408145,
+              "koinos_processed": 40408145,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792621107,
+              "eth_last_progress": 1792620914,
+              "koinos_anchor_ok": 1792621107,
+              "eth_anchor_ok": 1792621098,
+              "koinos_lib_max": 40408145,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792621106,
+              "eth_finalized_moved": 1792620913
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621120,
+            "status": {
+              "koinos_lib": 40408145,
+              "koinos_processed": 40408145,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792621109,
+              "eth_last_progress": 1792620903,
+              "koinos_anchor_ok": 1792621109,
+              "eth_anchor_ok": 1792621118,
+              "koinos_lib_max": 40408145,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792621109,
+              "eth_finalized_moved": 1792620899
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621127,
+            "status": {
+              "koinos_lib": 40408150,
+              "koinos_processed": 40408150,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792621122,
+              "eth_last_progress": 1792620914,
+              "koinos_anchor_ok": 1792621122,
+              "eth_anchor_ok": 1792621098,
+              "koinos_lib_max": 40408150,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792621122,
+              "eth_finalized_moved": 1792620913
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-21T22:19:18.735024+00:00",
+        "elapsedSeconds": 480.11,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621152,
+            "status": {
+              "koinos_lib": 40408151,
+              "koinos_processed": 40408151,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792621138,
+              "eth_last_progress": 1792620914,
+              "koinos_anchor_ok": 1792621138,
+              "eth_anchor_ok": 1792621129,
+              "koinos_lib_max": 40408151,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792621138,
+              "eth_finalized_moved": 1792620913
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621140,
+            "status": {
+              "koinos_lib": 40408152,
+              "koinos_processed": 40408152,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792621140,
+              "eth_last_progress": 1792620903,
+              "koinos_anchor_ok": 1792621140,
+              "eth_anchor_ok": 1792621118,
+              "koinos_lib_max": 40408152,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792621140,
+              "eth_finalized_moved": 1792620899
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621147,
+            "status": {
+              "koinos_lib": 40408151,
+              "koinos_processed": 40408151,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792621138,
+              "eth_last_progress": 1792620914,
+              "koinos_anchor_ok": 1792621138,
+              "eth_anchor_ok": 1792621129,
+              "koinos_lib_max": 40408151,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792621138,
+              "eth_finalized_moved": 1792620913
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-21T22:19:48.738674+00:00",
+        "elapsedSeconds": 510.12,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621172,
+            "status": {
+              "koinos_lib": 40408157,
+              "koinos_processed": 40408157,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792621169,
+              "eth_last_progress": 1792620914,
+              "koinos_anchor_ok": 1792621169,
+              "eth_anchor_ok": 1792621159,
+              "koinos_lib_max": 40408157,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792621169,
+              "eth_finalized_moved": 1792620913
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621181,
+            "status": {
+              "koinos_lib": 40408157,
+              "koinos_processed": 40408157,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792621171,
+              "eth_last_progress": 1792620903,
+              "koinos_anchor_ok": 1792621171,
+              "eth_anchor_ok": 1792621179,
+              "koinos_lib_max": 40408157,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792621171,
+              "eth_finalized_moved": 1792620899
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621187,
+            "status": {
+              "koinos_lib": 40408160,
+              "koinos_processed": 40408160,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792621185,
+              "eth_last_progress": 1792620914,
+              "koinos_anchor_ok": 1792621185,
+              "eth_anchor_ok": 1792621159,
+              "koinos_lib_max": 40408161,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792621184,
+              "eth_finalized_moved": 1792620913
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-21T22:20:18.744833+00:00",
+        "elapsedSeconds": 540.12,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621213,
+            "status": {
+              "koinos_lib": 40408167,
+              "koinos_processed": 40408167,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792621200,
+              "eth_last_progress": 1792620914,
+              "koinos_anchor_ok": 1792621200,
+              "eth_anchor_ok": 1792621190,
+              "koinos_lib_max": 40408167,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792621200,
+              "eth_finalized_moved": 1792620913
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621201,
+            "status": {
+              "koinos_lib": 40408164,
+              "koinos_processed": 40408164,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792621187,
+              "eth_last_progress": 1792620903,
+              "koinos_anchor_ok": 1792621187,
+              "eth_anchor_ok": 1792621179,
+              "koinos_lib_max": 40408164,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792621187,
+              "eth_finalized_moved": 1792620899
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621208,
+            "status": {
+              "koinos_lib": 40408167,
+              "koinos_processed": 40408167,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792621200,
+              "eth_last_progress": 1792620914,
+              "koinos_anchor_ok": 1792621200,
+              "eth_anchor_ok": 1792621190,
+              "koinos_lib_max": 40408167,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792621200,
+              "eth_finalized_moved": 1792620913
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-21T22:20:48.749540+00:00",
+        "elapsedSeconds": 570.13,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621233,
+            "status": {
+              "koinos_lib": 40408177,
+              "koinos_processed": 40408177,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792621231,
+              "eth_last_progress": 1792620914,
+              "koinos_anchor_ok": 1792621232,
+              "eth_anchor_ok": 1792621221,
+              "koinos_lib_max": 40408177,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792621231,
+              "eth_finalized_moved": 1792620913
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621241,
+            "status": {
+              "koinos_lib": 40408179,
+              "koinos_processed": 40408179,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792621234,
+              "eth_last_progress": 1792620903,
+              "koinos_anchor_ok": 1792621234,
+              "eth_anchor_ok": 1792621240,
+              "koinos_lib_max": 40408179,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792621234,
+              "eth_finalized_moved": 1792620899
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621248,
+            "status": {
+              "koinos_lib": 40408181,
+              "koinos_processed": 40408181,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792621247,
+              "eth_last_progress": 1792620914,
+              "koinos_anchor_ok": 1792621247,
+              "eth_anchor_ok": 1792621221,
+              "koinos_lib_max": 40408181,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792621247,
+              "eth_finalized_moved": 1792620913
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "recordedAt": "2026-10-21T22:21:18.755484+00:00",
+        "elapsedSeconds": 600.13,
+        "instances": [
+          {
+            "instance": 1,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621273,
+            "status": {
+              "koinos_lib": 40408191,
+              "koinos_processed": 40408191,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792621263,
+              "eth_last_progress": 1792620914,
+              "koinos_anchor_ok": 1792621263,
+              "eth_anchor_ok": 1792621251,
+              "koinos_lib_max": 40408191,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792621263,
+              "eth_finalized_moved": 1792620913
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 2,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621262,
+            "status": {
+              "koinos_lib": 40408183,
+              "koinos_processed": 40408183,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792621250,
+              "eth_last_progress": 1792620903,
+              "koinos_anchor_ok": 1792621250,
+              "eth_anchor_ok": 1792621240,
+              "koinos_lib_max": 40408183,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792621250,
+              "eth_finalized_moved": 1792620899
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          },
+          {
+            "instance": 3,
+            "httpStatus": 200,
+            "monitorReady": true,
+            "monitorReason": "ready",
+            "nativeProblems": [],
+            "checkedAt": 1792621268,
+            "status": {
+              "koinos_lib": 40408191,
+              "koinos_processed": 40408191,
+              "eth_finalized": 26243838,
+              "eth_processed": 26243838,
+              "deposits_seen": 0,
+              "quarantined": 0,
+              "koinos_last_progress": 1792621263,
+              "eth_last_progress": 1792620914,
+              "koinos_anchor_ok": 1792621263,
+              "eth_anchor_ok": 1792621251,
+              "koinos_lib_max": 40408191,
+              "eth_finalized_max": 26243838,
+              "koinos_lib_moved": 1792621263,
+              "eth_finalized_moved": 1792620913
+            },
+            "records": {
+              "e2k": {
+                "chain_counter_finalized": 1,
+                "records": {
+                  "highest": 1
+                }
+              },
+              "k2e": {
+                "chain_counter_head": 1,
+                "records": {
+                  "highest": 1
+                }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "historicalCollection": {
+    "observedAt": "2026-10-21T22:22:35.855Z",
+    "passed": true,
+    "results": [
+      {
+        "direction": "e2k",
+        "elapsedMs": 599,
+        "alreadyConsumed": true,
+        "signatureCount": 3,
+        "distinctVerifiedCurrentMembers": 3,
+        "quorum": 3,
+        "outcome": "ready",
+        "usedBackup": false
+      },
+      {
+        "direction": "k2e",
+        "elapsedMs": 755,
+        "alreadyConsumed": true,
+        "signatureCount": 3,
+        "distinctVerifiedCurrentMembers": 3,
+        "quorum": 3,
+        "outcome": "ready",
+        "usedBackup": false
+      }
+    ],
+    "bothPauseStates": {
+      "eth": true,
+      "koinos": true
+    },
+    "newTransactions": 0
+  },
+  "renderedWebsite": {
+    "freshCompletedReceiptsBothDirections": true,
+    "redeemControlsDisabled": true,
+    "e2kVisualScreenshotInspected": true,
+    "e2kAccessibilityCaptureIsUnchangedTreeDiff": true,
+    "k2eAccessibilityCaptureIsFullState": true,
+    "layoutAndOutageTestsReusedFromAcceptedEvidence": true
+  },
+  "remaining": "Strict all-samples caught-up monitor predicate did not pass: two brief ingestion snapshots were catching_up. Do not label them new RPC failures or reinterpret them as ready. No service/source change is justified by those snapshots. Retain the failed criterion and every sample; no pilot-completion claim.",
+  "proofSha256": {
+    "nativeObservation": "f859f77f38b9664617cf21f81a44b4d3c8a52dfae27716542c1f5745c67bb730",
+    "historicalCollection": "ac695b9f14c9c8500274e9f393c73407685b3f16c9874b9e541af96c0884d830",
+    "e2kRenderedStateDiff": "50e503ef6470d5f69071e8ee4a4763786584d3b4d9dff4bf9e42ceb7d39e8f48",
+    "k2eRenderedState": "a14835a60d0f2c0dfbb08d7438d2fe8a72b80291ae552858d26647d03cf47daf",
+    "e2kScreenshot": "aeeb724877979dcc6b01040ef821aa3d78bf203286c65230620f0816f9785910",
+    "k2eScreenshot": "e696ec407adad77fd958aff358b25db4b5a06f51ff472aaf465cf97c3bc4d047"
+  },
+  "nativeRestarts": 0,
+  "newUnlocks": 0,
+  "blockchainTransactions": 0,
+  "telegramMessages": 0
+}

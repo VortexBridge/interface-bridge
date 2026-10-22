@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-21T20:01:54.202738+00:00",
+  "scope": "Installed private primary/backup collector pilot; no new blockchain transaction",
+  "installedPilotAccepted": false,
+  "pending": [
+    "Fresh all-three native readiness after retained Ethereum/Koinos data-source refusals, then final delegated technical sign-off"
+  ],
+  "runtimeSources": {
+    "bridge": "1e3de7476f9e9fc6550a99a6c6cc80b18d7cfb12",
+    "interface": "e5a827ffa9b5cc952461b32ef7d52de98a4e300c"
+  },
+  "runtimeArtifacts": {
+    "collectorAmd64Sha256": "7ff95b4e2d778a7b82ab5379a369ffd470b12c381db30a7908943ee9bc5588d8",
+    "nativeValidatorUnchangedSha256": "90c07d1278df1005e52fb3dbb2f88056f0752a5d91dae3c6f9f7c3d9c91eaf49",
+    "privateWebsiteArchiveSha256": "90208c0d5ee4b40aca1eed96bb9c95d9dd68442b40f435739b710cecd8896946",
+    "privateWebsiteCspConfigurationSha256": "05c09efd832f734dca944987a9970d9abcdcceacdefb9c830f9635444dba8de9"
+  },
+  "operators": {
+    "primary": "Pablo",
+    "backup": "Pablo",
+    "separateCollectorVpsHosts": true,
+    "separateHostingProviders": true,
+    "sharedDependencies": [
+      "operator custody",
+      "Tailscale owner and control plane",
+      "provider-assigned DNS",
+      "public certificate authority"
+    ],
+    "threeValidatorIdentitiesOnOneOriginalHost": true,
+    "independentOperatorCustodyProven": false,
+    "sshTrust": "Owner-supplied exact endpoint and matching DNS, retained first-use pin; no independent provider-console attestation"
+  },
+  "installedChecks": {
+    "policyAssertions": 54,
+    "apiOnlyVpnDualStack": true,
+    "vpnRevocationAndRestore": true,
+    "collectorToOperatorSshAndUiDenied": true,
+    "oldNativeServeClaimPortsClosed": true,
+    "publicOriginsAndSshClosed": true,
+    "nativeProtectedFilesAndPidsUnchanged": true,
+    "actualCgroupUidFileAndEgressLimits": true,
+    "productionHttpsBothFamilies": true,
+    "realCertbotRenewalDryRunsWithDeployHooks": true,
+    "corsNoStoreOn403404405413429502": true,
+    "slowHeaderDeadlineSeconds": 3,
+    "actualPrimaryServiceOutageAndBackup": true,
+    "actualBothDownRefusalAndPinnedRecovery": true,
+    "actualVerifiedPartialRetention": "two primary signatures plus one backup, same canonical claim and expiry",
+    "compatibleCollectorOnlyWebsiteRollback": true,
+    "retiredDirectBrowserClaimRoutes404": true,
+    "privateWebsiteAssetsVerified": 57,
+    "websiteTermsAcceptedByHuman": true,
+    "agentAcceptedTerms": false,
+    "renderedCompletedReceiptsBothDirections": true,
+    "renderedInvalidAmountsAddressesAndTransactions": true,
+    "renderedBothDownWarningAndBackupRecovery": true,
+    "mobileViewport": [
+      390,
+      844
+    ],
+    "mobileHorizontalOverflow": false,
+    "privateTerminalOnlySigningFence": true,
+    "bothActualBridgesPaused": true
+  },
+  "actualHistoricalSignatureResults": [
+    {
+      "direction": "e2k",
+      "verifiedSignatures": 3,
+      "quorum": 3,
+      "usedBackup": false,
+      "sourceAlreadyConsumed": true,
+      "elapsedMs": 602
+    },
+    {
+      "direction": "k2e",
+      "verifiedSignatures": 3,
+      "quorum": 3,
+      "usedBackup": false,
+      "sourceAlreadyConsumed": true,
+      "elapsedMs": 787
+    }
+  ],
+  "validationProvenance": {
+    "interfaceTestsPassed": 32,
+    "renderedUnclaimedSignatureStates": {
+      "cases": 6,
+      "evidenceType": "Explicit fixtures with test keys and responses; not new live deposits"
+    },
+    "actualRenderedSite": "Real already-consumed canonical mainnet deposits and actual stopped/recovered collector services",
+    "commonCryptoAndMembershipModulesByteIdentical": true,
+    "goRaceVetBuildsAndNativeFixtures": "Earlier retained source-specific runs; not falsely re-run at documentation-only heads"
+  },
+  "latestNativeHealth": {
+    "observedAt": "2026-10-21T20:00:43.682Z",
+    "passed": false,
+    "okOfSix": 2,
+    "problem": "Two original instances refuse readiness: Ethereum data-source/no-progress and Koinos source failure/disagreement; collectors healthy"
+  },
+  "limits": [
+    "No new live transfer or governance transaction",
+    "No independent five-operator custody or separate-operator sharing acceptance",
+    "Native source/freshness refusals occurred transiently; no claim of continuous availability or RPC repair",
+    "Installed watchdog tested its health subset, not full-chain/token watchdog certification"
+  ],
+  "telegramMessagesSent": 0,
+  "blockchainTransactionsSent": 0,
+  "purchases": 0,
+  "nativeRestarts": 0,
+  "excludedTelenoHostAccessed": false,
+  "privateReceiptSha256": {
+    "actual-installed-recovery-drills.json": "056e7d3816952b31f6cd9d175dac267d3e097875d3e4a0d56e373b926468f370",
+    "website-actual-collector-cgroup-egress-and-uid-successor.json": "0ff3ddc7a70f0b2bbe9f4e28a7350356b7b08d717eea0288ca1108c68c15f3fe",
+    "backup-actual-collector-cgroup-egress-and-uid-acceptance.json": "250924559ec33904133aac38bf209ccd0b742e260525adc92fec97fea727d5a6",
+    "actual-tailscale-backup-api-revocation-denied.json": "868653dde31216ad454608433ffa0de5de8ce91909b3da420bdcc3c3ec79d42a",
+    "actual-tailscale-backup-api-revocation-restored.json": "7f9138f1cf72275dda32132738be10be37a9ebbd9c4563a3790bd94e75b4c3ab",
+    "website-actual-final-api-only-isolation-acceptance.json": "fe4bbb71420d40ec7c43b5f97658da1ed99289531d49416894281fadf4ef9da5",
+    "backup-actual-final-api-only-isolation-acceptance.json": "660744797c67e6e9e5b48eadeeee0d3f9d4416745c923b2a729ee7a9b894d61c",
+    "actual-validator-final-private-origin-cutover.json": "dfebce5c7fc597c0938b58b010d99d751639cb987f46eba1c356cb3e3b7b5a83",
+    "website-actual-certificate-renewal-dry-run.json": "8ac51581893c4a29c7738391c19069759b22fba46d1d879031b3a4d9e39fec7d",
+    "backup-actual-certificate-renewal-dry-run.json": "b384500109aa28d5088e40b15124b7f22821190a561b3d5bc85e2ad19efc47ea",
+    "website-actual-slow-header-deadline-successor.json": "8555ffdf42ae0f8b88fbd8666281fc8f03f54ae3df81d8e24a9523b1ff24be92",
+    "backup-actual-slow-header-deadline-successor.json": "e5afdbe8a4550d3eb4932740be9e1a0fac47b082d2c0879b1baa86c5fd70ce6a",
+    "website-actual-502-cors-no-store-and-recovery.json": "199c147de4b3fe58b5e26e446b4660306a12c92a9b1460ea76ea59de561692bc",
+    "backup-actual-502-cors-no-store-and-ready-recovery-successor.json": "5906172700085a36c5c9ab6ecc0f8ea2b132e201adbf80ecf4891d3138fc6577",
+    "website-collector-mode-20261021-r1/final-accepted-pilot-primary-recovery-installed-native-collection.json": "f58dce270ec180f61b7138c747219244add73bc241327de3d998b3f56c318231",
+    "website-collector-mode-20261021-r1/ui-backup-only-rendered-recovery-installed-native-collection.json": "f2ea72450f9da5c7b1668876974009c66bd7b567dc2cd3250763f701459e2794",
+    "website-collector-availability-20261021-r2/verified-installation.json": "2457076c66c6d399de3dbe960a885699ae1501b9493c31ed61f950e811a8db14",
+    "website-actual-collector-browser-csp-successor.json": "4d4e2fb41dc8bffbe74ec09719afb9c9c6abcdad2774d24f54d99b8435d1c91c",
+    "website-actual-compatible-collector-mode-rollback.json": "a13f1cd77c9e42e357cbe0d3d901aaa730a549269d03867886b7d97d9631c62d",
+    "actual-collector-ui-primary-down.json": "edf682217f599fc11f5e676d0bbb55999dcf8c2cf592032656ef6d92885d7411",
+    "actual-collector-ui-both-down.json": "d95f1e4af8c2ddfbed2e69308b7ce5f01e1b899b354d874bd6da587bf18355b7",
+    "actual-collector-ui-backup-recovery.json": "022880362101d9aae385137421aa01f8b73b3aefcba2c843f063fe5f29fb0303",
+    "actual-collector-website-k2e-paused.json": "d3d94f2dfb8d3ef298070d3ccc15cf5a90b88b7655eafe16eb61387773e94ea3",
+    "actual-collector-website-e2k-paused.json": "f4bd0f05a4bda6a34f0cdd76144503f11ad2f2f0ce5842b062a156cc1ee53267",
+    "actual-collector-website-e2k-redeemed.json": "9fd6f68564a0326114cce129f29e43a07b6a4c39393cc26b6735376ce8eb0306",
+    "actual-collector-website-k2e-redeemed.json": "9a3195810e5de0171bb2e93990522811d984f037fb6f710b8b43c18936b12767",
+    "actual-collector-website-mobile-layout.json": "1456aa857e9f03557eaccb8bf1f5aef2efe8af09b291f30a56918d6b008cc7fd",
+    "tailscale-api-only-final-saved-readback.hujson": "9852f94d340da9666f15485866810313e6206eaa808f218c2995d6b86265f082",
+    "ui-primary-down-actual-service-action.json": "8d4914c937465c9eb7340f53efea16ed40874a3dd300c60f331a400d29360022",
+    "ui-both-down-actual-service-action.json": "a1a5149f89e5bc15d025ec5bd9bee3705c45fb77a343475be9f76f9edd2c8134",
+    "ui-backup-recovery-actual-service-action.json": "e256fb332ca58ac2c419660b9b8038288754fd8fa6a5c7bbc5cb4951b985ffe9",
+    "ui-primary-recovery-actual-service-action.json": "6011b07b67950c235fd66ca7bd21e888ad755bbac1d8eb3ba0e81206c7ed8725",
+    "website-actual-installed-private-watchdog-accepted-final.json": "5b6eeefa67138ea60c6180aeccb9b3b1b533f6129b60a60156f30fe4621f9471",
+    "website-actual-installed-private-watchdog-accepted-successor.json": "0b6f02620e634ae29a1cc0bbaf776a30a4ad816cd2fbc1765ef4111e9e4f8ea7",
+    "actual-native-late-readiness-readonly-diagnostic.json": "14d6f16f75fb47bc6d439b194bd4ac0742542eaf9f40167aa164da4d3b4da307",
+    "website-actual-installed-private-watchdog-handoff-readiness.json": "9b34a990270acfffc521e5edd702adf6d040aedd31ae024058d51c313d292650"
+  },
+  "screenshots": {
+    "actual-collector-website-final-desktop.png": {
+      "sha256": "60da237d91354e5e20d6a2d46cee1a97f03ce4e5864acf474d0d0b4d054a6de8"
+    },
+    "actual-collector-ui-both-down-mobile.png": {
+      "sha256": "fe9af964676542ced3a8043527b4d756c0365a653d22de2816d0c98d2dc671bf"
+    }
+  }
+}

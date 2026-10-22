@@ -1,9 +1,12 @@
 import path from 'path';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
+import { collectionConfig } from './src/v2/collection-config.mjs';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
 
-export default defineConfig(() => {
+export default defineConfig(({ mode }) => {
+  // Refuse accidental inclusion of private origins before Vite embeds any public environment value.
+  collectionConfig({ ...loadEnv(mode, process.cwd(), 'VITE_'), ...process.env });
 
   return {
     resolve: {
