@@ -37,7 +37,33 @@ a temporary collection warning with Retry; completed transfers remain independen
 these requests on timeout/unmount and shows no positive readiness badge. A reachable collector says
 nothing about native validator health, membership or quorum; only verified collection results enable claims.
 
-## Current installed source and readiness — 22 October 2026
+## Latest actual legacy source recovery — 22 October 2026
+
+The approved Koinos witness stalled while its RPC container remained up. A single guarded restart of
+the existing P2P container restored current block ingestion. Independent readback verifies all thirteen
+original container identities/images/mount sets and the other twelve PIDs/start times, including both
+producers. Actual paired calls from the validator VPS agree on head 40424576, irreversible height
+40424516 and the canonical receipt. Teleno remains primary; both Koinos sources are owner-operated.
+No source/configuration/history change, producer action or native validator restart was made.
+Protected readback verifies all three original encrypted keys, configurations and loaded executables.
+
+The retained unchanged-gate 600.22-second native window has all three ready in 19/21 samples: 62 HTTP
+200 responses and one HTTP 503. The 503 is a progress-timer alert while a new finalized frontier is
+4.66 seconds old; processing follows the new frontier by two seconds. It has no source-failure flag.
+The separate four-block Koinos catch-up sample is HTTP 200. The matched gateway journal has four
+recovered 408 retry events and no terminal refusal in this window. The strict gate stays false.
+No native/monitor guard was changed to relabel these samples or manufacture acceptance.
+
+A later current pre-collection gate refuses Ethereum on instance 3; its matched original dRPC witness
+journal records three HTTP 408 refusals after the permitted retry. No per-request attribution is claimed.
+Both bridges currently read paused and both historical deposits read consumed. The collection stopped
+before signature requests. Stable all-three readiness, fresh post-change 3/3 collection in both directions
+and current rendered consistency/final sign-off remain pending. Earlier accepted security, recovery and
+UI evidence is retained. No transaction or Telegram message was sent; no client/collector build changed.
+
+See `evidence/collector-private-pilot-20261021/approved-legacy-source-recovery-20261022.json` for all sanitized samples and immutable private-evidence digests.
+
+## Earlier installed source and readiness checkpoint — 22 October 2026
 
 The owner explicitly approved replacing only the Koinos witness with his existing legacy API over the
 existing private VPN; Teleno remains primary. Both Koinos readers are owner-operated. This amendment
