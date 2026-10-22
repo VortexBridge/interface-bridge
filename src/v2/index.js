@@ -1,10 +1,11 @@
 // Vortex bridge v2 for this site: the flows (flows.mjs) with the bridges of the selected network and the validators.
 import { ethers } from "ethers";
 import * as koilib from "koilib";
-import { createFlows } from "./flows.mjs";
 import KoinosBridgeAbi from "../assets/contracts/Koinos-Bridge-v2.json";
 import KoinosTokenAbi from "../assets/contracts/Koinos-Token.json";
 import { BRIDGE_CHAINS, BRIDGE_CHAINS_TYPES, KOINOS_RPC } from "../constants/chains";
+import { createFlows } from "./flows.mjs";
+import { createJsonReader } from "./json-reader.mjs";
 
 export { KIND } from "./flows.mjs";
 
@@ -29,4 +30,4 @@ export const vortex = configured ? createFlows({
 }) : null;
 
 // Koinos reads need no wallet
-export const koinosReader = new koilib.Provider(KOINOS_RPC);
+export const koinosReader = createJsonReader(koilib.Provider, KOINOS_RPC);
