@@ -1,0 +1,791 @@
+{
+  "recordedAt": "2026-10-22T07:53:23.411379+00:00",
+  "scope": "Actual bounded native readiness after owner-approved existing legacy Koinos witness; all samples retained",
+  "sourceChange": {
+    "ownerApproved": true,
+    "koinosPrimary": "original private Teleno API",
+    "koinosWitness": "owner existing legacy API over the existing private VPN",
+    "bothKoinosReadersOwnerControlled": true,
+    "independentOperatorsClaimed": false,
+    "ethereumSourcesUnchanged": true,
+    "originalNativeGuardsAndHistoryPreserved": true
+  },
+  "window": {
+    "completedAt": "2026-10-22T07:44:59.614478+00:00",
+    "seconds": 600.2,
+    "samples": 21,
+    "allThreeReadySamples": 19,
+    "nativeHttp200": 62,
+    "nativeHttp503": 1,
+    "reportedKoinosProblems": 0,
+    "oneBlockKoinosIngestionSnapshots": 1,
+    "ethereumSourceRefusalSnapshots": 1,
+    "ethereumRefusalBacklogBlocks": 32,
+    "lastSampleAllThreeReady": true,
+    "nativeProcessesUnchanged": true,
+    "meaningfulWindowCompleted": true,
+    "strictAllSamplesReady": false,
+    "passed": false
+  },
+  "samples": [
+    {
+      "recordedAt": "2026-10-22T07:34:59.417438+00:00",
+      "elapsedSeconds": 0.01,
+      "instances": [
+        {
+          "instance": 1,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 2,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 3,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        }
+      ]
+    },
+    {
+      "recordedAt": "2026-10-22T07:35:29.424882+00:00",
+      "elapsedSeconds": 30.01,
+      "instances": [
+        {
+          "instance": 1,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 2,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 3,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        }
+      ]
+    },
+    {
+      "recordedAt": "2026-10-22T07:35:59.428267+00:00",
+      "elapsedSeconds": 60.02,
+      "instances": [
+        {
+          "instance": 1,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 2,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 3,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        }
+      ]
+    },
+    {
+      "recordedAt": "2026-10-22T07:36:29.436215+00:00",
+      "elapsedSeconds": 90.03,
+      "instances": [
+        {
+          "instance": 1,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 2,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 3,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        }
+      ]
+    },
+    {
+      "recordedAt": "2026-10-22T07:36:59.440923+00:00",
+      "elapsedSeconds": 120.03,
+      "instances": [
+        {
+          "instance": 1,
+          "httpStatus": 200,
+          "ready": false,
+          "nativeMonitorReason": "catching_up",
+          "koinosLagBlocks": 1,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 2,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 3,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        }
+      ]
+    },
+    {
+      "recordedAt": "2026-10-22T07:37:29.448024+00:00",
+      "elapsedSeconds": 150.04,
+      "instances": [
+        {
+          "instance": 1,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 2,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 3,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        }
+      ]
+    },
+    {
+      "recordedAt": "2026-10-22T07:37:59.454830+00:00",
+      "elapsedSeconds": 180.04,
+      "instances": [
+        {
+          "instance": 1,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 2,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 3,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        }
+      ]
+    },
+    {
+      "recordedAt": "2026-10-22T07:38:29.461504+00:00",
+      "elapsedSeconds": 210.05,
+      "instances": [
+        {
+          "instance": 1,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 2,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 3,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        }
+      ]
+    },
+    {
+      "recordedAt": "2026-10-22T07:38:59.467907+00:00",
+      "elapsedSeconds": 240.06,
+      "instances": [
+        {
+          "instance": 1,
+          "httpStatus": 503,
+          "ready": false,
+          "nativeMonitorReason": "reported_problem",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 32,
+          "reportedProblems": [
+            "eth: a data source failed or the sources disagree (details in the local log)",
+            "eth: no progress for 5 min"
+          ]
+        },
+        {
+          "instance": 2,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 3,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        }
+      ]
+    },
+    {
+      "recordedAt": "2026-10-22T07:39:29.475128+00:00",
+      "elapsedSeconds": 270.06,
+      "instances": [
+        {
+          "instance": 1,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 2,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 3,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        }
+      ]
+    },
+    {
+      "recordedAt": "2026-10-22T07:39:59.481236+00:00",
+      "elapsedSeconds": 300.07,
+      "instances": [
+        {
+          "instance": 1,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 2,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 3,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        }
+      ]
+    },
+    {
+      "recordedAt": "2026-10-22T07:40:29.487455+00:00",
+      "elapsedSeconds": 330.08,
+      "instances": [
+        {
+          "instance": 1,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 2,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 3,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        }
+      ]
+    },
+    {
+      "recordedAt": "2026-10-22T07:40:59.493101+00:00",
+      "elapsedSeconds": 360.08,
+      "instances": [
+        {
+          "instance": 1,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 2,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 3,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        }
+      ]
+    },
+    {
+      "recordedAt": "2026-10-22T07:41:29.500265+00:00",
+      "elapsedSeconds": 390.09,
+      "instances": [
+        {
+          "instance": 1,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 2,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 3,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        }
+      ]
+    },
+    {
+      "recordedAt": "2026-10-22T07:41:59.507620+00:00",
+      "elapsedSeconds": 420.1,
+      "instances": [
+        {
+          "instance": 1,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 2,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 3,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        }
+      ]
+    },
+    {
+      "recordedAt": "2026-10-22T07:42:29.513772+00:00",
+      "elapsedSeconds": 450.1,
+      "instances": [
+        {
+          "instance": 1,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 2,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 3,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        }
+      ]
+    },
+    {
+      "recordedAt": "2026-10-22T07:42:59.517915+00:00",
+      "elapsedSeconds": 480.11,
+      "instances": [
+        {
+          "instance": 1,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 2,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 3,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        }
+      ]
+    },
+    {
+      "recordedAt": "2026-10-22T07:43:29.524924+00:00",
+      "elapsedSeconds": 510.11,
+      "instances": [
+        {
+          "instance": 1,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 2,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 3,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        }
+      ]
+    },
+    {
+      "recordedAt": "2026-10-22T07:43:59.532047+00:00",
+      "elapsedSeconds": 540.12,
+      "instances": [
+        {
+          "instance": 1,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 2,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 3,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        }
+      ]
+    },
+    {
+      "recordedAt": "2026-10-22T07:44:29.536671+00:00",
+      "elapsedSeconds": 570.13,
+      "instances": [
+        {
+          "instance": 1,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 2,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 3,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        }
+      ]
+    },
+    {
+      "recordedAt": "2026-10-22T07:44:59.543159+00:00",
+      "elapsedSeconds": 600.13,
+      "instances": [
+        {
+          "instance": 1,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 2,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        },
+        {
+          "instance": 3,
+          "httpStatus": 200,
+          "ready": true,
+          "nativeMonitorReason": "ready",
+          "koinosLagBlocks": 0,
+          "ethereumLagBlocks": 0,
+          "reportedProblems": []
+        }
+      ]
+    }
+  ],
+  "boundedOriginalEthereumJournal": {
+    "since": "2026-10-22T07:34:50Z",
+    "until": "2026-10-22T07:45:00Z",
+    "primaryCategories": {},
+    "witnessProvider": "dRPC",
+    "witnessCategories": {
+      "ethereum-read-transient-retry:408:": 4,
+      "ethereum-read-refusal:408:HTTPError": 1
+    },
+    "requestToInstanceCorrelationClaimed": false
+  },
+  "actualRuntimeReconciliation": {
+    "primaryCollectorAndEdgeUnchanged": true,
+    "privateWebsiteAnd57AssetsMatched": true,
+    "allThreeGatewaySourcePinsAndProcessesMatched": true,
+    "backupGoCollectorAndConfigurationUnchanged": true,
+    "backupNginxRestartSeparatelyObserved": true,
+    "backupNginxCurrentConfigurationMatchesAcceptedPin": true,
+    "backupNginxEffectiveLimitsMatched": true,
+    "backupTrustedPublicHttpsFromOperatorMac": "HTTP 200",
+    "backupSelfConnectionFromOwnHost": "ECONNREFUSED; retained as vantage-specific refusal",
+    "backupRestartCauseOrActorAttributed": false,
+    "newRestartOrRepairByThisContinuation": false
+  },
+  "goalComplete": false,
+  "pending": "Stable all-three native readiness still fails because of a real Ethereum source refusal; retain the separate brief Koinos ingestion result. Fresh post-change historical 3/3 collection, live pause/UI consistency and final sign-off remain pending. Do not weaken guards, substitute Ethereum sources, restart healthy services or repeatedly collect until green.",
+  "publicPrivateAccessDetailsIncluded": false,
+  "blockchainTransactionsSent": 0,
+  "telegramMessagesSent": 0,
+  "privateEvidenceDigests": [
+    {
+      "label": "actual-native-stability-resumed-20261022T0734Z",
+      "sha256": "0320fecc21e6f3fecb4856134d2f738c8291007fb645e6f1238c92f351c0c3af"
+    },
+    {
+      "label": "actual-ethereum-window-journal-20261022T0745Z",
+      "sha256": "423dab707aa7f89eeb10f4c0afd0a3bc6128f5a3b6cd441803545c693af32fc7"
+    },
+    {
+      "label": "resumed-collectors-gateways-website-readback-20261022T0736Z",
+      "sha256": "40382bb0011fc7267f50b7a14a4960bc077822523f3545e91772287def26b4b7"
+    },
+    {
+      "label": "resumed-collectors-gateways-website-readback-20261022T0736Z-r2",
+      "sha256": "aef2e2c1d128f987284afc9fc4572b47505839c083adfdb235215d23c7e98e75"
+    },
+    {
+      "label": "actual-backup-runtime-difference-20261022T0741Z",
+      "sha256": "eaf5dd06f6cbd0783846722bdcc786e0065454b21d5c66fe7b928a0ccd9e88e7"
+    },
+    {
+      "label": "actual-backup-edge-revalidation-20261022T0744Z",
+      "sha256": "c972ba496c1d33a3b4c33666f7a16f0675dc37bdda468b89d36742c8fcbbe3c9"
+    },
+    {
+      "label": "actual-backup-https-vantage-diagnostic-20261022T0748Z",
+      "sha256": "e70b4e10a35c1bcb19860e900f8c053ec0363fbe622bb117300641119747f153"
+    },
+    {
+      "label": "resumed-pr-readback-20261022T0737Z",
+      "sha256": "01479c508b2b8770f58c0f32d1c6f5aec5b9ffd4633e2c3f3c74fe53ead2c8a0"
+    }
+  ]
+}

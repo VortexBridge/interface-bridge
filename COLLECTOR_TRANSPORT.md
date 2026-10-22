@@ -37,6 +37,33 @@ a temporary collection warning with Retry; completed transfers remain independen
 these requests on timeout/unmount and shows no positive readiness badge. A reachable collector says
 nothing about native validator health, membership or quorum; only verified collection results enable claims.
 
+## Current installed source and readiness — 22 October 2026
+
+The owner explicitly approved replacing only the Koinos witness with his existing legacy API over the
+existing private VPN; Teleno remains primary. Both Koinos readers are owner-operated. This amendment
+proves two actual node implementations, not independent operators. Three guarded sequential restarts
+completed; independent protected readback verifies the new source pins and preserved original binary,
+keys, units, full history, signing fingerprints, quorum and 120-second fence. Ethereum sources are unchanged.
+
+A fresh 600.20-second observation retains all 21 samples: all three ready in 19, with 62 native HTTP 200
+responses and one HTTP 503. One HTTP 200 result is `catching_up` by one Koinos block and recovers at the
+next sample; it is not an RPC failure. The other exception is a real Ethereum source refusal with a
+32-block backlog, also recovered by the next sample. The bounded original dRPC witness journal records
+an HTTP 408 refusal after its permitted retry in this interval. No Koinos problem was reported in the
+sampled window; no uninterrupted-availability guarantee or per-request source attribution is claimed.
+
+The strict all-samples readiness gate still fails. No fresh signature collection is used to bypass it;
+post-change 3/3 collection, live pause/UI consistency and final technical sign-off remain pending. The
+original native and Go collector processes are unchanged. The backup nginx PID changed outside this
+continuation; its configuration and effective limits match accepted pins, and trusted public HTTPS
+returns 200 from the operator Mac. A refused self-connection from the backup itself is retained as a
+vantage-specific result. Do not infer its restart actor or reopen origins to make that probe succeed.
+No blockchain transaction, producer modification or Telegram message occurred. Preserve all earlier
+accepted isolation/recovery/UI proofs; do not replay completed controllers or poll until lucky.
+
+See `evidence/collector-private-pilot-20261021/approved-legacy-native-window-20261022.json` for every sample and sanitized immutable evidence digests. No client/collector code or
+installed website build changed for this documentation update.
+
 ## Installed pilot, 21 October 2026
 
 The actual private terminal-only VXTEST website uses primary/backup collectors on separate VPS hosts.
@@ -58,7 +85,7 @@ was exercised with origin restrictions intact. See the coordinated server PR's s
 Final pilot sign-off remains pending consistent all-three native readiness. A subsequent owner-authorized,
 native-loader-qualified polling-only adjustment uses Koinos 15 seconds and Ethereum 30 seconds, with
 three sequential guarded restarts. The original binary, sources, keys, history, quorum and 120-second
-signing fence are unchanged. The public Koinos witness still sometimes trails the private primary by
+signing fence are unchanged. At that checkpoint, the public Koinos witness trailed the private primary by
 more than 400 blocks. Post-change collection gets 3/3 signatures in Ethereum-to-Koinos and only 2/3 in
 the reverse direction; verified partials survive backup fallback and the client correctly refuses the
 incomplete quorum. The 600-second observation has all three ready in only 3 of 21 samples, and its
