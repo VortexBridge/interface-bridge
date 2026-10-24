@@ -223,11 +223,18 @@ test("a failed membership read is not kept: the backup's copy of that signer is 
   assert(got.enough); assert(got.usedBackup); assert.equal(reads.filter((s) => s === wallets[0].address).length, 2);
 });
 
-test("per answer only as many distinct signers as there are validators reach a membership read", async () => {
+test("membership is read in rounds of the validator count, and only until the quorum is verified", async () => {
   const f = setup(), reads = [];
-  const responses = [f.rep([5, 6, 7, 0, 1, 2].map((i) => f.sign(i))), f.rep([0, 1, 2].map((i) => f.sign(i)))];
+  const responses = [f.rep([5, 6, 7, 0, 1, 2].map((i) => f.sign(i)))];
   const vx = createVortex({ ethers, cfg: config, fetch: async () => json(responses.shift()) });
   const got = await vx.collect(f.claim, { expiry: f.expiry, getValidatorCount: async () => 3, isValidator: async (s) => { reads.push(s); return f.isValidator(s); } });
-  assert(got.enough); assert(got.usedBackup); assert.equal(got.quorum, 3);
-  assert.deepEqual(reads.slice(0, 3), [5, 6, 7].map((i) => wallets[i].address)); assert.equal(reads.length, 6);
+  assert(got.enough); assert(!got.usedBackup); assert.equal(got.quorum, 3);
+  assert.deepEqual(reads.slice(0, 3), [5, 6, 7].map((i) => wallets[i].address));   // first round: 3 reads
+  assert.equal(reads.length, 6);                                                      // second round, then the quorum is there
+});
+test("valid signers after removed ones still count (no candidate is dropped before its membership read)", async () => {
+  const f = setup(), current = new Set([2, 3, 4, 5, 6].map((i) => wallets[i].address));   // 5 current validators, 0 + 1 removed
+  const vx = createVortex({ ethers, cfg: config, fetch: async () => json(f.rep([0, 1, 2, 3, 4, 5, 6].map((i) => f.sign(i)))) });
+  const got = await vx.collect(f.claim, { expiry: f.expiry, getValidatorCount: async () => 5, isValidator: async (s) => current.has(s) });
+  assert(got.enough); assert(!got.usedBackup); assert.equal(got.quorum, 4); assert.equal(got.signatures.length, 4);
 });

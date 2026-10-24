@@ -232,18 +232,25 @@ export function createVortex({ ethers, fetch: fetchFn = globalThis.fetch, cfg })
       try { return await withTimeout(Promise.resolve().then(() => fn({ signal: ctrl.signal })), ms); }
       finally { clearTimeout(timer); ctrl.abort(); operation.signal.removeEventListener("abort", abort); }
     }
-    // signers are recovered locally first; per answer at most `signerLimit` distinct signers (the validator count, else
-    // the contracts' 19) reach a membership read, so one hostile answer cannot cause a burst of reads
+    // signers are recovered locally first (an answer holds at most 19); their membership is read in rounds of at most
+    // `signerLimit` (the validator count, else the contracts' 19) and only until the quorum is verified, so one hostile
+    // answer cannot cause a burst of reads — and valid signers after removed ones still count
     async function check(candidates) {
       const pairs = new Map();
       for (const signature of candidates) {
         try {
           const sig = c.direction === "k2e" ? canonicalEth(signature) : canonicalKoinos(signature);
           const signer = c.direction === "k2e" ? U.verifyTypedData(ethDomain(), CLAIM_TYPES, ethValue(c), sig) : recoverKoinos(digest, sig);
-          if (!pairs.has(signer) && pairs.size < signerLimit) pairs.set(signer, sig);
+          if (!pairs.has(signer)) pairs.set(signer, sig);
         } catch (e) { /* not a canonical signature: never reaches a membership read */ }
       }
-      const checked = await Promise.all([...pairs].map(async ([signer, sig]) => {
+      const list = [...pairs];
+      for (let at = 0; at < list.length && good.size < quorum && !operation.signal.aborted && remaining(); at += Math.max(1, signerLimit)) {
+        await checkRound(list.slice(at, at + Math.max(1, signerLimit)));
+      }
+    }
+    async function checkRound(round) {
+      const checked = await Promise.all(round.map(async ([signer, sig]) => {
         if (operation.signal.aborted || !remaining()) return null;
         try {
           if (!membership.has(signer)) {
