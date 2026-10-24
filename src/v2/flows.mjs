@@ -18,6 +18,7 @@ export const ETH_BRIDGE_ABI = [
   "function weth() view returns (address)",
   "function tokens(address) view returns (uint8 kind, uint8 decimals, bool enabled, bytes25 koinosToken)",
   "function maxDeposit8(address) view returns (uint128)",
+  "function limits(address) view returns (uint128 capacity8, uint128 available8, uint64 lastUpdate)",
   "event Deposit(uint64 indexed nonce, address indexed token, address indexed from, bytes25 recipient, uint256 amount8, uint32 toChain)",
 ];
 const ERC20_ABI = [
@@ -29,7 +30,8 @@ export const KIND = { NONE: 0, LOCKED: 1, WRAPPED: 2 };
 // cfg: { koinos: { bridge, bridgeChainId }, eth: { bridge, networkChainId, bridgeChainId }, validators: [urls] }
 // koinosBridgeAbi / koinosTokenAbi: koilib ABIs (entry_point / read_only form)
 // rpcTimeoutMs: every chain read gives up after this (a hanging node must never freeze the page; the page asks again)
-export function createFlows({ ethers, koilib, fetch, cfg, koinosBridgeAbi, koinosTokenAbi, rpcTimeoutMs = 20000 }) {
+// koinosReader (optional): the Koinos read provider used when an Ethereum deposit does not pass its own `koinosProvider`
+export function createFlows({ ethers, koilib, fetch, cfg, koinosBridgeAbi, koinosTokenAbi, rpcTimeoutMs = 20000, koinosReader }) {
   const vx = createVortex({ ethers, fetch, cfg });
   const U = ethers.utils;
   const eIface = new U.Interface(ETH_BRIDGE_ABI);
@@ -73,21 +75,34 @@ export function createFlows({ ethers, koilib, fetch, cfg, koinosBridgeAbi, koino
     if (info.kind === KIND.NONE || !info.enabled) throw new Error("this token can not be bridged right now");
     if (amount8 > info.maxDeposit8) throw new Error(`the most per transfer is ${U.formatUnits(info.maxDeposit8.toString(), 8)}`);
   }
+  // the DESTINATION bridge pays at most its daily capacity per claim: a deposit above it could never be claimed
+  function checkPayout(amount8, capacity8, network) {
+    if (amount8 > capacity8) throw new Error(`the most the bridge can pay out on ${network} per day is ${U.formatUnits(capacity8.toString(), 8)}`);
+  }
+  // the wallet must be on the bridge's Ethereum network, checked before it is asked
+  async function checkEthNetwork(signer) {
+    if ((await signer.getChainId()) !== Number(cfg.eth.networkChainId))
+      throw permanent("your wallet is on another network, switch it to the bridge's Ethereum network and try again");
+  }
 
   // ------------------------------------------------------------------ deposits
   // Every check of the contracts, BEFORE the wallet is asked. The site runs it before an approval too.
-  async function checkKoinosDeposit({ provider, token, amount8, recipient }) {
+  // `ethProvider`: an Ethereum read provider (the payout cap is read on Ethereum, the destination)
+  async function checkKoinosDeposit({ provider, ethProvider, token, amount8, recipient }) {
     const info = await koinosTokenInfo(provider, token);
     checkDeposit(info, BigInt(amount8));
     vx.fromAmount8(amount8, info.remoteDecimals);                       // must be payable exactly on Ethereum
-    return vx.ethRecipient(recipient).toLowerCase();
+    const to = vx.ethRecipient(recipient).toLowerCase();
+    if (!ethProvider) throw permanent("the Ethereum bridge cannot be read right now, nothing was sent");
+    checkPayout(BigInt(amount8), (await eBridge(ethProvider).limits(info.partner)).capacity8.toBigInt(), "Ethereum");
+    return to;
   }
   // `beforeSend` (optional, all three sends): awaited as the LAST step before the wallet is asked — the site re-reads
   // both bridges' pause flags there, so nothing slow sits between that check and the wallet prompt.
   // Koinos -> Ethereum: ONE transaction = approve(bridge, exact amount) + deposit. Returns the transaction id.
   // `onSigned(id)` (optional): the wallet only SIGNS (Kondor can); the id is final then and handed over BEFORE the
   // transaction is sent through `provider`'s node, so a lost answer can not hide a sent deposit (as for Solana); see
-  // submitKoinos for which answers keep the id (`submitted`) and which one is a refusal.
+  // submitKoinos: every answer but a result, a refusal too, keeps the id (`submitted`).
   // Without `onSigned` the wallet signs and sends in one step (WalletConnect: its session allows only that).
   async function depositFromKoinos(args) {
     const { provider, signer, from, token, amount8 } = args;
@@ -111,10 +126,11 @@ export function createFlows({ ethers, koilib, fetch, cfg, koinosBridgeAbi, koino
     return id;
   }
   // Sends a SIGNED Koinos transaction to the provider's node and reads the raw JSON-RPC answer. Only a well-formed
-  // answer to THIS request counts: a result = sent; an error object with a numeric code and a message (and no result)
-  // = refused, nothing sent. Anything else — no answer, a broken or empty answer, another id, result AND error, the
-  // node's own timeout ("deadline exceeded"), no complete answer within rpcTimeoutMs — may still have arrived: the error
-  // then carries `submitted` = the id and the caller waits for the chain.
+  // answer to THIS request counts as sent: a result. Everything else may still have arrived — a node (or a proxy) can
+  // pass a transaction on and still answer with an error — so the error ALWAYS carries `submitted` = the id and the
+  // caller keeps it and waits for the chain: a refusal (an error object with a numeric code and a message, no result;
+  // only the code is shown, never the node's text), no answer, a broken or empty answer, another id, result AND error,
+  // the node's own timeout ("deadline exceeded"), no complete answer within rpcTimeoutMs.
   async function submitKoinos(provider, transaction) {
     const url = (provider.rpcNodes || [])[provider.currentNodeId || 0];
     if (!url) throw new Error("no Koinos node configured");
@@ -140,21 +156,26 @@ export function createFlows({ ethers, koilib, fetch, cfg, koinosBridgeAbi, koino
     const errText = err === undefined ? "" : JSON.stringify(err);
     if (mine && json.result !== undefined && err === undefined) return json.result;
     if (/deadline exceeded/i.test(errText)) throw unknown("the Koinos node did not finish in time");
-    if (mine && json.result === undefined && err && typeof err === "object" && typeof err.code === "number" && typeof err.message === "string")
-      throw new Error(`the Koinos node refused the transaction: ${errText}`.slice(0, 300));
+    if (mine && json.result === undefined && err && typeof err === "object" && Number.isInteger(err.code) && typeof err.message === "string")
+      throw unknown(`the Koinos node refused the transaction (error code ${err.code}); it is kept until the chain shows whether it arrived`);
     throw unknown("no clear answer from the Koinos node");
   }
   // Ethereum -> Koinos. `simulate`: also run the deposit as a call (only once the approval is in place)
-  async function checkEthDeposit({ signer, token, amount, recipient, native = false, pageDecimals }, simulate = false) {
+  // `koinosProvider` (default: the koinosReader of createFlows): the payout cap is read on Koinos, the destination
+  async function checkEthDeposit({ signer, koinosProvider = koinosReader, token, amount, recipient, native = false, pageDecimals }, simulate = false) {
+    await checkEthNetwork(signer);
     const b = eBridge(signer);
     const t = native ? await b.weth() : token;
     const info = await ethTokenInfo(signer.provider, t);
     // the page parsed the typed amount with ITS token list's decimals; the bridge counts with the registered
-    // ones — if they differ, the user would send 10^k times what they typed
-    if (pageDecimals !== undefined && Number(pageDecimals) !== Number(info.decimals))
-      throw new Error(`the page uses ${pageDecimals} decimals for this token, the bridge ${info.decimals} — refusing`);
-    checkDeposit(info, vx.toAmount8(amount, info.decimals));            // exact in 8 decimals or refused
+    // ones — if they differ (or the page does not say), the user could send 10^k times what they typed
+    if (pageDecimals === undefined || pageDecimals === null || Number(pageDecimals) !== Number(info.decimals))
+      throw new Error(`the page uses ${pageDecimals ?? "unknown"} decimals for this token, the bridge ${info.decimals} — refusing`);
+    const amount8 = vx.toAmount8(amount, info.decimals);                // exact in 8 decimals or refused
+    checkDeposit(info, amount8);
     const to = U.hexlify(vx.koinosRecipient(recipient));
+    if (!koinosProvider) throw permanent("the Koinos bridge cannot be read right now, nothing was sent");
+    checkPayout(amount8, (await koinosLimit(koinosProvider, info.partner)).capacity8, "Koinos");
     if (simulate && native) await b.callStatic.depositETH(to, { value: amount.toString() });
     if (simulate && !native) await b.callStatic.deposit(token, amount.toString(), to);
     return { to, info };
@@ -282,14 +303,25 @@ export function createFlows({ ethers, koilib, fetch, cfg, koinosBridgeAbi, koino
 
   // anyone may submit a claim, the tokens always go to the recipient of the deposit
   async function claimOnEth(signer, got) {
+    await bounded(checkEthNetwork)(signer);
     const args = vx.ethClaimArgs(got.claim, got.signatures);
     const b = eBridge(signer);
     await bounded(() => b.callStatic.claim(...args))();                 // a claim that would revert is never sent
     return b.claim(...args);
   }
+  // the collected signatures (each one verified by vortex-v2.mjs): at least the quorum, and not expired or about to
+  const CLAIM_EXPIRY_MARGIN_MS = 60000n;
+  function checkClaimSignatures(got) {
+    const c = got.claim, sigs = got.signatures || [];
+    if (!got.enough || !(got.quorum >= 2) || !(sigs.length >= got.quorum)) throw retryable("not enough validator signatures yet, please try again in a minute");
+    if (BigInt(c.expiry) * (c.direction === "k2e" ? 1000n : 1n) - BigInt(Date.now()) < CLAIM_EXPIRY_MARGIN_MS)
+      throw retryable("the validator signatures have expired, please ask for new ones");
+  }
   // Koinos claim: every reason for a revert is re-read right before the wallet is asked (a reverted Koinos transaction
-  // still costs the recipient's scarce mana): already claimed, paused, token disabled, today's limit used up
+  // still costs the recipient's scarce mana): too few or expired signatures, already claimed, paused, token disabled,
+  // today's limit used up
   async function checkKoinosClaim(provider, got) {
+    checkClaimSignatures(got);
     const c = got.claim;
     const [done, p, info, lim] = await Promise.all([kRead(provider, "is_consumed", { depositId: vx.koinosDepositId(c.depositNonce) }),
       kRead(provider, "is_paused"), koinosTokenInfo(provider, c.token), koinosLimit(provider, c.token)]);
@@ -311,6 +343,7 @@ export function createFlows({ ethers, koilib, fetch, cfg, koinosBridgeAbi, koino
     }
     tx.transaction = await tx.sign();
     if (!tx.transaction.id || !(tx.transaction.signatures || []).length) throw new Error("the wallet did not sign");
+    checkClaimSignatures(got);                                          // a long wallet prompt: not sent once expired
     const id = tx.transaction.id;
     onSigned(id);
     await submitKoinos(provider, tx.transaction);

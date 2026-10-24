@@ -206,7 +206,7 @@ export function createVortex({ ethers, fetch: fetchFn = globalThis.fetch, cfg })
     const overallTimer = setTimeout(() => operation.abort(), operationTimeoutMs);
     const remaining = () => Math.max(0, end - Date.now());
     const expiresAt = () => c.expiry * (c.direction === "k2e" ? 1000n : 1n);
-    let answered = 0, notReady = false, usedBackup = false, deadlineExpired = false;
+    let answered = 0, notReady = false, usedBackup = false, deadlineExpired = false, signerLimit = 19;
     const issue = (text) => { if (problems.length < 3 && !problems.includes(text)) problems.push(text); };
     async function request(base, path, max, ms) {
       if (operation.signal.aborted || !remaining()) throw new Error("timeout");
@@ -232,13 +232,26 @@ export function createVortex({ ethers, fetch: fetchFn = globalThis.fetch, cfg })
       try { return await withTimeout(Promise.resolve().then(() => fn({ signal: ctrl.signal })), ms); }
       finally { clearTimeout(timer); ctrl.abort(); operation.signal.removeEventListener("abort", abort); }
     }
+    // signers are recovered locally first; per answer at most `signerLimit` distinct signers (the validator count, else
+    // the contracts' 19) reach a membership read, so one hostile answer cannot cause a burst of reads
     async function check(candidates) {
-      const checked = await Promise.all(candidates.map(async (signature) => {
-        if (operation.signal.aborted || !remaining()) return null;
+      const pairs = new Map();
+      for (const signature of candidates) {
         try {
           const sig = c.direction === "k2e" ? canonicalEth(signature) : canonicalKoinos(signature);
           const signer = c.direction === "k2e" ? U.verifyTypedData(ethDomain(), CLAIM_TYPES, ethValue(c), sig) : recoverKoinos(digest, sig);
-          if (!membership.has(signer)) membership.set(signer, memberRead((options) => isValidator(signer, options)));
+          if (!pairs.has(signer) && pairs.size < signerLimit) pairs.set(signer, sig);
+        } catch (e) { /* not a canonical signature: never reaches a membership read */ }
+      }
+      const checked = await Promise.all([...pairs].map(async ([signer, sig]) => {
+        if (operation.signal.aborted || !remaining()) return null;
+        try {
+          if (!membership.has(signer)) {
+            // a failed read is no answer: it is not kept, so the backup collector's copy is read again
+            const read = memberRead((options) => isValidator(signer, options));
+            membership.set(signer, read);
+            read.catch(() => { if (membership.get(signer) === read) membership.delete(signer); });
+          }
           return (await membership.get(signer)) === true && !operation.signal.aborted && remaining() ? [signer, sig] : null;
         } catch (e) { return null; }
       }));
@@ -264,7 +277,7 @@ export function createVortex({ ethers, fetch: fetchFn = globalThis.fetch, cfg })
       return signatures;
     }
     try {
-      if (typeof getValidatorCount === "function") quorum = quorumFor(await memberRead(getValidatorCount));
+      if (typeof getValidatorCount === "function") { const n = await memberRead(getValidatorCount); quorum = quorumFor(n); signerLimit = n; }
       if (expiresAt() <= BigInt(Date.now())) { issue("signature request expired"); }
       else if (collectionMode === "collector") {
         for (let i = 0; i < collectors.length && good.size < quorum && remaining() && !operation.signal.aborted; i++) {
@@ -296,7 +309,8 @@ export function createVortex({ ethers, fetch: fetchFn = globalThis.fetch, cfg })
     if (c.direction === "k2e") list.sort((x, y) => (x[0].toLowerCase() < y[0].toLowerCase() ? -1 : 1));
     const enough = list.length >= quorum;
     const outcome = enough ? "ready" : expired ? "expired" : deadlineExpired ? "timeout" : collectionMode === "collector" && !answered ? "collector unavailable" : notReady ? "validators not ready" : "insufficient signatures";
-    return { claim: c, digest, quorum, signatures: list.map((x) => x[1]).slice(0, quorum), signers: list.map((x) => x[0]), enough,
+    const used = list.slice(0, quorum);                                // signers[i] signed signatures[i]
+    return { claim: c, digest, quorum, signatures: used.map((x) => x[1]), signers: used.map((x) => x[0]), enough,
       problems, outcome, usedBackup };
   }
 

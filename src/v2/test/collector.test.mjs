@@ -204,3 +204,30 @@ test("an expiry reached during collection never enables claim preparation", asyn
   const got=await vx.collect(f.claim,{expiry,quorum:4,isValidator:f.isValidator});
   assert(!got.enough);assert.equal(got.outcome,"expired");assert.equal(got.signatures.length,0);
 });
+
+for (const direction of ["k2e", "e2k"]) test(`${direction}: signers[i] signed signatures[i] when more than the quorum is verified`, async () => {
+  const f = setup(direction), who = new Map([0, 1, 2, 3, 4].map((i) => [f.sign(i), direction === "k2e" ? wallets[i].address : kAddress(wallets[i])]));
+  const vx = createVortex({ ethers, cfg: config, fetch: async () => json(f.rep([...who.keys()])) });
+  const got = await vx.collect(f.claim, { expiry: f.expiry, quorum: 3, isValidator: f.isValidator });
+  assert(got.enough); assert.equal(got.signatures.length, 3); assert.equal(got.signers.length, 3);
+  got.signatures.forEach((s, i) => assert.equal(who.get(s), got.signers[i]));
+});
+
+test("a failed membership read is not kept: the backup's copy of that signer is read again", async () => {
+  const f = setup(), responses = [f.rep([f.sign(0), f.sign(1)]), f.rep([f.sign(0), f.sign(2)])], reads = [];
+  const vx = createVortex({ ethers, cfg: config, fetch: async () => json(responses.shift()) });
+  const got = await vx.collect(f.claim, { expiry: f.expiry, quorum: 3, isValidator: async (s) => {
+    reads.push(s); if (s === wallets[0].address && reads.filter((x) => x === s).length === 1) throw new Error("rate limited");
+    return f.isValidator(s);
+  } });
+  assert(got.enough); assert(got.usedBackup); assert.equal(reads.filter((s) => s === wallets[0].address).length, 2);
+});
+
+test("per answer only as many distinct signers as there are validators reach a membership read", async () => {
+  const f = setup(), reads = [];
+  const responses = [f.rep([5, 6, 7, 0, 1, 2].map((i) => f.sign(i))), f.rep([0, 1, 2].map((i) => f.sign(i)))];
+  const vx = createVortex({ ethers, cfg: config, fetch: async () => json(responses.shift()) });
+  const got = await vx.collect(f.claim, { expiry: f.expiry, getValidatorCount: async () => 3, isValidator: async (s) => { reads.push(s); return f.isValidator(s); } });
+  assert(got.enough); assert(got.usedBackup); assert.equal(got.quorum, 3);
+  assert.deepEqual(reads.slice(0, 3), [5, 6, 7].map((i) => wallets[i].address)); assert.equal(reads.length, 6);
+});

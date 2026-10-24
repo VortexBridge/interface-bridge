@@ -8,6 +8,8 @@ export function collectionConfig(env) {
     return { ready: validators.length > 0, cfg: { collectionMode, validators } };
   }
   if (list(env.VITE_VORTEX_VALIDATORS).length) throw new Error("remove VITE_VORTEX_VALIDATORS from collector builds");
+  // no collector set up yet: unavailable (the page shows maintenance), never a fallback to direct validators
+  if (!list(env.VITE_VORTEX_COLLECTORS).length && !env.VITE_VORTEX_DEPLOYMENT) return { ready: false, cfg: { collectionMode, collectors: [], deployment: "" } };
   const collectors = list(env.VITE_VORTEX_COLLECTORS).map((base) => {
     const u = new URL(base);
     if (u.protocol !== "https:" || u.username || u.password || u.search || u.hash || u.pathname !== "/") throw new Error("collector URLs must be HTTPS origins");
