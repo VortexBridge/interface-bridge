@@ -462,7 +462,8 @@ const Bridge = () => {
         // Kondor only signs, the page sends: the id is kept BEFORE the transaction is sent (WalletConnect signs and sends)
         let viaWalletConnect = _get(walletSelector, "wallet[0].name", "") == "walletconnect" && !!_get(walletSelector, "wallet[0].object", null);
         let walletAsked = false;
-        let args = { provider: providerKoin, signer: signerKoin, from: walletAddress, token: _token.address, amount8: BigInt(fullAmount), recipient,
+        // ethProvider: the destination's payout cap is read on Ethereum before the wallet is asked
+        let args = { provider: providerKoin, ethProvider: vortexEvmProvider, signer: signerKoin, from: walletAddress, token: _token.address, amount8: BigInt(fullAmount), recipient,
           beforeSend: async () => { await checkNotPaused(); prompt = walletPrompt(); walletAsked = true; },
           onSigned: viaWalletConnect ? undefined : (id) => { _txhash = id; keep(id); } };
         try {
