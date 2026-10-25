@@ -3,9 +3,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { ethers } from "ethers";
 import * as koilib from "koilib";
-import { createFlows } from "../flows.mjs";
+import { createFlows } from "../../src/v2/flows.mjs";
 
-const abi = JSON.parse(fs.readFileSync(new URL("../../assets/contracts/Koinos-Bridge-v2.json", import.meta.url)));
+const abi = JSON.parse(fs.readFileSync(new URL("../../src/assets/contracts/Koinos-Bridge-v2.json", import.meta.url)));
 const cfg = { koinos: { bridge: "19GYjDBVXU7keLbYvMLazsGQn3GTWHjHkK", bridgeChainId: 1 },
   eth: { bridge: "0x0000000000000000000000000000000000000001", networkChainId: 1, bridgeChainId: 2 }, validators: [] };
 // any use (a read, a wallet prompt) of this object fails the refusal checks below
