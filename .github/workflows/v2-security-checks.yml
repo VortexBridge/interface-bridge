@@ -1,0 +1,36 @@
+name: V2 website checks
+
+"on":
+  pull_request:
+    branches: [v2]
+  push:
+    branches: [codex/security-release-integration-*]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  website:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install the committed lockfile, test and build with the pinned Node image
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/src" -w /src \
+            node@sha256:0e910f435308c36ea60b4cfd7b80208044d77a074d16b768a81901ce938a62dc bash -euc '
+              npm ci --legacy-peer-deps --ignore-scripts --no-audit --no-fund --cache /tmp/vortex-ci-npm
+              npm run test:rpc-reader
+              npm run test:amount
+              npm run test:recipient
+              npm run test:vortex:collector
+              npm run build'
