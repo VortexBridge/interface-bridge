@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import http from "node:http";
-import { membershipRpc } from "../membership-rpc.mjs";
-import { createVortex } from "../vortex-v2.mjs";
+import { membershipRpc } from "../../src/v2/membership-rpc.mjs";
+import { createVortex } from "../../src/v2/vortex-v2.mjs";
 import { ethers } from "ethers";
 
 async function server(t, handler) {

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import http from "node:http";
-import { collectorsUnavailable } from "../collector-availability.mjs";
+import { collectorsUnavailable } from "../../src/v2/collector-availability.mjs";
 
 test("one reachable collector suppresses the outage warning, without inspecting validator readiness", async () => {
   const outcomes = [502, 200];
