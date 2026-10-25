@@ -24,3 +24,9 @@ test("unconfigured and direct legacy startups retain their maintenance behavior"
   assert.equal(collectionConfig({ VITE_VORTEX_VALIDATORS: "https://a.example" }).ready, true);
   assert.throws(() => collectionConfig({ VITE_VORTEX_COLLECTION_MODE: "unknown" }));
 });
+
+test("collector mode without any collector setting is unavailable at import, never direct", () => {
+  const result = collectionConfig({ VITE_VORTEX_COLLECTION_MODE: "collector" });
+  assert.equal(result.ready, false); assert.equal(result.cfg.collectionMode, "collector");
+  assert.deepEqual(result.cfg.collectors, []); assert.equal(result.cfg.validators, undefined);
+});

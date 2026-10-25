@@ -13,20 +13,28 @@ export { KIND } from "./flows.mjs";
 export const VORTEX_KOINOS = BRIDGE_CHAINS.find((c) => c.chainType == BRIDGE_CHAINS_TYPES.KOIN) || null;
 export const VORTEX_EVM = BRIDGE_CHAINS.find((c) => c.chainType == BRIDGE_CHAINS_TYPES.EVM && c.bridgeAddress) || null;
 
-export const collection = collectionConfig(import.meta.env);
+// a broken collection setting must not stop the whole site: the Vortex route then shows as under maintenance
+export const collection = (() => {
+  try {
+    return collectionConfig(import.meta.env);
+  } catch (e) {
+    console.error("Vortex collection is not configured correctly:", e.message);
+    return { ready: false, cfg: {} };
+  }
+})();
+
+// Koinos reads need no wallet
+export const koinosReader = createJsonReader(koilib.Provider, KOINOS_RPC);
 
 const configured = !!(VORTEX_KOINOS && VORTEX_EVM && collection.ready && ethers.utils.isAddress(VORTEX_EVM.bridgeAddress)
   && VORTEX_EVM.bridgeAddress != ethers.constants.AddressZero);
 
 // null while the bridge is not set up for this network: the pages then show the Vortex route as under maintenance
 export const vortex = configured ? createFlows({
-  ethers, koilib, fetch: (...args) => fetch(...args), koinosBridgeAbi: KoinosBridgeAbi, koinosTokenAbi: KoinosTokenAbi,
+  ethers, koilib, fetch: (...args) => fetch(...args), koinosBridgeAbi: KoinosBridgeAbi, koinosTokenAbi: KoinosTokenAbi, koinosReader,
   cfg: {
     koinos: { bridge: VORTEX_KOINOS.bridgeAddress, bridgeChainId: VORTEX_KOINOS.chainId },
     eth: { bridge: VORTEX_EVM.bridgeAddress, networkChainId: VORTEX_EVM.evmChainId, bridgeChainId: VORTEX_EVM.chainId },
     ...collection.cfg,
   },
 }) : null;
-
-// Koinos reads need no wallet
-export const koinosReader = createJsonReader(koilib.Provider, KOINOS_RPC);

@@ -204,3 +204,37 @@ test("an expiry reached during collection never enables claim preparation", asyn
   const got=await vx.collect(f.claim,{expiry,quorum:4,isValidator:f.isValidator});
   assert(!got.enough);assert.equal(got.outcome,"expired");assert.equal(got.signatures.length,0);
 });
+
+for (const direction of ["k2e", "e2k"]) test(`${direction}: signers[i] signed signatures[i] when more than the quorum is verified`, async () => {
+  const f = setup(direction), who = new Map([0, 1, 2, 3, 4].map((i) => [f.sign(i), direction === "k2e" ? wallets[i].address : kAddress(wallets[i])]));
+  const vx = createVortex({ ethers, cfg: config, fetch: async () => json(f.rep([...who.keys()])) });
+  const got = await vx.collect(f.claim, { expiry: f.expiry, quorum: 3, isValidator: f.isValidator });
+  assert(got.enough); assert.equal(got.signatures.length, 3); assert.equal(got.signers.length, 3);
+  got.signatures.forEach((s, i) => assert.equal(who.get(s), got.signers[i]));
+});
+
+test("a failed membership read is not kept: the backup's copy of that signer is read again", async () => {
+  const f = setup(), responses = [f.rep([f.sign(0), f.sign(1)]), f.rep([f.sign(0), f.sign(2)])], reads = [];
+  const vx = createVortex({ ethers, cfg: config, fetch: async () => json(responses.shift()) });
+  const got = await vx.collect(f.claim, { expiry: f.expiry, quorum: 3, isValidator: async (s) => {
+    reads.push(s); if (s === wallets[0].address && reads.filter((x) => x === s).length === 1) throw new Error("rate limited");
+    return f.isValidator(s);
+  } });
+  assert(got.enough); assert(got.usedBackup); assert.equal(reads.filter((s) => s === wallets[0].address).length, 2);
+});
+
+test("membership is read in rounds of the validator count, and only until the quorum is verified", async () => {
+  const f = setup(), reads = [];
+  const responses = [f.rep([5, 6, 7, 0, 1, 2].map((i) => f.sign(i)))];
+  const vx = createVortex({ ethers, cfg: config, fetch: async () => json(responses.shift()) });
+  const got = await vx.collect(f.claim, { expiry: f.expiry, getValidatorCount: async () => 3, isValidator: async (s) => { reads.push(s); return f.isValidator(s); } });
+  assert(got.enough); assert(!got.usedBackup); assert.equal(got.quorum, 3);
+  assert.deepEqual(reads.slice(0, 3), [5, 6, 7].map((i) => wallets[i].address));   // first round: 3 reads
+  assert.equal(reads.length, 6);                                                      // second round, then the quorum is there
+});
+test("valid signers after removed ones still count (no candidate is dropped before its membership read)", async () => {
+  const f = setup(), current = new Set([2, 3, 4, 5, 6].map((i) => wallets[i].address));   // 5 current validators, 0 + 1 removed
+  const vx = createVortex({ ethers, cfg: config, fetch: async () => json(f.rep([0, 1, 2, 3, 4, 5, 6].map((i) => f.sign(i)))) });
+  const got = await vx.collect(f.claim, { expiry: f.expiry, getValidatorCount: async () => 5, isValidator: async (s) => current.has(s) });
+  assert(got.enough); assert(!got.usedBackup); assert.equal(got.quorum, 4); assert.equal(got.signatures.length, 4);
+});
