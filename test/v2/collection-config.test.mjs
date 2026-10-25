@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { collectionConfig } from "../collection-config.mjs";
+import { collectionConfig } from "../../src/v2/collection-config.mjs";
 
 test("collector-only startup needs no validator setting and exposes no private roster", () => {
   const result = collectionConfig({ VITE_VORTEX_COLLECTION_MODE: "collector", VITE_VORTEX_COLLECTORS: "https://primary.example,https://backup.example", VITE_VORTEX_DEPLOYMENT: "pilot" });

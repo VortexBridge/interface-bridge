@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { ethers } from "ethers";
-import { createVortex } from "../vortex-v2.mjs";
+import { createVortex } from "../../src/v2/vortex-v2.mjs";
 
 const U = ethers.utils;
 const wallets = Array.from({ length: 8 }, (_, i) => new ethers.Wallet(U.hexZeroPad(U.hexlify(i + 1), 32)));

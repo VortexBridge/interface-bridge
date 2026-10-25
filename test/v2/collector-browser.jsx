@@ -3,9 +3,9 @@ import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Box, Button, Typography } from "@mui/material";
 import { ethers } from "ethers";
-import SignatureCollection from "../../components/SignatureCollection";
-import { createVortex } from "../vortex-v2.mjs";
-import { collectionStatus } from "../collection-status.mjs";
+import SignatureCollection from "../../src/components/SignatureCollection";
+import { createVortex } from "../../src/v2/vortex-v2.mjs";
+import { collectionStatus } from "../../src/v2/collection-status.mjs";
 
 const U = ethers.utils;
 const keys = Array.from({ length: 8 }, (_, i) => new ethers.Wallet(U.hexZeroPad(U.hexlify(i + 1), 32)));
