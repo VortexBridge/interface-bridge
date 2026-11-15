@@ -374,12 +374,14 @@ const Redeem = (props) => {
         // Usar la primera que responda exitosamente
         const opIdCurrent = parseInt(opIdKoinos);
         const opIdNext = opIdCurrent + 1;
+        const opIdPrevious = opIdCurrent - 1;
         
         try {
           // Intentar ambas consultas en paralelo y usar la primera que responda
           result = await Promise.any([
             bridge.getKoinTx(txIdParam ? txIdParam : sourceTX, opIdKoinos),
-            bridge.getKoinTx(txIdParam ? txIdParam : sourceTX, opIdNext.toString())
+            bridge.getKoinTx(txIdParam ? txIdParam : sourceTX, opIdNext.toString()),
+            bridge.getKoinTx(txIdParam ? txIdParam : sourceTX, opIdPrevious.toString())
           ]);
         } catch (raceError) {
           // Si ambas consultas paralelas fallan, no hacer un tercer intento
