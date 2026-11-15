@@ -310,7 +310,7 @@ const Redeem = (props) => {
     setLoading(true);
     let result = null;
     let existInBlockchain = false;
-    let opIdKoinos = ""; // op id of transaction in koinos
+    let opIdsKoinos = []; // op ids of transaction in koinos
     try {
       if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.EVM) {
         let r = await provider.getTransactionReceipt(txIdParam);
@@ -322,23 +322,30 @@ const Redeem = (props) => {
         let r = await providerKoin.getTransactionsById([ txIdParam ]);
         if(_get(r, "transactions", []).length == 0) throw new Error("no transaction");
         
-        // get op id
+        // get op ids
+        // the transaction can be included in several fork branches and the
+        // event sequence (which is the OpId used by the validators) can be
+        // different in each branch, so collect all candidates
+        const blockIds = _get(r, "transactions[0].containing_blocks", []);
         const blockResult = await providerKoin.call('block_store.get_blocks_by_id', {
-          block_ids: [_get(r, "transactions[0].containing_blocks[0]") ],
+          block_ids: blockIds,
           return_block: false,
           return_receipt: true,
         })
-        for (const receipt of _get(blockResult, 'block_items[0].receipt.transaction_receipts', [])) {
-          if (receipt.id === txIdParam) {
-            for (const event of receipt.events) {
-              if (event.name === 'bridge.tokens_locked_event') {
-                opIdKoinos = `${event.sequence}`
+        for (const item of _get(blockResult, 'block_items', [])) {
+          for (const receipt of _get(item, 'receipt.transaction_receipts', [])) {
+            if (receipt.id === txIdParam) {
+              for (const event of receipt.events) {
+                if (event.name === 'bridge.tokens_locked_event') {
+                  opIdsKoinos.push(`${event.sequence}`)
+                }
               }
             }
           }
         }
+        if (opIdsKoinos.length == 0) throw new Error("no lock event found");
 
-        //console.log(opIdKoinos)
+        //console.log(opIdsKoinos)
         existInBlockchain = true;
       }
       setblockchainTX(existInBlockchain);
@@ -370,21 +377,16 @@ const Redeem = (props) => {
         result = await bridge.getEthTx(txIdParam ? txIdParam : sourceTX);
       }
       if (_get(fromChain, "chainType", "") == BRIDGE_CHAINS_TYPES.KOIN) {
-        // Hacer dos consultas paralelas: una con opIdKoinos y otra con opIdKoinos + 1
-        // Usar la primera que responda exitosamente
-        const opIdCurrent = parseInt(opIdKoinos);
-        const opIdNext = opIdCurrent + 1;
-        const opIdPrevious = opIdCurrent - 1;
+        // Consultar en paralelo todos los opIds candidatos y usar la primera que responda
+        const opIdCandidates = Array.from(new Set(opIdsKoinos));
         
         try {
-          // Intentar ambas consultas en paralelo y usar la primera que responda
-          result = await Promise.any([
-            bridge.getKoinTx(txIdParam ? txIdParam : sourceTX, opIdKoinos),
-            bridge.getKoinTx(txIdParam ? txIdParam : sourceTX, opIdNext.toString()),
-            bridge.getKoinTx(txIdParam ? txIdParam : sourceTX, opIdPrevious.toString())
-          ]);
+          // Intentar todas las consultas en paralelo y usar la primera que responda
+          result = await Promise.any(
+            opIdCandidates.map(opId => bridge.getKoinTx(txIdParam ? txIdParam : sourceTX, opId))
+          );
         } catch (raceError) {
-          // Si ambas consultas paralelas fallan, no hacer un tercer intento
+          // Si todas las consultas paralelas fallan, no hacer un tercer intento
           // Dejar que el catch externo maneje el error y programe el reintento
           throw raceError;
         }
